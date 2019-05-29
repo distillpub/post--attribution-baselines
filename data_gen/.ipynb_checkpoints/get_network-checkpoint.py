@@ -8,23 +8,39 @@ from preprocessing import preprocessing_factory
 
 import eval_image_classifier
 
+tf.app.flags.DEFINE_string('f', None, '')
+
 slim = tf.contrib.slim
 FLAGS = tf.app.flags.FLAGS
 
-def normalize(im_batch):
-    if len(im_batch.shape) == 3:
+
+def normalize(im_batch, _range=None, _domain=None):
+    if len(im_batch.shape) == 2:
+        axis = (0, 1)
+    elif len(im_batch.shape) == 3:
         axis = (0, 1, 2)
     elif len(im_batch.shape) == 4:
         axis = (1, 2, 3)
     else:
-        raise ValueError('im_batch must be of rank 3 or 4')
-        
-    max_vals = np.amax(im_batch, axis=axis, keepdims=True)
-    min_vals = np.amin(im_batch, axis=axis, keepdims=True)
-    return (im_batch - min_vals) / (max_vals - min_vals)
+        raise ValueError('im_batch must be of rank 2, 3 or 4')
+    
+    if _domain is not None:
+        min_vals = _domain[0]
+        max_vals = _domain[1]
+    else:
+        min_vals = np.amin(im_batch, axis=axis, keepdims=True)
+        max_vals = np.amax(im_batch, axis=axis, keepdims=True)
+    
+    norm_batch = (im_batch - min_vals) / (max_vals - min_vals)
+    
+    if _range is not None:
+        amin = _range[0]
+        amax = _range[1]
+        norm_batch = norm_batch * (amax - amin) + amin
+    return norm_batch
 
-def main():
-    FLAGS.batch_size = 4
+def get_model():
+    FLAGS.batch_size = 1
     FLAGS.dataset_name = 'imagenet'
     FLAGS.dataset_split_name = 'validation'
     FLAGS.dataset_dir = '/data/image_datasets/imagenet/'
@@ -82,6 +98,7 @@ def main():
     # Define the model #
     ####################
     images_pl = tf.placeholder(tf.float32, (None, 299, 299, 3))
+    labels_pl    = tf.placeholder(tf.int64, (None,))
     logits, _ = network_fn(images_pl)
     pred_labels   = tf.argmax(logits, axis=1)
 
@@ -102,6 +119,7 @@ def main():
     
     model = Model()
     model.images_pl = images_pl
+    model.labels_pl = labels_pl
     model.logits = logits
     model.pred_labels = pred_labels
     model.image_op  = images
