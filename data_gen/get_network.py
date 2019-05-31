@@ -5,6 +5,7 @@ import numpy as np
 from datasets import dataset_factory
 from nets import nets_factory
 from preprocessing import preprocessing_factory
+from regularized_explanations import ops
 
 import eval_image_classifier
 
@@ -99,8 +100,15 @@ def get_model():
     ####################
     images_pl = tf.placeholder(tf.float32, (None, 299, 299, 3))
     labels_pl    = tf.placeholder(tf.int64, (None,))
-    logits, _ = network_fn(images_pl)
+    background_reference_pl = tf.placeholder(tf.float32, (None, 51, 299, 299, 3))
+    
+    explainer = ops.TFOpsExplainer(random_alpha=False)
+    cond_input_op, train_eg = explainer.input_to_samples_delta(images_pl, lambda: background_reference_pl)
+    
+    logits, _ = network_fn(cond_input_op)
     pred_labels   = tf.argmax(logits, axis=1)
+    
+    expected_grads_op = explainer.shap_value_op(logits, cond_input_op, sparse_labels_op=labels_pl)
 
     variables_to_restore = slim.get_variables_to_restore()
     
@@ -124,4 +132,7 @@ def get_model():
     model.pred_labels = pred_labels
     model.image_op  = images
     model.label_op  = labels
+    model.train_eg = train_eg
+    model.expected_grads_op = expected_grads_op
+    model.background_reference_pl = background_reference_pl
     return model, sess
