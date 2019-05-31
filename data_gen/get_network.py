@@ -100,10 +100,9 @@ def get_model():
     ####################
     images_pl = tf.placeholder(tf.float32, (None, 299, 299, 3))
     labels_pl    = tf.placeholder(tf.int64, (None,))
-    background_reference_pl = tf.placeholder(tf.float32, (None, 51, 299, 299, 3))
     
     explainer = ops.TFOpsExplainer(random_alpha=False)
-    cond_input_op, train_eg = explainer.input_to_samples_delta(images_pl, lambda: background_reference_pl)
+    cond_input_op, train_eg = explainer.input_to_samples_delta(images_pl, lambda: tf.placeholder(tf.float32, (None, 51, 299, 299, 3)))
     
     logits, _ = network_fn(cond_input_op)
     pred_labels   = tf.argmax(logits, axis=1)
@@ -134,5 +133,5 @@ def get_model():
     model.label_op  = labels
     model.train_eg = train_eg
     model.expected_grads_op = expected_grads_op
-    model.background_reference_pl = background_reference_pl
+    model.background_reference_pl = explainer.background_ref_op
     return model, sess

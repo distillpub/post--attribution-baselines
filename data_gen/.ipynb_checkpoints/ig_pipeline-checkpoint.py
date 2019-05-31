@@ -123,8 +123,6 @@ def get_acc_ig_weights(model, sess):
     segmentation = np.load('data/segmentation.npy')
     means_df = pd.read_csv('data/cluster_means.csv')
     
-    alpha_range = np.linspace(0.0, 1.0, num=51)
-    
     image_op    = model.image_op
     images_pl   = model.images_pl
     labels_pl   = model.labels_pl
@@ -134,12 +132,12 @@ def get_acc_ig_weights(model, sess):
     
     delta_pl = tf.placeholder(tf.float32, [None, 299, 299, 3])
 
-    explainer = ops.TFOpsExplainer(input_to_samples_delta)
-    grad_op = explainer._grad_across_multi_output(explainer, output_tensor=logits, input_tensor=images_pl, sparse_labels_op=labels_pl)
+    explainer = ops.TFOpsExplainer()
+    grad_op = explainer._grad_across_multi_output(output_tensor=logits, input_tensor=images_pl, sparse_labels_op=labels_pl)
     grad_input_op = grad_op * delta_pl
     
     alpha_range = np.linspace(0.0, 1.0, num=51)
-    alpha_range = (alpha_range * 100).astype(np.int64) / 100.0
+    alpha_range = np.rint(alpha_range * 100) / 100.0
     
     image_names = ['house_finch', 'rubber_eraser', 'goldfinch', 'killer_whale']
     for i in range(len(image_names)):
@@ -182,7 +180,7 @@ def get_acc_ig_weights(model, sess):
         print('Saving ig weight images as png files...')
         for i in tqdm(range(len(alpha_range))):
             alpha = alpha_range[i]
-            alpha = int(alpha * 100) / 100.0
+            alpha = np.rint(alpha * 100) / 100.0
             weights = ig_weights_acc[i]
             im_weights = norm_clip(weights)
             interp  = interp_inputs_acc[i]
