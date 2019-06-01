@@ -1,0 +1,6 @@
+,rank,pred_name,pred_logit
+0,1,house_finch,0.96414614
+1,2,brambling,0.0012208661
+2,3,bulbul,0.0012029475
+3,4,junco,0.0004594508
+4,5,great_grey_owl,0.0004472095

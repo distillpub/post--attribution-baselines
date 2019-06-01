@@ -40,10 +40,10 @@ def normalize(im_batch, _range=None, _domain=None):
         norm_batch = norm_batch * (amax - amin) + amin
     return norm_batch
 
-def get_model():
+def get_model(dataset_split_name='validation'):
     FLAGS.batch_size = 1
     FLAGS.dataset_name = 'imagenet'
-    FLAGS.dataset_split_name = 'validation'
+    FLAGS.dataset_split_name = dataset_split_name
     FLAGS.dataset_dir = '/data/image_datasets/imagenet/'
     FLAGS.eval_image_size = 299
     FLAGS.model_name = 'inception_v4'
