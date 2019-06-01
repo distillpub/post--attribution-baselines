@@ -24,12 +24,13 @@ var image_group = container
     .attr('height', image_size)
     .attr('transform', `translate(${margin.left}, ${margin.top})`);
     
-var base_link = 'data_gen/data/ig_weights_slic/'
+var base_link = 'data_gen/data/goldfinch/slic/'
+
 image_data = [
-    { x: 0, y: 0, id: 'reference_image', link: base_link + 'references/reference_0.png'},
-    { x: image_size + image_padding, y: 0, id: 'slic_image', link: base_link + 'masks/slic_mask_0.png'},
-    { x: 2 * (image_size + image_padding), y: 0, id: 'image', link: base_link + 'images/slic_image_0.png'},
-    { x: 3 * (image_size + image_padding), y: 0, id: 'ig_weights', link: base_link + 'ig_weights/ig_weights_0.png'},
+    { x: 0, y: 0, id: 'reference_image', link: base_link + 'reference_0.png'},
+    { x: image_size + image_padding, y: 0, id: 'slic_image', link: base_link + 'slic_mask_0.png'},
+    { x: 2 * (image_size + image_padding), y: 0, id: 'image', link: base_link + 'slic_image_0.png'},
+    { x: 3 * (image_size + image_padding), y: 0, id: 'ig_weights', link: base_link + 'ig_weights_0.png'},
 ];
 
 var images = image_group.selectAll('image').data(image_data);
@@ -47,7 +48,7 @@ var slic_image = image_group.select('#slic_image');
 var image = image_group.select('#image');
 var ig_weights = image_group.select('#ig_weights');
 
-d3.json('data_gen/data/segmentation_dict.json').then(function(data) {
+d3.json(base_link + 'segmentation_dict.json').then(function(data) {
     function handle_mouseover(d, i, enter_svg) {
         var coordinates = d3.mouse(enter_svg.node());
         var y = coordinates[0] - enter_svg.attr('x');
@@ -60,17 +61,17 @@ d3.json('data_gen/data/segmentation_dict.json').then(function(data) {
             }
         }
         
-        reference_image.attr('xlink:href', base_link + `references/reference_${cluster}.png`);
-        slic_image.attr('xlink:href', base_link + `masks/slic_mask_${cluster}.png`);
-        image.attr('xlink:href', base_link + `images/slic_image_${cluster}.png`);
-        ig_weights.attr('xlink:href', base_link + `ig_weights/ig_weights_${cluster}.png`);
+        reference_image.attr('xlink:href', base_link + `reference_${cluster}.png`);
+        slic_image.attr('xlink:href', base_link + `slic_mask_${cluster}.png`);
+        image.attr('xlink:href', base_link + `slic_image_${cluster}.png`);
+        ig_weights.attr('xlink:href', base_link + `ig_weights_${cluster}.png`);
     }
     
     function handle_mouseout(d, i, enter_svg) {
-        reference_image.attr('xlink:href', base_link + `references/reference_${cluster}.png`);
-        slic_image.attr('xlink:href', base_link + `masks/slic_mask_${cluster}.png`);
-        image.attr('xlink:href', base_link + `images/slic_image_${cluster}.png`);
-        ig_weights.attr('xlink:href', base_link + `ig_weights/ig_weights_${cluster}.png`);
+        reference_image.attr('xlink:href', base_link + `reference_${cluster}.png`);
+        slic_image.attr('xlink:href', base_link + `slic_mask_${cluster}.png`);
+        image.attr('xlink:href', base_link + `slic_image_${cluster}.png`);
+        ig_weights.attr('xlink:href', base_link + `ig_weights_${cluster}.png`);
     }
 
     slic_image.on('mousemove', function(d, i) { handle_mouseover(d, i, slic_image) });

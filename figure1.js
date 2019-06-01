@@ -1,5 +1,5 @@
 var margin = ({
-    top: 30,
+    top: 60,
     right: 30,
     bottom: 30,
     left: 30
@@ -8,20 +8,29 @@ var margin = ({
 image_size = 300;
 image_padding = 30;
 slider_padding = 60;
+slider_text_spacing = 100;
 chart_padding = 80;
 chart_height = 300;
 chart_width = 300;
+slider_height = 100;
 
-slider_height = 200;
-width = 3 * image_size + image_padding + chart_padding;
-height = image_size + slider_height + slider_padding;
+num_images = 3;
+width = (num_images + 1) * image_size + (num_images - 1) * image_padding + chart_padding;
+height = image_size + slider_height + slider_padding + slider_text_spacing;
 
-var interp_im_dir = 'data_gen/data/ig_weights_acc/';
-var grad_dir = 'data_gen/data/ig_weights_acc/';
+slider_width = width - 2 * slider_padding;
+
+var base_dir = 'data_gen/data/goldfinch/integrated_gradients/'
+var interp_im_dir  = base_dir;
+var interp_im_file = 'interpolated_image_';
+var grad_dir  = base_dir;
+var grad_file = 'point_weights_';
+var cumulative_file = 'cumulative_weights_';
 
 image_data = [
-    { x: 0, y: 0, id: "interp_alpha"},
-    { x: image_size + image_padding, y: 0, id: "weights_alpha"}
+    { x: 0, y: 0, id: 'interp_alpha', title: 'α * Image + (1 - α) * Reference'},
+    { x: image_size + image_padding, y: 0, id: 'weights_alpha', title: 'Gradients at α'},
+    { x: 2*(image_size + image_padding), y: 0, id: 'cumulative_alpha', title: 'Accumulated Gradients up to α'}
 ];
 
 var prev_alpha = 0.0;
@@ -29,7 +38,7 @@ var prev_alpha = 0.0;
 var container = d3.select('body')
                     .append('svg')
                     .attr('width', width + margin.left + margin.right)
-                    .attr('height', height + margin.top + margin.bottom + slider_padding);
+                    .attr('height', height + margin.top + margin.bottom);
 
 var image_group = container
     .append('g')
@@ -38,12 +47,24 @@ var image_group = container
     .attr('height', image_size)
     .attr('transform', `translate(${margin.left}, ${margin.top})`);
 
+image_group
+    .selectAll('text')
+    .data(image_data)
+    .enter()
+    .append('text')
+    .attr('id', function(d) { return d.id + '_title' })
+    .style("text-anchor", "middle")
+    .style("font-weight", 700)
+    .text(function(d) { return d.title })
+    .attr('x', function(d) { return (image_size / 2) + d.x })
+    .attr('y', -10);
+
 var line_chart = image_group
     .append('g')
     .attr('id', 'line_chart')
     .attr('width', chart_width)
     .attr('height', chart_height)
-    .attr('transform', `translate(${2 * image_size + image_padding + chart_padding}, 0)`);
+    .attr('transform', `translate(${num_images * image_size + (num_images - 1) * image_padding + chart_padding}, 0)`);
 
 line_chart.append('text')
     .attr("transform", "rotate(-90)")
@@ -67,7 +88,7 @@ line_chart.append("text")
 var chart_svg_border = image_group
     .append('g')
     .attr('id', 'chart_svg_border')
-    .attr('transform', `translate(${2 * image_size + image_padding + chart_padding - 5}, -5)`)
+    .attr('transform', `translate(${num_images * image_size + (num_images - 1) * image_padding + chart_padding - 5}, -5)`)
     .append('svg')
     .attr('width', chart_width + 10)
     .attr('height', chart_height + 10);
@@ -97,9 +118,11 @@ function image_init(image_data) {
         .attr('height', image_size)
         .attr('xlink:href', function(d) {
             if (d.id === 'weights_alpha') {
-                return grad_dir + d.id + '0.02.png'
+                return grad_dir + grad_file + '0.02.png';
+            } else if (d.id == 'cumulative_alpha') {
+                return grad_dir + cumulative_file + '0.02.png';
             } else {
-                return interp_im_dir + d.id + '0.02.png';
+                return interp_im_dir + interp_im_file + '0.02.png';
             }})
         .attr('id', function(d) { return d.id; })
         .attr('x', function(d) { return d.x; })
@@ -117,13 +140,17 @@ function update_images(alpha_val) {
     else if (alpha_val == 1.0) {
         alpha_val = '1.0';
     }
-    var interp_file = interp_im_dir + 'interp_alpha' + alpha_val + '.png';
+    var interp_file = interp_im_dir + interp_im_file + alpha_val + '.png';
     var interp_image = image_group.select('#interp_alpha');
     interp_image.attr('xlink:href', interp_file)
     
-    var weights_file = grad_dir + 'weights_alpha' + alpha_val + '.png';
+    var weights_file = grad_dir + grad_file + alpha_val + '.png';
     var weights_image = image_group.select('#weights_alpha');
     weights_image.attr('xlink:href', weights_file)
+    
+    var acc_file = grad_dir + cumulative_file + alpha_val + '.png';
+    var acc_image = image_group.select('#cumulative_alpha');
+    acc_image.attr('xlink:href', acc_file)
 }
 
 function draw_chart(data) {
@@ -289,16 +316,55 @@ function draw_chart(data) {
         .attr('width', width - 2 * slider_padding)
         .attr('height', slider_height)
         .attr('transform', `translate(${margin.left + slider_padding}, ${margin.top + image_size + slider_padding})`);
-
+    
+    slider_group
+        .append('rect')
+        .attr('fill', 'black')
+        .attr('x', 0)
+        .attr('y', slider_text_spacing * 0.6 )
+        .attr('width', slider_width)
+        .attr('height', 3);
+        
+    slider_group
+        .append('rect')
+        .attr('fill', 'black')
+        .attr('x', 0)
+        .attr('y', slider_text_spacing * 0.6 - 10)
+        .attr('width', 3)
+        .attr('height', 10);
+        
+    slider_group
+        .append('rect')
+        .attr('fill', 'black')
+        .attr('x', slider_width - 3)
+        .attr('y', slider_text_spacing * 0.6 - 10)
+        .attr('width', 3)
+        .attr('height', 10);
+            
+    slider_group
+        .append('text')
+        .attr('id', 'slider_label')
+        .style("text-anchor", "middle")
+        .style("font-weight", 700)
+        .text('α')
+        .attr('x', slider_width / 2)
+        .attr('y', slider_text_spacing)
+        .attr('font-size', 35)
+        .attr('fill', 'black')
+        .style("font-family", "sans-serif");
+    
     var slider = d3
         .sliderHorizontal()
-        .min(0.02)
+        .min(0.0)
         .max(1.0)
         .step(0.02)
-        .ticks(5)
-        .width(width - 2 * slider_padding)
+        .ticks(10)
+        .width(slider_width)
         .default(0.0)
         .on('onchange', function(alpha_value) {
+            if (alpha_value == 0.0) {
+                alpha_value = 0.02;
+            }
             update_images(alpha_value);
             update_chart(alpha_value);
         });
@@ -307,4 +373,4 @@ function draw_chart(data) {
         .call(slider);
 }
 
-d3.csv('data_gen/data/alpha_cu_sum.csv').then(function(data) { draw_chart(data) });
+d3.csv(base_dir + 'cumulative_sums.csv').then(function(data) { draw_chart(data) });
