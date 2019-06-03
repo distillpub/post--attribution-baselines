@@ -5,18 +5,25 @@ var margin = ({
     left: 30
 });
 
-image_size = 299;
-image_padding = 30;
-num_images = 4;
+image_size = 300;
 
 indicator_image_size = 75;
 indicator_image_padding = 10;
 indicator_box_top_padding = 25;
 
+image_padding = 30;
+
+num_images = 2;
 width = num_images * image_size + (num_images - 1) * image_padding;
 height = image_size + indicator_image_size + indicator_image_padding + indicator_box_top_padding;
 
-var current_json = null;
+var base_image_name = 'goldfinch';
+var base_dir = `data_gen/data/${base_image_name}/integrated_gradients/`;
+
+image_data = [
+    { x: 0, y: 0, id: 'display_image', title: 'Predicted Class: ' + base_image_name},
+    { x: image_size + image_padding, y: 0, id: 'ig_weights', title: 'Integrated Gradients Attribution Maps'},
+];
 
 indicator_data = [
     { x: 0, y: 0, id: 'goldfinch', opacity: 1.0},
@@ -26,9 +33,9 @@ indicator_data = [
 ]
 
 var container = d3.select('body')
-    .append('svg')
-    .attr('width', width + margin.left + margin.right)
-    .attr('height', height + margin.top + margin.bottom);
+                    .append('svg')
+                    .attr('width', width + margin.left + margin.right)
+                    .attr('height', height + margin.top + margin.bottom);
 
 var image_group = container
     .append('g')
@@ -36,6 +43,21 @@ var image_group = container
     .attr('width', width)
     .attr('height', image_size)
     .attr('transform', `translate(${margin.left}, ${margin.top})`);
+
+image_group
+    .selectAll('text')
+    .data(image_data)
+    .enter()
+    .append('text')
+    .attr('id', function(d) { return d.id + '_title' })
+    .style("text-anchor", "middle")
+    .style("font-weight", 700)
+    .text(function(d) { return d.title })
+    .attr('x', function(d) { return (image_size / 2) + d.x })
+    .attr('y', -10);
+
+var display_text = image_group
+    .select('#display_image_title');
 
 var indicator_group = container
     .append('g')
@@ -51,48 +73,16 @@ indicator_group
     .attr('y', -indicator_box_top_padding / 2)
     .attr('text-anchor', 'middle')
     .style('font-weight', 700)
-    .text('Click to select a different ImageNet image:')
-    .style("font-family", "sans-serif");
+    .text('Click to select a different ImageNet image:');
 
-var base_image_name = 'goldfinch';
-var base_link = 'data_gen/data/' + base_image_name + '/slic/';
+container.selectAll('text').style("font-family", "sans-serif");
 
-image_data = [
-    { x: 0, y: 0, id: 'reference_image', link: base_link + 'reference_0.png', title: 'Reference Image'},
-    { x: image_size + image_padding, y: 0, id: 'slic_image', link: base_link + 'slic_mask_0.png', title: 'Segmented Image'},
-    { x: 2 * (image_size + image_padding), y: 0, id: 'image', link: base_link + 'slic_image_0.png', title: 'Original Image'},
-    { x: 3 * (image_size + image_padding), y: 0, id: 'ig_weights', link: base_link + 'ig_weights_0.png', title: 'Integrated Gradients Attribution Map'},
-];
 
-var images = image_group.selectAll('image').data(image_data);
-images.enter()
-    .append('svg:image')
-    .attr('width', image_size)
-    .attr('height', image_size)
-    .attr('xlink:href', function(d) { return d.link; })
-    .attr('id', function(d) { return d.id; })
-    .attr('x', function(d) { return d.x; })
-    .attr('y', function(d) { return d.y; });
-
-image_group
-    .selectAll('text')
-    .data(image_data)
-    .enter()
-    .append('text')
-    .attr('id', function(d) { return d.id + '_title' })
-    .style("text-anchor", "middle")
-    .style("font-weight", 700)
-    .text(function(d) { return d.title })
-    .attr('x', function(d) { return (image_size / 2) + d.x })
-    .attr('y', -10)
-    .style("font-family", "sans-serif");
-    
-var reference_image = image_group.select('#reference_image');
-var slic_image = image_group.select('#slic_image');
-var image = image_group.select('#image');
-var ig_weights = image_group.select('#ig_weights');
 
 function select_new_image(row, i) {
+    if (base_image_name === row.id) {
+        return;
+    }
     var indicator_images = indicator_group.selectAll('image').data(indicator_data)
     indicator_images.attr('opacity', function(d) {
         if (row.id == d.id) {
@@ -103,55 +93,57 @@ function select_new_image(row, i) {
     })
     
     base_image_name = row.id;
-    base_link = 'data_gen/data/' + base_image_name + '/slic/';
-    console.log(base_link);
+    base_dir = `data_gen/data/${base_image_name}/integrated_gradients/`;
+
+    var display_image = image_group.select('#display_image');
+    var weights_image = image_group.select('#ig_weights');
     
-    reference_image.attr('xlink:href', base_link + `reference_0.png`);
-    slic_image.attr('xlink:href', base_link + `slic_mask_0.png`);
-    image.attr('xlink:href', base_link + `slic_image_0.png`);
-    ig_weights.attr('xlink:href', base_link + `ig_weights_0.png`);
+    var interp_file = base_dir + 'interpolated_image_1.0.png';
+    var weights_file = base_dir + 'cumulative_weights_1.0.png';
     
-    d3.json(base_link + 'segmentation_dict.json').then(function(data) {
-        current_json = data;
-    })
+    cross_fade_image(display_image, interp_file, image_group, 500);
+    cross_fade_image(weights_image, weights_file, image_group, 500);
+    
+    var format_name = base_image_name.replace(/_/g, ' ');
+    display_text
+        .text('Predicted Class: ' + format_name);
 }
-    
-var indicator_images = indicator_group.selectAll('image').data(indicator_data);
 
-indicator_images.enter()
-    .append('image')
-    .attr('width', indicator_image_size)
-    .attr('height', indicator_image_size)
-    .attr('xlink:href', function(d) {
-        return 'data_gen/data/' + d.id + '/integrated_gradients/interpolated_image_1.0.png';
-    })
-    .attr('id', function(d) { return d.id; })
-    .attr('x', function(d) { return d.x; })
-    .attr('y', function(d) { return d.y; })
-    .attr('opacity', function(d) { return d.opacity; })
-    .on('click', select_new_image);
+function image_init(image_data) {
+    var images = image_group.selectAll('image').data(image_data);
+    var indicator_images = indicator_group.selectAll('image').data(indicator_data);
     
-d3.json(base_link + 'segmentation_dict.json').then(function(data) {
-    current_json = data;
-    
-    function handle_mouseover(d, i, enter_svg) {
-        var coordinates = d3.mouse(enter_svg.node());
-        var y = coordinates[0] - enter_svg.attr('x');
-        var x = coordinates[1] - enter_svg.attr('y');
-        
-        var cluster = 0;
-        if (x in current_json) {
-            if (y in current_json[x]) {
-                cluster = current_json[x][y];
+    //Main Images
+    images.enter()
+        .append('image')
+        .attr('width', image_size)
+        .attr('height', image_size)
+        .attr('xlink:href', function(d) {
+            if (d.id === 'display_image') {
+                return base_dir + 'interpolated_image_1.0.png';
+            } else if (d.id == 'ig_weights') {
+                return base_dir + 'cumulative_weights_1.0.png';
+            } else {
+                return '404.png';
             }
-        }
-        
-        reference_image.attr('xlink:href', base_link + `reference_${cluster}.png`);
-        slic_image.attr('xlink:href', base_link + `slic_mask_${cluster}.png`);
-        image.attr('xlink:href', base_link + `slic_image_${cluster}.png`);
-        ig_weights.attr('xlink:href', base_link + `ig_weights_${cluster}.png`);
-    }
+        })
+        .attr('id', function(d) { return d.id; })
+        .attr('x', function(d) { return d.x; })
+        .attr('y', function(d) { return d.y; });
+    
+    //Indicator Images
+    indicator_images.enter()
+        .append('image')
+        .attr('width', indicator_image_size)
+        .attr('height', indicator_image_size)
+        .attr('xlink:href', function(d) {
+            return 'data_gen/data/' + d.id + '/integrated_gradients/interpolated_image_1.0.png';
+        })
+        .attr('id', function(d) { return d.id; })
+        .attr('x', function(d) { return d.x; })
+        .attr('y', function(d) { return d.y; })
+        .attr('opacity', function(d) { return d.opacity; })
+        .on('click', select_new_image);
+}
 
-    slic_image.on('mousemove', function(d, i) { handle_mouseover(d, i, slic_image) });
-    image.on('mousemove', function(d, i) { handle_mouseover(d, i, image) });
-});
+image_init(image_data);
