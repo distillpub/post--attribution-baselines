@@ -1,20 +1,32 @@
 function cross_fade_image(image_node, new_link, group_node, transition_duration) {
+    var original_x = +image_node.attr('x');
+    var original_y = +image_node.attr('y');
+    var original_width = +image_node.attr('width');
+    var original_height = +image_node.attr('height');
+    
     var new_image = group_node.append('svg:image')
         .attr('id', 'transition_image')
-        .attr('width', image_node.attr('width'))
-        .attr('height', image_node.attr('height'))
+        .attr('width', original_width)
+        .attr('height', original_height)
         .attr('xlink:href', image_node.attr('xlink:href'))
-        .attr('x', image_node.attr('x'))
-        .attr('y', image_node.attr('y'))
+        .attr('x', original_x)
+        .attr('y', original_y)
         .style('opacity', 1.0);
     
     image_node
-        .style('opacity', 0.0)
         .attr('xlink:href', new_link)
-        .transition(transition_duration)
-        .style('opacity', 1.0);
+        .style('opacity', 1.0)
+        .attr('x', original_x)
+        .attr('y', original_y)
+        .attr('width', original_width)
+        .attr('height', original_height);
+        
     
-    new_image.transition(transition_duration)
+    new_image
+        .transition()
+        .duration(transition_duration)
         .style('opacity', 0.0)
+        .attr('x', original_x)
+        .attr('y', original_y)
         .remove();
 }

@@ -23,6 +23,8 @@ var base_image_name = 'goldfinch';
 var base_dir = `data_gen/data/${base_image_name}/`;
 var current_data = null;
 
+var transition_duration  = 500;
+
 indicator_data = [
     { x: 0, y: 0, id: 'goldfinch', opacity: 1.0},
     { x: indicator_image_size + indicator_image_padding, y: 0, id: 'rubber_eraser', opacity: 0.2 },
@@ -187,7 +189,9 @@ function draw_chart(data, is_updating) {
             .attr('height', function(d) { return chart_height - y(+d.pred_logit); });
     }
     else {
-        bars.transition(500).attr('x', function(d) { return x(d.pred_name.replace(/_/g, ' ')); })
+        bars.transition()
+            .duration(transition_duration)
+            .attr('x', function(d) { return x(d.pred_name.replace(/_/g, ' ')); })
             .attr('y', function(d) { return y(+d.pred_logit); })
             .attr('width', x.bandwidth())
             .attr('height', function(d) { return chart_height - y(+d.pred_logit); })
@@ -215,7 +219,7 @@ function select_new_image(row, i) {
     cross_fade_image(display_image, 
                      base_dir + 'integrated_gradients/interpolated_image_1.0.png',
                      image_group,
-                     500);
+                     transition_duration);
                      
     var formatted_name = base_image_name.replace(/_/g, ' ');
     display_text
