@@ -5,4 +5,5 @@ Team members:
 
 Project page: https://cse512-19s.github.io/FP-Visualizing-Gradient-Attributions/  
 
-Modify or replace `index.html` in the `docs` folder to update your project page.
+A repository for understanding integrated and expected gradients, two methods
+that are used to explain the output of deep neural networks.
