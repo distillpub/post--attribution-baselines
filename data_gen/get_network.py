@@ -102,7 +102,7 @@ def get_model(dataset_split_name='validation'):
     labels_pl    = tf.placeholder(tf.int64, (None,))
     
     explainer = ops.TFOpsExplainer(random_alpha=False)
-    cond_input_op, train_eg = explainer.input_to_samples_delta(images_pl, lambda: tf.placeholder(tf.float32, (None, 51, 299, 299, 3)))
+    cond_input_op, train_eg = explainer.input_to_samples_delta(images_pl, lambda: tf.placeholder(tf.float32, (None, 201, 299, 299, 3)))
     
     logits, _ = network_fn(cond_input_op)
     pred_labels   = tf.argmax(logits, axis=1)

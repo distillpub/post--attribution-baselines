@@ -43,7 +43,7 @@ def get_eg_samples(model, sess):
     grad_input_op = grad_op * delta_pl
     
     image_names = ['house_finch', 'rubber_eraser', 'goldfinch', 'killer_whale']
-    num_samples = 51
+    num_samples = 201
     
     reference_images = []
     for sample in range(num_samples):
@@ -154,8 +154,8 @@ def get_eg_pairwise(model, sess):
     grad_op = explainer._grad_across_multi_output(output_tensor=logits, input_tensor=images_pl, sparse_labels_op=labels_pl)
     grad_input_op = grad_op * delta_pl
     
-    alpha_range = np.linspace(0.0, 1.0, num=51)
-    alpha_range = np.rint(alpha_range * 100) / 100.0
+    alpha_range = np.linspace(0.0, 1.0, num=201)
+    alpha_range = np.rint(alpha_range * 1000) / 1000.0
     
     image_names = ['house_finch', 'rubber_eraser', 'goldfinch', 'killer_whale']
     for i in range(len(image_names)):
@@ -206,7 +206,7 @@ def get_eg_pairwise(model, sess):
             print('Saving ig weight images as png files...')
             for i in tqdm(range(len(alpha_range))):
                 alpha = alpha_range[i]
-                alpha = np.rint(alpha * 100) / 100.0
+                alpha = np.rint(alpha * 1000) / 1000.0
                 weights = raw_weights_acc[i]
                 weights = np.abs(np.sum(weights, axis=-1))
                 im_weights = norm_clip(weights)
@@ -312,6 +312,11 @@ def get_ig_weights_slic(model, sess):
     expected_grads_op       = model.expected_grads_op
     background_reference_pl = model.background_reference_pl
     
+    delta_pl = tf.placeholder(tf.float32, [None, 299, 299, 3])
+    explainer = ops.TFOpsExplainer()
+    grad_op = explainer._grad_across_multi_output(output_tensor=logits, input_tensor=images_pl, sparse_labels_op=labels_pl)
+    grad_input_op = grad_op * delta_pl
+    
     image_names = ['house_finch', 'rubber_eraser', 'goldfinch', 'killer_whale']
     for i in range(len(image_names)):
         name = image_names[i]
@@ -355,14 +360,25 @@ def get_ig_weights_slic(model, sess):
 
             selected_slic_mask = color_mask_float
             selected_slic_mask = mark_boundaries(selected_slic_mask, selection_mask.astype(int), mode='thick')
-
-            background_reference_images = np.tile(np.expand_dims(input_reference, axis=0), [51, 1, 1, 1])
-            ig_weights = sess.run(expected_grads_op, feed_dict={
-                images_pl: image_input,
-                background_reference_pl: background_reference_images,
-                train_eg: True,
-                labels_pl: label_input
-            })
+            
+            raw_weights_acc = []
+            for alpha in np.linspace(0.0, 1.0, num=201):
+                interp_input = alpha * image_input + (1.0 - alpha) * input_reference
+                ig_sample = sess.run(grad_input_op, feed_dict = {images_pl: interp_input, 
+                                                             labels_pl: label_input,
+                                                             delta_pl:  image_input - input_reference})
+                raw_weights_acc.append(ig_sample)
+            raw_weights_acc = np.array(raw_weights_acc).squeeze()
+            ig_weights = np.mean(raw_weights_acc, axis=0)
+            
+#             background_reference_images = np.tile(np.expand_dims(input_reference, axis=0), [201, 1, 1, 1])
+            
+#             ig_weights = sess.run(expected_grads_op, feed_dict={
+#                 images_pl: image_input,
+#                 background_reference_pl: background_reference_images,
+#                 train_eg: True,
+#                 labels_pl: label_input
+#             })
             sum_ig_weights = np.sum(ig_weights, axis=-1)
             sum_abs_ig_weights = np.abs(sum_ig_weights)
             ig_im = norm_clip(sum_abs_ig_weights.squeeze())
@@ -393,8 +409,8 @@ def get_acc_ig_weights(model, sess):
     grad_op = explainer._grad_across_multi_output(output_tensor=logits, input_tensor=images_pl, sparse_labels_op=labels_pl)
     grad_input_op = grad_op * delta_pl
     
-    alpha_range = np.linspace(0.0, 1.0, num=51)
-    alpha_range = np.rint(alpha_range * 100) / 100.0
+    alpha_range = np.linspace(0.0, 1.0, num=201)
+    alpha_range = np.rint(alpha_range * 1000) / 1000.0
     
     image_names = ['house_finch', 'rubber_eraser', 'goldfinch', 'killer_whale']
     for i in range(len(image_names)):
@@ -436,7 +452,7 @@ def get_acc_ig_weights(model, sess):
         print('Saving ig weight images as png files...')
         for i in tqdm(range(len(alpha_range))):
             alpha = alpha_range[i]
-            alpha = np.rint(alpha * 100) / 100.0
+            alpha = np.rint(alpha * 1000) / 1000.0
             weights = raw_weights_acc[i]
             weights = np.abs(np.sum(weights, axis=-1))
             im_weights = norm_clip(weights)
