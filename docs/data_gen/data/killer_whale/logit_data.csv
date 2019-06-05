@@ -1,0 +1,6 @@
+,rank,pred_name,pred_logit
+0,1,killer_whale,0.9477322
+1,2,grey_whale,0.0014543955
+2,3,magpie,0.00057837565
+3,4,great_white_shark,0.0005580579
+4,5,king_penguin,0.00025244599
