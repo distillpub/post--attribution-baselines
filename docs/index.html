@@ -89,8 +89,11 @@ p { margin: 0 0 10px 0; }
         to visualizations (<a href='figure1.html' target='_blank'>Figure 1</a>, 
         <a href='figure2.html' target='_blank'>Figure 2</a>,
         <a href='figure3.html' target='_blank'>Figure 3</a>,
-        and 
-        <a href='figure4.html' target='_blank'>Figure 4</a>) that illustrate the
+        <a href='figure4.html' target='_blank'>Figure 4</a>,
+        <a href='figure5.html' target='_blank'>Figure 5</a>,
+        <a href='figure6.html' target='_blank'>Figure 6</a>
+        and
+        <a href='figure7.html' target='_blank'>Figure 7</a>) that illustrate the
         how an existing method for interpreting deep neural networks works, and 
         some of the issues with said method. I've added context for each figure in the paragraphs below.
         I plan to add two more figures that describe the novel method we've proposed.
@@ -107,69 +110,45 @@ p { margin: 0 0 10px 0; }
       
       <h4>Neural networks are good at image classification</h4>
       <p>
-          In recent years, machine learning methods have gotten increasingly good at
-          a huge variety of tasks, including image classification: determining what object
-          is an image. This is in part due to the resurgence of neural networks. Specifically,
-          convolutional neural networks (CNNs) are the most popular class of model used
-          for image-related tasks. Inception V4, an image classification network trained to do
-          image classification on the ImageNet dataset can achieve a validation accuracy of over
-          80%. This means that, on images it has never seen before, the network can correctly
-          predict which object is in the image given a list of 1000 possible classes, over 80% of the time.
-          In <a href='figure1.html' target='_blank'>Figure 1</a>, I plot the output of the Inception V4
-          network on 4 different validation images. The bar plot shows the top 5 objects that the network
-          thinks the image represents, in sorted order. The network gets all of the images correct!
+          <a href='figure1.html' target='_blank'>Figure 1</a> plots the output of the 
+          <a href='https://arxiv.org/abs/1602.07261' target='_blank'>Inception V4</a>
+          network, a convolutional neural network architecture for image classification trained on the ImageNet dataset.
+          Inception V4 achieves a top-1 validation accuracy of over 80%. In the plot, I've visualized
+          4 images from the ImageNet validation set, as well as the top 5 classes the network
+          thinks the image represents. The network correctly guesses the class of each of the 4 images
+          with high probability.
       </p>
       
       <h4>But how did the network make the prediction it did?</h4>
       <p>
-          Although it is great that machine learning practitioners can develop accurate networks,
-          users often want to know <em>why</em> a network made a prediction it did. This is especially
-          useful in high-risk situations: if a model told diagnosed you with a disease, you'd 
-          want the model to be able to explain its decision making process! Even in image classification,
-          explanations are important: did the network classify a bird correctly because it learned
-          what birds looks like, or because pictures of birds typically have green backgrounds?
-          Feature attribution methods provide us with a way to answer these questions. Given a prediction,
-          feature attribution methods determine which features were most important to making the prediction.
-          In image classification, the features are individual pixels in the image. In 
-          <a href='figure2.html' target='_blank'>Figure 2</a>, we plot the validation images 
-          side-by-side with a saliency map: a map of which pixels were most important to the network
-          when making the prediction. White pixels are more important, and black pixls are less important.
-          The figure demonstrates that for some images, the network behaves intuitively and highlights the
-          object in the image, but for others, it seems to use arbitrary pixels in the background when making
-          the prediction.
+          Our image classification network may be accurate, but why did it make the predictions it did?
+          How can we verify that our network is actually learning what a goldfinch looks like, and
+          not simply predicting all images that have a yellow foreground and a green background to be goldfinches? 
+          <a href='https://arxiv.org/abs/1703.01365' target='_blank'>Integrated gradients</a> proposes to
+          solve this method. Given a prediction on an image, it highlights which features were most 
+          important in making the prediction. In the case of images, features are pixels, and we can
+          plot the most important pixels by highlighting them in white. <a href='figure2.html' target='_blank'>Figure 2</a>
+          plots the pixels that integrated gradients highlights as important for each prediction. 
+          For some images, the network behaves intuitively, but for others, the network
+          seems to be using looking at arbitrary pixels in the background.
       </p>
       
-      <h4>How did we generate feature attribution maps?</h4>
+      <h4>How exactly does integrated gradients work?</h4>
       <p>
-          How were we able to plot a map of which pixels the Inception V4 model thought was important
-          when making predictions? It turns out that there exists several methods for
-          generating feature attributions for deep neural networks. One of the most 
-          popular is called Integrated Gradients, and the way it works is by using the gradient.
-          Recall that the gradient of a multi-variate function is the direction of maximum increase.
-          This means that the gradients tell us which pixels that, if we changed them,
-          would most change the output of the network! The way integrated gradients works
-          is that it defines a baseline image x'. Then, it integrates all of the gradients
-          between x' and the current image x. For a variety of mathematical reasons, this turns out
-          to well-approximate which pixels the network is using when making a prediction on the image x.
+          To understand why certain pixels were highlighted as important, we need to 
+          better understand the integrated gradients method. We plot a visualization of the method in
+          <a href='figure3.html' target='_blank'>Figure 3</a>. Integrated gradients works by integrating
+          the input gradients of our network between a reference image (black) and our current image (the goldfinch, for example).
+          You can think of this integration as averaging the gradients at all images between the reference and the bird.
+          Intuitively, this is akin to asking our network: "Why do you see a bird and not nothing (a black image)?"
           
-          <br><br>
-          To better understand the process, we instead opt to 
-          visualize it in <a href='figure3.html' target='_blank'>Figure 3</a>. The first image
-          shows the image x interpolated with the baseline image x', which we've arbitrarily chosen
-          to be the constant black image. The second image shows the gradients at the interpolated image,
-          which you can think of as what the network is <em>seeing</em> at that image. The third image 
-          shows how the gradients accumulate from 0 to the current alpha value. This process is visualizing
-          how the maps in the previous figure were generated: at alpha equal to 1, the accumulated
-          gradients approximate which pixels are most important to the network's prediction. Finally,
-          the line plot on the far right plots the sum of the cumulative gradients up to the current alpha.
-          That is, it simply takes the third image, and sums all of the values in it. 
-          Why would we care about this sum? It turns out that this sum indicates how good the approximation
-          is: if the sum is close to the output of the network at that prediction (indicated in blue),
-          then the acuumulated gradients up to alpha are a good approximation of what the network is doing.
-          Plotting the sum in this way also demonstrates another fact: the majority of the magnitude of the gradients
-          comes from very small alpha values: at levels that humans cannot distinguish the original image. 
-          It is precisely at these levels that the network is seeing the most information!
-          
+          We also plot in the figure the cumulative sum of gradients as a function of alpha. This tells us two things: first,
+          it tells us that the gradients with the highest magnitudes typically come from small alpha values, which means that
+          the image is seeing the most signal at a level that is not visible to humans. Second, it tells us how
+          well we approximated the integral. Remember that integrated gradients uses an integral, but in practice we calculate
+          this with a discrete sum approximation. If the approximation is good, then the cumulative sum at alpha (plotted in red) should
+          be close to the output of the network (plotted in blue). 
+        
           <br><br>
           
           For the sake of time, I've skipped over many of the mathematical details of 
@@ -179,26 +158,25 @@ p { margin: 0 0 10px 0; }
   </section>
   
   <section>
-      <h4>What's this about a baseline image?</h4>
+      <h4>The crucial flaw with integrated gradients</h4>
       <p>
-          One crucial detail I skipped over is the baseline image x'. You can think about
-          integrated gradients in the following way. Mathematically, it asks our network: "how did
-          you get from the prediction you made on the baseline image x' to the prediction
-          you made on the current image x?". We can re-phrase this as: how did you get from seeing
-          <em>nothing</em> (all black image) to <em>something</em> (the image of a bird, for example).
-          However, you might realize a problem with this approach. Why does the color black 
-          indicate nothing? In images, the color black can indicate the presence of many things.
-          It is an arbitrary color, no better than using red or green to indicate nothingness!
-          This is the pitfall of integrated gradients. If you want to understand your network,
-          you have to define some notion of "nothingness". It is not clear how to do so with images.
-          In fact, if we use different colors in our reference image, we can get 
-          entirely different explanations for our network! Because of how integrated gradients works,
-          it is biased against the color that is chosen as a reference. If I choose black as a reference value,
-          than black pixels in my image won't be highlighted as important even if they should be.
-          We demonstrate this in <a href='figure4.html' target='_blank'>Figure 4</a>. Mouse over the 
-          segmented image to choose a reference color to use for integrated gradients, and observe
-          that the pixels that are highlighted as important can change drastically depending on which
-          color is used as a background reference.
+          I intuitively described integrated gradients as asking the question: 
+          "Why do you see what you see in the image and not nothing?". For mathematical reasons, it turns
+          out that this type of counter-factual question is essential to interpreting neural networks. 
+          To explain a prediction, a network needs some reference: the explanations are relative to
+          the reference. This reference is meant to encode "nothingness" or "lack of information".
+          Integrated gradients recommends using the all black image as a reference, but black is as meaningful
+          a color as any other. It is not clear why black should be chosen as a reference. In fact, 
+          if we choose the reference to be a constant color, than integrated gradients
+          is biased against that color. Due to its mathematical definition, it tends not 
+          to highlight colors in the original image that are the same as the reference color.
+          
+          <br><br>
+          In <a href='figure4.html' target='_blank'>Figure 4</a>, you can hover over the image
+          to choose different reference values for integrated gradients. Observe how, as you 
+          choose different reference colors, which pixels are highlighted as important
+          can change drastically. Which reference color is the <em>correct</em> one for interpreting
+          our network?
       </p>
   </section>
   
