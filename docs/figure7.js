@@ -131,7 +131,7 @@ function image_init(image_data) {
             } else if (d.id === 'ig_weights') {
                 return base_dir + 'integrated_gradients/cumulative_weights_1.0.png';
             } else if (d.id === 'eg_weights') {
-                return base_dir + 'eg_samples/cumulative_weights_50.png';
+                return base_dir + 'eg_samples/cumulative_weights_200.png';
             }
             else {
                 return '404.png';

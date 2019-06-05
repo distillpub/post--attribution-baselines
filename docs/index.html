@@ -181,12 +181,49 @@ p { margin: 0 0 10px 0; }
   </section>
   
   <section>
-      <h4>A new approach: expected gradients</h4>
+      <h4>Why use a constant image as a reference?</h4>
       <p>
-          Expected gradients is a new approach to overcome the problems I've described above.
-          In this section, I will visualize how expected gradients works, and why 
-          it overcomes the aforementioned problems. These visualizations are still in progress,
-          but will look similar to the ones above.
+          You might be wondering: why use a constant image as a reference? Could 
+          we instead ask the question: "why is this image a goldfinch and 
+          not a killer whale?" It turns out, we can! We can use images from the 
+          ImageNet dataset as a references when asking counter-factual questions, which gives us
+          different explanations. We plot some of these explanations
+          in <a href='figure5.html' target='_blank'>Figure 5</a>. Here, you can
+          choose both a background referene image and a target image. Notice how
+          the explanations change when you ask for explanations relative to different
+          background images. Also note that the gradients accumulate more evenly when
+          you interpolate between two natural images.
+      </p>
+  </section>
+  
+  <section>
+      <h4>Why use only one reference image?</h4>
+      <p>
+          You might now want to know whether or not you can integrate over multiple images
+          to get explanations. This is akin to asking the question: "Why is this image
+          a goldfinch relative to a background distribution of images?" Instead of 
+          arbitrarily modeling lack of information using a black image, we can model
+          lack of information by using the original training distribution. This avoids
+          the choice of hyper-parameter, and better models the notion of "nothingness".
+          This is the basis of our proposed method, expected gradients. We plot 
+          expected gradients in <a href='figure6.html' target='_blank'>Figure 6</a>.
+          Instead of interpolating over a single reference image, we do the following sampling procedure:
+          we sample an image from the training set, and an alpha value between 0 and 1 uniformly at random.
+          We then calculate the gradients (times the relative input) at the interpolated image between
+          the sampled reference and the input image. This allows us to explain how our network views
+          an image relative to all of the other images it has seen.
+      </p>
+  </section>
+  
+  <section>
+      <h4>Comparing methods</h4>
+      <p>
+          In <a href='figure7.html' target='_blank'>Figure 7</a>, we compare integrated gradients
+          using black as a reference with our method, called expected gradients. Even 
+          if some of the explanations using integrated gradients may be "sharper", we still 
+          believe that expected gradients is a better explanation method. The explanations by integrated
+          gradients may look sharp simply because the object in the image has pixels that are far away from black,
+          not because the network actually has sharp explanations.
       </p>
   </section>
 

@@ -17,16 +17,26 @@ legend_right_padding = 50;
 legend_top_padding = 20;
 
 image_padding = 30;
-slider_padding = 60;
+slider_padding = 30;
+slider_image_padding = 60;
 slider_text_spacing = 100;
 chart_padding = 80;
 chart_height = 300;
 chart_width = 300;
+
 slider_height = 100;
+slider_image_size = 18;
+slider_image_col_count = 50;
+slider_num_images = 200;
+slider_image_row_count = Math.ceil(slider_num_images / slider_image_col_count);
+slider_image_left_padding = -10;
 
 num_images = 3;
 width = (num_images + 1) * image_size + (num_images - 1) * image_padding + chart_padding;
-height = image_size + slider_height + slider_padding + slider_text_spacing;
+height = image_size + slider_height + 
+    slider_padding + slider_image_padding + slider_text_spacing + 
+    slider_image_row_count * slider_image_size + 
+    indicator_box_top_padding + indicator_image_padding + indicator_image_size;
 
 slider_width = width - 2 * slider_padding;
 
@@ -40,7 +50,7 @@ var grad_file = 'point_weights_';
 var cumulative_file = 'cumulative_weights_';
 
 image_data = [
-    { x: 0, y: 0, id: 'display_image', title: 'Test Image'},
+    { x: 0, y: 0, id: 'display_image', title: 'Test Image Interpolated with Reference'},
     { x: image_size + image_padding, y: 0, id: 'weights_alpha', title: 'Gradients at α'},
     { x: 2 * (image_size + image_padding), y: 0, id: 'cumulative_samples', title: 'Accumulated Gradients up to α'}
 ];
@@ -51,7 +61,19 @@ indicator_data = [
     { x: indicator_image_size + indicator_image_padding, y: 0, id: 'rubber_eraser', opacity: 0.2 },
     { x: 2 * (indicator_image_size + indicator_image_padding), y: 0, id: 'house_finch', opacity: 0.2 },
     { x: 3 * (indicator_image_size + indicator_image_padding), y: 0, id: 'killer_whale', opacity: 0.2 }
-]
+];
+
+slider_data = [];
+for (var i = 0; i < slider_num_images; ++i) {
+    slider_data.push({
+        rank: i + 1,
+        x: (i % slider_image_col_count) * slider_image_size,
+        y: Math.floor(i / slider_image_col_count)  * slider_image_size,
+        id: `slider_im_${i}`,
+        url_end: `reference_${i + 1}.png`,
+        opacity: (i === 0 ? 1.0 : 0.0)
+    });
+}
 
 var prev_samples = 0;
 
@@ -87,7 +109,9 @@ var indicator_group = container
     .attr('id', 'indicator_group')
     .attr('width', 4 * indicator_image_size + 3 * indicator_image_padding)
     .attr('height', indicator_image_size + indicator_image_padding + image_padding)
-    .attr('transform', `translate(${margin.left + slider_padding}, ${margin.top + image_size + slider_padding + 
+    .attr('transform', `translate(${margin.left + slider_padding}, 
+        ${margin.top + image_size + slider_padding + 
+        slider_image_row_count * slider_image_size + slider_image_padding +
         image_padding + slider_height + indicator_box_top_padding})`);
 
 indicator_group
@@ -103,8 +127,10 @@ var legend_group = container
     .attr('id', 'legend_group')
     .attr('width', legend_width)
     .attr('height', legend_height)
-    .attr('transform', `translate(${margin.left + width - legend_width - legend_right_padding}
-        , ${margin.top + image_size + slider_padding + image_padding + slider_height + legend_top_padding})`);  
+    .attr('transform', `translate(${margin.left + width - legend_width - legend_right_padding},
+        ${margin.top + image_size + slider_padding +
+            slider_image_row_count * slider_image_size + slider_image_padding +
+            image_padding + slider_height + legend_top_padding})`);  
     
 legend_group
     .append('rect')
@@ -205,8 +231,38 @@ function samples_less(row, samples) {
     return +Number((+row.samples).toFixed(2)) <= samples;
 }
 
-function update_images(current_samples, transition_duration) {
+function handle_mouseover(d, i) {
+    if (d.rank > current_samples) { 
+        return;
+    }
+    var base_image = slider_image_group.select('#' + d.id);
+    var tooltip_image = slider_image_group.append('image')
+        .attr('x', d.x + slider_image_size + 5)
+        .attr('y', d.y + slider_image_size + 5)
+        .attr('width', image_size)
+        .attr('height', image_size)
+        .attr('xlink:href', 'data_gen/data/' + base_image_name + '/eg_samples/' + d.url_end)
+        .attr('id', d.id + '_tooltip')
+        .attr('z-index', 1);
+        
+        base_image.on('mousemove', function() { handle_mousemove(tooltip_image, base_image, d.x, d.y) });
+}
 
+function handle_mouseout(d, i) {
+    var tooltip_image = slider_image_group.select('#' + d.id + '_tooltip');
+    tooltip_image.remove();
+}
+
+function handle_mousemove(image, enter_svg, orig_x, orig_y) {
+    var coordinates = d3.mouse(enter_svg.node());
+    var x = coordinates[0] - enter_svg.attr('x');
+    var y = coordinates[1] - enter_svg.attr('y');
+    
+    image.attr('x', orig_x + slider_image_size + 5 + x)
+         .attr('y', orig_y + slider_image_size + 5 + y);
+}
+
+function update_images(current_samples, transition_duration) {
     var interp_file = base_dir + interp_im_file + current_samples + '.png';
     var interp_image = image_group.select('#display_image');
     
@@ -225,6 +281,11 @@ function update_images(current_samples, transition_duration) {
         cross_fade_image(weights_image, weights_file, image_group, transition_duration);
         cross_fade_image(acc_image, acc_file, image_group, transition_duration);
     }
+    
+    var slider_images = slider_image_group.selectAll('image');
+    slider_images.attr('opacity', function(d) {
+        return (d.rank <= current_samples ? 1.0 : 0.0)
+    });
 }
 
 function draw_chart(data) {
@@ -282,7 +343,8 @@ function draw_chart(data) {
     
     var line = d3.line()
         .x(function(d) { return x(+d.sample) })
-        .y(function(d) { return y(+d.cumulative_sum)});
+        .y(function(d) { return y(+d.cumulative_sum)})
+        .curve(d3.curveCardinal);
         
     var line1 = d3.line()
         .x(function(d) { return x(+d.sample) })
@@ -306,14 +368,14 @@ function draw_chart(data) {
         .attr('stroke', 'darkblue')
         .attr('stroke-width', 2);
         
-    chart_markings.selectAll('circle').data(cu_data) 
-        .enter()  
-        .append('circle')
-        .attr('fill', 'firebrick')
-        .attr('stroke', 'none')
-        .attr('cx', function(d) { return x(Number((+d.sample).toFixed(2))); })
-        .attr('cy', function(d) { return y(+d.cumulative_sum); })
-        .attr('r', 3);
+    // chart_markings.selectAll('circle').data(cu_data) 
+    //     .enter()  
+    //     .append('circle')
+    //     .attr('fill', 'firebrick')
+    //     .attr('stroke', 'none')
+    //     .attr('cx', function(d) { return x(Number((+d.sample).toFixed(2))); })
+    //     .attr('cy', function(d) { return y(+d.cumulative_sum); })
+    //     .attr('r', 3);
     
     function update_chart(num_samples, new_data, new_image) {
         var new_cu_data = new_data.filter(function(d) { return filter_method(d, 'IG'); });
@@ -325,7 +387,7 @@ function draw_chart(data) {
             transition_duration = 500;
         }
         else if (Math.abs(num_samples - prev_samples) > 10) {
-            transition_duration = 50 * Math.abs(num_samples - prev_samples);
+            transition_duration = 10 * Math.abs(num_samples - prev_samples);
         }
         
         var axis_transition = d3
@@ -357,7 +419,8 @@ function draw_chart(data) {
         
         var line = d3.line()
             .x(function(d) { return x(+d.sample) })
-            .y(function(d) { return y(+d.cumulative_sum)});
+            .y(function(d) { return y(+d.cumulative_sum)})
+            .curve(d3.curveCardinal);;
         
         chart_markings.select('#line_mark')
             .datum(new_cu_data)
@@ -369,40 +432,42 @@ function draw_chart(data) {
             .transition(mark_transition)
             .attr('d', line);
         
-        var circle_marks = chart_markings
-            .selectAll('circle')
-            .data(new_cu_data);
-            
-        circle_marks
-            .exit()
-            .transition(mark_transition)
-            .attr('cx', function(d) { return x(Number((+d.sample).toFixed(2))); })
-            .attr('cy', function(d) { return y(+d.cumulative_sum); })
-            .remove();
-        
-        circle_marks
-            .transition(mark_transition)
-            .attr('cx', function(d) { return x(Number((+d.sample).toFixed(2))); })
-            .attr('cy', function(d) { return y(+d.cumulative_sum); });
-            
-        circle_marks.enter()
-            .append('circle')
-            .attr('fill', 'firebrick')
-            .attr('stroke', 'none')
-            .attr('r', 3)
-            .transition(mark_transition)
-            .attr('cx', function(d) { return x(Number((+d.sample).toFixed(2))); })
-            .attr('cy', function(d) { return y(+d.cumulative_sum); });
+        // var circle_marks = chart_markings
+        //     .selectAll('circle')
+        //     .data(new_cu_data);
+        // 
+        // circle_marks
+        //     .exit()
+        //     .transition(mark_transition)
+        //     .attr('cx', function(d) { return x(Number((+d.sample).toFixed(2))); })
+        //     .attr('cy', function(d) { return y(+d.cumulative_sum); })
+        //     .remove();
+        // 
+        // circle_marks
+        //     .transition(mark_transition)
+        //     .attr('cx', function(d) { return x(Number((+d.sample).toFixed(2))); })
+        //     .attr('cy', function(d) { return y(+d.cumulative_sum); });
+        // 
+        // circle_marks.enter()
+        //     .append('circle')
+        //     .attr('fill', 'firebrick')
+        //     .attr('stroke', 'none')
+        //     .attr('r', 3)
+        //     .transition(mark_transition)
+        //     .attr('cx', function(d) { return x(Number((+d.sample).toFixed(2))); })
+        //     .attr('cy', function(d) { return y(+d.cumulative_sum); });
                 
         prev_samples = num_samples;
     }
-
+    
     slider_group = container
         .append('g')
         .attr('id', 'slider_group')
         .attr('width', width - 2 * slider_padding)
         .attr('height', slider_height)
-        .attr('transform', `translate(${margin.left + slider_padding}, ${margin.top + image_size + slider_padding})`);
+        .attr('transform', `translate(${margin.left + slider_padding}, 
+            ${margin.top + image_size + slider_padding + 
+                + slider_image_padding + slider_image_size * slider_image_row_count})`);
     
     slider_group
         .append('rect')
@@ -442,16 +507,13 @@ function draw_chart(data) {
     
     var slider = d3
         .sliderHorizontal()
-        .min(0)
-        .max(50)
+        .min(1)
+        .max(slider_num_images)
         .step(1)
-        .ticks(10)
+        .ticks(20)
         .width(slider_width)
         .default(0.0)
         .on('onchange', function(sample_value) {
-            if (sample_value === 0) {
-                sample_value = 1;
-            }
             current_samples = sample_value;
             update_images(current_samples, 0);
             update_chart(current_samples, current_data, false);
@@ -459,6 +521,23 @@ function draw_chart(data) {
 
     slider_group
         .call(slider);
+        
+    slider_image_group = container
+        .append('g')
+        .attr('id', 'slider_image_group')
+        .attr('width', slider_image_size * slider_image_col_count)
+        .attr('height', slider_image_size * slider_image_row_count)
+        .attr('transform', `translate(${margin.left + slider_padding + slider_image_left_padding},
+            ${margin.top + image_size + slider_image_padding})`);
+    slider_image_group
+        .append('text')
+        .attr('id', 'slider_image_label')
+        .text('Reference Images:')
+        .attr('x', 0)
+        .attr('y', -10)
+        .attr('font-size', 16)
+        .attr('fill', 'black')
+        .style("font-family", "sans-serif");
     
     function select_new_image(row, i) {
         if (base_image_name === row.id) {
@@ -487,6 +566,7 @@ function draw_chart(data) {
     function image_init(image_data) {
         var images = image_group.selectAll('image').data(image_data);
         var indicator_images = indicator_group.selectAll('image').data(indicator_data);
+        var slider_images = slider_image_group.selectAll('image').data(slider_data);
         
         //Main Images
         images.enter()
@@ -518,6 +598,20 @@ function draw_chart(data) {
             .attr('y', function(d) { return d.y; })
             .attr('opacity', function(d) { return d.opacity; })
             .on('click', select_new_image);
+        
+        slider_images.enter()
+            .append('image')
+            .attr('width', slider_image_size)
+            .attr('height', slider_image_size)
+            .attr('xlink:href', function(d) {
+                return 'data_gen/data/' + base_image_name + '/eg_samples/' + d.url_end;
+            })
+            .attr('id', function(d) { return d.id; })
+            .attr('x', function(d) { return d.x; })
+            .attr('y', function(d) { return d.y; })
+            .attr('opacity', function(d) { return d.opacity; })
+            .on('mouseover', handle_mouseover)
+            .on('mouseout', handle_mouseout);
     }
     
     image_init(image_data);
