@@ -31,7 +31,7 @@ function figure5() {
 
     var slider_width = width - 2 * slider_padding;
 
-    var current_alpha = 0.02;
+    var current_alpha = 0.0;
     var current_data = null; 
     var current_rank = 0;
 
@@ -475,9 +475,6 @@ function figure5() {
             .width(slider_width)
             .default(0.0)
             .on('onchange', function(alpha_value) {
-                if (alpha_value == 0.0) {
-                    alpha_value = 0.02;
-                }
                 current_alpha = alpha_value;
                 update_images(alpha_value, 0);
                 update_chart(alpha_value, current_data, false);
@@ -571,11 +568,11 @@ function figure5() {
                 .attr('height', image_size)
                 .attr('xlink:href', function(d) {
                     if (d.id === 'weights_alpha') {
-                        return base_dir + grad_file + current_alpha + '.png';
+                        return base_dir + grad_file + '0.0.png';
                     } else if (d.id == 'cumulative_alpha') {
-                        return base_dir + cumulative_file + current_alpha + '.png';
+                        return base_dir + cumulative_file + '0.0.png';
                     } else {
-                        return base_dir + interp_im_file + current_alpha + '.png';
+                        return base_dir + interp_im_file + '0.0.png';
                     }})
                 .attr('id', function(d) { return d.id; })
                 .attr('x', function(d) { return d.x; })
