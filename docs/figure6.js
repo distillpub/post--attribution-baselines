@@ -51,9 +51,9 @@ function figure6() {
     var cumulative_file = 'cumulative_weights_';
 
     var image_data = [
-        { x: 0, y: 0, id: 'display_image', title: 'Test Image Interpolated with Reference'},
-        { x: image_size + image_padding, y: 0, id: 'weights_alpha', title: 'Gradients at alpha'},
-        { x: 2 * (image_size + image_padding), y: 0, id: 'cumulative_samples', title: 'Accumulated Gradients up to alpha'}
+        { x: 0, y: 0, id: 'display_image', title: '(1): image interpolated with reference'},
+        { x: image_size + image_padding, y: 0, id: 'weights_alpha', title: '(2): [image - reference] * [gradients at (1)]'},
+        { x: 2 * (image_size + image_padding), y: 0, id: 'cumulative_samples', title: '(3): average of (2) up to alpha'}
     ];
 
 
@@ -196,7 +196,7 @@ function figure6() {
         .attr("x", 0 - chart_height / 2)
         .attr("dy", "1em")
         .style("text-anchor", "middle")
-        .text("Cumulative Sum of Gradients");
+        .text("Mean Cumulative Sum of Gradients");
         
     line_chart.append("text")             
       .attr("transform", `translate(${(chart_width / 2)}, ${(chart_height + chart_padding / 2)})`)
@@ -207,7 +207,7 @@ function figure6() {
       .attr("transform", `translate(${(chart_width) / 2}, -10)`)
       .style("text-anchor", "middle")
       .style("font-weight", 700)
-      .text("Accumulation of Gradient Magnitudes at alpha");
+      .text("Sum of pixel values in (3)");
           
     var chart_svg_border = image_group
         .append('g')
