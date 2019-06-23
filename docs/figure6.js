@@ -7,6 +7,7 @@ function figure6() {
     });
 
     var image_size = 300;
+    var reference_image_size = 200;
 
     var indicator_image_size = 75;
     var indicator_image_padding = 10;
@@ -180,8 +181,8 @@ function figure6() {
         var tooltip_image = slider_image_group.append('image')
             .attr('x', d.x + slider_image_size + 5)
             .attr('y', d.y + slider_image_size + 5)
-            .attr('width', image_size)
-            .attr('height', image_size)
+            .attr('width', reference_image_size)
+            .attr('height', reference_image_size)
             .attr('xlink:href', 'data_gen/data/' + base_image_name + '/eg_samples/' + d.url_end)
             .attr('id', d.id + '_tooltip')
             .attr('z-index', 1);
