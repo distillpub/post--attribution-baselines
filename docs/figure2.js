@@ -23,7 +23,7 @@ function figure2() {
 
     var image_data = [
         { x: 0, y: 0, id: 'display_image_fig2', title: 'Predicted Class: ' + base_image_name},
-        { x: image_size + image_padding, y: 0, id: 'ig_weights_fig2', title: 'Integrated Gradients Attribution Maps'},
+        { x: image_size + image_padding, y: 0, id: 'ig_weights_fig2', title: 'Integrated Gradients Attribution Map'},
     ];
 
     var indicator_data = [

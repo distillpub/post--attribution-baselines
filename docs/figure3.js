@@ -98,64 +98,6 @@ function figure3() {
         .style('font-weight', 700)
         .text('Click to select a different ImageNet image:')
         
-    // var legend_group = container
-    //     .append('g')
-    //     .attr('id', 'legend_group')
-    //     .attr('width', legend_width)
-    //     .attr('height', legend_height)
-    //     .attr('transform', `translate(${margin.left + width - legend_width - legend_right_padding}
-    //         , ${margin.top + image_size + slider_padding + image_padding + slider_height + legend_top_padding})`);  
-    // 
-    // legend_group
-    //     .append('rect')
-    //     .attr('width', legend_width)
-    //     .attr('height', legend_height)
-    //     .attr('fill', 'none')
-    //     .attr('stroke', 'gray')
-    //     .attr('stroke-width', 1.5);
-    // 
-    // legend_group
-    //     .append('text')
-    //     .attr('x', legend_width * 0.04)
-    //     .attr('y', legend_height * 0.3)
-    //     .style('font-weight', 700)
-    //     .style('font-size', 16)
-    //     .text('Color')
-    // 
-    // var sum_group = legend_group
-    //     .append('g')
-    //     .attr('width', legend_width * 0.9)
-    //     .attr('height', legend_height * 0.25)
-    //     .attr('transform', `translate(${legend_width * 0.05}, ${legend_height * 0.3})`);
-
-    // var baseline_group = legend_group
-    //     .append('g')
-    //     .attr('width', legend_width * 0.9)
-    //     .attr('height', legend_height * 0.25)
-    //     .attr('transform', `translate(${legend_width * 0.05}, ${legend_height * 0.6})`);
-    // // 
-    // sum_group.append('rect')
-    //     .attr('y', 12.5)
-    //     .attr('width', 25)
-    //     .attr('height', 5)
-    //     .attr('fill', 'firebrick');
-    // 
-    // sum_group.append('text')
-    //     .attr('y', 20)
-    //     .attr('x', 35)
-    //     .text('Sum of absolute accumulated gradients at alpha');
-    // 
-    // baseline_group.append('rect')
-    //     .attr('y', 12.5)
-    //     .attr('width', 25)
-    //     .attr('height', 5)
-    //     .attr('fill', 'darkblue');
-    // 
-    // baseline_group.append('text')
-    //     .attr('y', 20)
-    //     .attr('x', 35)
-    //     .text('Output logit magnitude for the target class');
-    // 
     var line_chart = image_group
         .append('g')
         .attr('id', 'line_chart')

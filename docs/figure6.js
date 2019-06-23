@@ -20,15 +20,15 @@ function figure6() {
     var image_padding = 30;
     var slider_padding = 30;
     var slider_image_padding = 60;
-    var slider_text_spacing = 100;
+    var slider_text_spacing = 40;
     var chart_padding = 80;
     var chart_height = 300;
     var chart_width = 300;
 
-    var slider_height = 100;
-    var slider_image_size = 18;
+    var slider_height = 40;
+    var slider_image_size = 26;
     var slider_image_col_count = 50;
-    var slider_num_images = 200;
+    var slider_num_images = 50;
     var slider_image_row_count = Math.ceil(slider_num_images / slider_image_col_count);
     var slider_image_left_padding = -10;
 
@@ -51,9 +51,9 @@ function figure6() {
     var cumulative_file = 'cumulative_weights_';
 
     var image_data = [
-        { x: 0, y: 0, id: 'display_image', title: '(1): image interpolated with reference'},
-        { x: image_size + image_padding, y: 0, id: 'weights_alpha', title: '(2): [image - reference] * [gradients at (1)]'},
-        { x: 2 * (image_size + image_padding), y: 0, id: 'cumulative_samples', title: '(3): average of (2) up to alpha'}
+        { x: 0, y: 0, id: 'display_image', title: '(1)'},
+        { x: image_size + image_padding, y: 0, id: 'weights_alpha', title: '(2)'},
+        { x: 2 * (image_size + image_padding), y: 0, id: 'cumulative_samples', title: '(3)'}
     ];
 
 
@@ -123,66 +123,6 @@ function figure6() {
         .style('font-weight', 700)
         .text('Click to select a different ImageNet image:')
         
-    var legend_group = container
-        .append('g')
-        .attr('id', 'legend_group')
-        .attr('width', legend_width)
-        .attr('height', legend_height)
-        .attr('transform', `translate(${margin.left + width - legend_width - legend_right_padding},
-            ${margin.top + image_size + slider_padding +
-                slider_image_row_count * slider_image_size + slider_image_padding +
-                image_padding + slider_height + legend_top_padding})`);  
-        
-    legend_group
-        .append('rect')
-        .attr('width', legend_width)
-        .attr('height', legend_height)
-        .attr('fill', 'none')
-        .attr('stroke', 'gray')
-        .attr('stroke-width', 1.5);
-
-    legend_group
-        .append('text')
-        .attr('x', legend_width * 0.04)
-        .attr('y', legend_height * 0.3)
-        .style('font-weight', 700)
-        .style('font-size', 16)
-        .text('Color')
-
-    var sum_group = legend_group
-        .append('g')
-        .attr('width', legend_width * 0.9)
-        .attr('height', legend_height * 0.25)
-        .attr('transform', `translate(${legend_width * 0.05}, ${legend_height * 0.3})`);
-
-    var baseline_group = legend_group
-        .append('g')
-        .attr('width', legend_width * 0.9)
-        .attr('height', legend_height * 0.25)
-        .attr('transform', `translate(${legend_width * 0.05}, ${legend_height * 0.6})`);
-
-    sum_group.append('rect')
-        .attr('y', 12.5)
-        .attr('width', 25)
-        .attr('height', 5)
-        .attr('fill', 'firebrick');
-
-    sum_group.append('text')
-        .attr('y', 20)
-        .attr('x', 35)
-        .text('Sum of absolute accumulated gradients at alpha');
-        
-    baseline_group.append('rect')
-        .attr('y', 12.5)
-        .attr('width', 25)
-        .attr('height', 5)
-        .attr('fill', 'darkblue');
-        
-    baseline_group.append('text')
-        .attr('y', 20)
-        .attr('x', 35)
-        .text('Output logit magnitude for the target class');
-        
     var line_chart = image_group
         .append('g')
         .attr('id', 'line_chart')
@@ -207,7 +147,7 @@ function figure6() {
       .attr("transform", `translate(${(chart_width) / 2}, -10)`)
       .style("text-anchor", "middle")
       .style("font-weight", 700)
-      .text("Sum of pixel values in (3)");
+      .text("(4)");
           
     var chart_svg_border = image_group
         .append('g')
@@ -291,7 +231,7 @@ function figure6() {
 
     function draw_chart(data) {
         current_data = data;
-        var sample_domain = [0.0, current_samples];
+        var sample_domain = [0.0, Math.max(current_samples, 1)];
         var sum_domain = d3.extent(data, function(d) { return +d.cumulative_sum; });
         
         var cu_data = current_data.filter(function(d) { return filter_method(d, 'IG'); });
@@ -401,7 +341,7 @@ function figure6() {
             var xaxis = line_chart.select('#chart-x-axis');
             var yaxis = line_chart.select('#chart-y-axis');
             
-            var sample_domain = [0, num_samples];
+            var sample_domain = [0, Math.max(current_samples, 1)];
             var x = d3.scaleLinear()
                 .range([0, image_size])
                 .domain(sample_domain);
@@ -469,59 +409,47 @@ function figure6() {
             .attr('transform', `translate(${margin.left + slider_padding}, 
                 ${margin.top + image_size + slider_padding + 
                     + slider_image_padding + slider_image_size * slider_image_row_count})`);
-        
-        slider_group
-            .append('rect')
-            .attr('fill', 'black')
-            .attr('x', 0)
-            .attr('y', slider_text_spacing * 0.6 )
-            .attr('width', slider_width)
-            .attr('height', 3);
-            
-        slider_group
-            .append('rect')
-            .attr('fill', 'black')
-            .attr('x', 0)
-            .attr('y', slider_text_spacing * 0.6 - 10)
-            .attr('width', 3)
-            .attr('height', 10);
-            
-        slider_group
-            .append('rect')
-            .attr('fill', 'black')
-            .attr('x', slider_width - 3)
-            .attr('y', slider_text_spacing * 0.6 - 10)
-            .attr('width', 3)
-            .attr('height', 10);
                 
-        slider_group
+        var slider_label = slider_group
             .append('text')
             .attr('id', 'slider_label')
             .style("text-anchor", "middle")
             .style("font-weight", 700)
-            .text('# Samples')
+            .text(`${current_samples} sample`)
             .attr('x', slider_width / 2)
             .attr('y', slider_text_spacing)
-            .attr('font-size', 35)
+            .attr('font-size', 20)
             .attr('fill', 'black')
             .style("font-family", "sans-serif");
         
-        var slider = d3
-            .sliderHorizontal()
-            .min(1)
-            .max(slider_num_images)
-            .step(1)
-            .ticks(20)
-            .width(slider_width)
-            .default(0.0)
-            .on('onchange', function(sample_value) {
-                current_samples = sample_value;
+        
+        var slider2 = slid3r()
+            .width(width - 2 * slider_padding)
+            .range([1, 50])
+            .startPos(current_samples)
+            .clamp(true)
+            .label(null)
+            .numTicks(6)
+            .font('sans-serif')
+            .onDrag(function(sample_value) {
+                current_samples = Math.round(sample_value);
+                
+                if (current_samples == 1)
+                {
+                    slider_label.text(`1 sample`);
+                }
+                else 
+                {
+                    slider_label.text(`${current_samples} samples`);
+                }
+                
+                
                 update_images(current_samples, 0);
                 update_chart(current_samples, current_data, false);
             });
 
-        slider_group
-            .call(slider);
+        slider_group.append('g')
+            .call(slider2);
             
         slider_image_group = container
             .append('g')
