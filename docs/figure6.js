@@ -258,7 +258,7 @@ function figure6() {
             .call(d3.axisLeft(y));
             
         line_chart.append('g')
-            .attr('id', 'grid_markings')    
+            .attr('id', 'grid_markings_6')    
             .selectAll('line.horizontalGrid').data(y.ticks()).enter()
             .append('line')
             .attr('class', 'horizontalGrid')
@@ -353,7 +353,7 @@ function figure6() {
                 .domain(sum_domain);
             
             if (new_image) {
-                var grid_markings_data = d3.select('#grid_markings')
+                var grid_markings_data = d3.select('#grid_markings_6')
                     .selectAll('line.horizontalGrid')
                     .data(y.ticks());
                 
