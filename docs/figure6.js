@@ -350,6 +350,38 @@ function figure6() {
             var y = d3.scaleLinear()
                 .range([image_size, 0])
                 .domain(sum_domain);
+            
+            if (new_image) {
+                var grid_markings_data = d3.select('#grid_markings')
+                    .selectAll('line.horizontalGrid')
+                    .data(y.ticks());
+                
+                grid_markings_data.exit()
+                    .transition(axis_transition)
+                    .attr('y1', 0.0)
+                    .attr('y2', 0.0)
+                    .style('stroke-opacity', 0)
+                    .remove();
+                
+                grid_markings_data.transition(axis_transition)
+                    .attr('y1', function(d) { return y(d) + 0.5; })
+                    .attr('y2', function(d) { return y(d) + 0.5; });
+                
+                grid_markings_data.enter()
+                .append('line')
+                .attr('class', 'horizontalGrid')
+                .attr('x1', 0)
+                .attr('x2', image_size)
+                .attr('y1', 0.0)
+                .attr('y2', 0.0)
+                .attr('shape-rendering', 'crispEdges')
+                .attr('fill', 'none')
+                .attr('stroke', 'gray')
+                .attr('stroke-width', '1px')
+                .transition(axis_transition)
+                .attr('y1', function(d) { return y(d) + 0.5; })
+                .attr('y2', function(d) { return y(d) + 0.5; });
+            }
                 
             xaxis.transition(axis_transition).call(d3.axisBottom(x));
             yaxis.transition(axis_transition).call(d3.axisLeft(y))
@@ -422,14 +454,22 @@ function figure6() {
             .attr('fill', 'black')
             .style("font-family", "sans-serif");
         
-        
+        var ticks = [
+            {'pos': 1, 'label': 1},
+            {'pos': 10, 'label': 10},
+            {'pos': 20, 'label': 20},
+            {'pos': 30, 'label': 30},
+            {'pos': 40, 'label': 40},
+            {'pos': 50, 'label': 50},
+        ]
         var slider2 = slid3r()
             .width(width - 2 * slider_padding)
             .range([1, 50])
             .startPos(current_samples)
             .clamp(true)
             .label(null)
-            .numTicks(6)
+            // .numTicks(6)
+            .customTicks(ticks)
             .font('sans-serif')
             .onDrag(function(sample_value) {
                 current_samples = Math.round(sample_value);
