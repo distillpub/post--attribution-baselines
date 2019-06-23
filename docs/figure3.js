@@ -19,15 +19,15 @@ function figure3() {
 
     var image_padding = 30;
     var slider_padding = 60;
-    var slider_text_spacing = 100;
+    var slider_text_spacing = 40;
     var chart_padding = 80;
     var chart_height = 300;
     var chart_width = 300;
-    var slider_height = 100;
+    var slider_height = 40;
 
     var num_images = 3;
     var width = (num_images + 1) * image_size + (num_images - 1) * image_padding + chart_padding;
-    var height = image_size + slider_height + slider_padding + slider_text_spacing;
+    var height = image_size + slider_height + slider_padding + slider_text_spacing + indicator_image_size;
 
     var slider_width = width - 2 * slider_padding;
 
@@ -41,9 +41,9 @@ function figure3() {
     var cumulative_file = 'cumulative_weights_';
 
     var image_data = [
-        { x: 0, y: 0, id: 'interp_alpha', title: '(1): alpha * image + (1 - alpha) * reference'},
-        { x: image_size + image_padding, y: 0, id: 'weights_alpha', title: "(2): [image - reference] * [gradients at (1)]"},
-        { x: 2*(image_size + image_padding), y: 0, id: 'cumulative_alpha', title: '(3): average of (2) up to alpha'}
+        { x: 0, y: 0, id: 'interp_alpha', title: '(1)'},
+        { x: image_size + image_padding, y: 0, id: 'weights_alpha', title: "(2)"},
+        { x: 2*(image_size + image_padding), y: 0, id: 'cumulative_alpha', title: '(3)'}
     ];
 
     var indicator_data = [
@@ -98,64 +98,64 @@ function figure3() {
         .style('font-weight', 700)
         .text('Click to select a different ImageNet image:')
         
-    var legend_group = container
-        .append('g')
-        .attr('id', 'legend_group')
-        .attr('width', legend_width)
-        .attr('height', legend_height)
-        .attr('transform', `translate(${margin.left + width - legend_width - legend_right_padding}
-            , ${margin.top + image_size + slider_padding + image_padding + slider_height + legend_top_padding})`);  
-        
-    legend_group
-        .append('rect')
-        .attr('width', legend_width)
-        .attr('height', legend_height)
-        .attr('fill', 'none')
-        .attr('stroke', 'gray')
-        .attr('stroke-width', 1.5);
+    // var legend_group = container
+    //     .append('g')
+    //     .attr('id', 'legend_group')
+    //     .attr('width', legend_width)
+    //     .attr('height', legend_height)
+    //     .attr('transform', `translate(${margin.left + width - legend_width - legend_right_padding}
+    //         , ${margin.top + image_size + slider_padding + image_padding + slider_height + legend_top_padding})`);  
+    // 
+    // legend_group
+    //     .append('rect')
+    //     .attr('width', legend_width)
+    //     .attr('height', legend_height)
+    //     .attr('fill', 'none')
+    //     .attr('stroke', 'gray')
+    //     .attr('stroke-width', 1.5);
+    // 
+    // legend_group
+    //     .append('text')
+    //     .attr('x', legend_width * 0.04)
+    //     .attr('y', legend_height * 0.3)
+    //     .style('font-weight', 700)
+    //     .style('font-size', 16)
+    //     .text('Color')
+    // 
+    // var sum_group = legend_group
+    //     .append('g')
+    //     .attr('width', legend_width * 0.9)
+    //     .attr('height', legend_height * 0.25)
+    //     .attr('transform', `translate(${legend_width * 0.05}, ${legend_height * 0.3})`);
 
-    legend_group
-        .append('text')
-        .attr('x', legend_width * 0.04)
-        .attr('y', legend_height * 0.3)
-        .style('font-weight', 700)
-        .style('font-size', 16)
-        .text('Color')
-
-    var sum_group = legend_group
-        .append('g')
-        .attr('width', legend_width * 0.9)
-        .attr('height', legend_height * 0.25)
-        .attr('transform', `translate(${legend_width * 0.05}, ${legend_height * 0.3})`);
-
-    var baseline_group = legend_group
-        .append('g')
-        .attr('width', legend_width * 0.9)
-        .attr('height', legend_height * 0.25)
-        .attr('transform', `translate(${legend_width * 0.05}, ${legend_height * 0.6})`);
-
-    sum_group.append('rect')
-        .attr('y', 12.5)
-        .attr('width', 25)
-        .attr('height', 5)
-        .attr('fill', 'firebrick');
-
-    sum_group.append('text')
-        .attr('y', 20)
-        .attr('x', 35)
-        .text('Sum of absolute accumulated gradients at alpha');
-        
-    baseline_group.append('rect')
-        .attr('y', 12.5)
-        .attr('width', 25)
-        .attr('height', 5)
-        .attr('fill', 'darkblue');
-        
-    baseline_group.append('text')
-        .attr('y', 20)
-        .attr('x', 35)
-        .text('Output logit magnitude for the target class');
-        
+    // var baseline_group = legend_group
+    //     .append('g')
+    //     .attr('width', legend_width * 0.9)
+    //     .attr('height', legend_height * 0.25)
+    //     .attr('transform', `translate(${legend_width * 0.05}, ${legend_height * 0.6})`);
+    // // 
+    // sum_group.append('rect')
+    //     .attr('y', 12.5)
+    //     .attr('width', 25)
+    //     .attr('height', 5)
+    //     .attr('fill', 'firebrick');
+    // 
+    // sum_group.append('text')
+    //     .attr('y', 20)
+    //     .attr('x', 35)
+    //     .text('Sum of absolute accumulated gradients at alpha');
+    // 
+    // baseline_group.append('rect')
+    //     .attr('y', 12.5)
+    //     .attr('width', 25)
+    //     .attr('height', 5)
+    //     .attr('fill', 'darkblue');
+    // 
+    // baseline_group.append('text')
+    //     .attr('y', 20)
+    //     .attr('x', 35)
+    //     .text('Output logit magnitude for the target class');
+    // 
     var line_chart = image_group
         .append('g')
         .attr('id', 'line_chart')
@@ -180,7 +180,7 @@ function figure3() {
       .attr("transform", `translate(${(chart_width) / 2}, -10)`)
       .style("text-anchor", "middle")
       .style("font-weight", 700)
-      .text("Sum of pixel values in (3)");
+      .text("(4)");
           
     var chart_svg_border = image_group
         .append('g')
@@ -206,7 +206,8 @@ function figure3() {
     }
 
     function update_images(alpha_val, transition_duration) {
-        alpha_val = Number((alpha_val).toFixed(2));
+        alpha_val = Number((Math.floor(alpha_val * 50) / 50).toFixed(2));
+        
         if (alpha_val == 0.0) {
             alpha_val = '0.0';
         }
@@ -235,7 +236,7 @@ function figure3() {
 
     function draw_chart(data) {
         current_data = data;
-        var alpha_domain = [0.0, current_alpha];
+        var alpha_domain = [0.0, Math.max(current_alpha, 0.01)];
         var sum_domain = d3.extent(data, function(d) { return +d.cumulative_sum; });
         
         var cu_data = current_data.filter(function(d) { return filter_method(d, 'IG'); });
@@ -344,7 +345,7 @@ function figure3() {
             var xaxis = line_chart.select('#chart-x-axis');
             var yaxis = line_chart.select('#chart-y-axis');
             
-            var alpha_domain = [0.0, alpha_val];
+            var alpha_domain = [0.0, Math.max(alpha_val, 0.01)];
             var x = d3.scaleLinear()
                 .range([0, image_size])
                 .domain(alpha_domain);
@@ -402,66 +403,43 @@ function figure3() {
                     
             prev_alpha = alpha_val;
         }
-
+            
         slider_group = container
             .append('g')
             .attr('id', 'slider_group')
             .attr('width', width - 2 * slider_padding)
             .attr('height', slider_height)
             .attr('transform', `translate(${margin.left + slider_padding}, ${margin.top + image_size + slider_padding})`);
-        
-        slider_group
-            .append('rect')
-            .attr('fill', 'black')
-            .attr('x', 0)
-            .attr('y', slider_text_spacing * 0.6 )
-            .attr('width', slider_width)
-            .attr('height', 3);
-            
-        slider_group
-            .append('rect')
-            .attr('fill', 'black')
-            .attr('x', 0)
-            .attr('y', slider_text_spacing * 0.6 - 10)
-            .attr('width', 3)
-            .attr('height', 10);
-            
-        slider_group
-            .append('rect')
-            .attr('fill', 'black')
-            .attr('x', slider_width - 3)
-            .attr('y', slider_text_spacing * 0.6 - 10)
-            .attr('width', 3)
-            .attr('height', 10);
                 
-        slider_group
+        var slider_label = slider_group
             .append('text')
             .attr('id', 'slider_label')
             .style("text-anchor", "middle")
             .style("font-weight", 700)
-            .text('alpha')
+            .text(`alpha = ${current_alpha.toFixed(2)}`)
             .attr('x', slider_width / 2)
             .attr('y', slider_text_spacing)
-            .attr('font-size', 35)
+            .attr('font-size', 20)
             .attr('fill', 'black')
             .style("font-family", "sans-serif");
         
-        var slider = d3
-            .sliderHorizontal()
-            .min(0.0)
-            .max(1.0)
-            .step(0.02)
-            .ticks(10)
-            .width(slider_width)
-            .default(0.0)
-            .on('onchange', function(alpha_value) {
-                current_alpha = alpha_value;
-                update_images(alpha_value, 0);
+        var slider2 = slid3r()
+            .width(width - 2 * slider_padding)
+            .range([0.0, 1.0])
+            .startPos(current_alpha)
+            .clamp(false)
+            .label(null)
+            .numTicks(6)
+            .font('sans-serif')
+            .onDrag(function(alpha_value) {
+                current_alpha = Number((Math.floor(alpha_value * 50) / 50).toFixed(2));
+                slider_label.text(`alpha = ${current_alpha.toFixed(2)}`);
+                update_images(current_alpha, 0);
                 update_chart(alpha_value, current_data, false);
             });
-
-        slider_group
-            .call(slider);
+        
+        slider_group.append('g')
+            .call(slider2);
         
         function select_new_image(row, i) {
             if (base_image_name === row.id) {

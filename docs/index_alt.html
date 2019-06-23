@@ -1,0 +1,244 @@
+<!DOCTYPE HTML>
+<html xml:lang="en" lang="en">
+<head>
+  <title>CSE512 | A3 [Add: title]</title>
+  <style media="all">
+* { padding: 0; margin: 0; }
+ body {
+  margin: 0 auto 0 auto;
+  padding: 0;
+  max-width: 1200px;
+  font-family: "Avenir", "Avenir Next", Helvetica Neue, Arial;
+  font-size: 0.95em;
+}
+ a, a:visited { text-decoration: none; color: #7533f4; }
+a:hover { text-decoration: underline; color: #f4b014; }
+ h1, h2, h3, h4, h5 {
+  color: #492a7c;
+  background-color: inherit;
+  font-weight: normal;
+  padding: 0 0 5px 0;
+  margin: 15px 0 0 0;
+  border: none;
+  clear: right;
+}
+h1 { font-size: 24pt; margin:  5px 0 10px 0; line-height: 28px; }
+h2 { font-size: 14pt; margin: 30px 0 15px 0; letter-spacing: 0.01em; border-bottom: 1px solid #ccc;  line-height: 20px;}
+h3 { font-size: 13pt; }
+h4 { font-size: 12pt; }
+h5 { font-size: 11pt; }
+p { margin: 0 0 10px 0; }
+ .content {
+  margin: 0;
+  padding: 15px 20px;
+  background-color: #ffffff;
+}
+ .title, .title h1, .title a {
+  color: #492a7c;
+  font-size: 24pt;
+  margin-bottom: 20px;
+  margin-top: 5px;
+}
+ .footer {
+  border-top: 1px solid #ccc;
+  margin-top: 30px;
+  padding-top: 4px;
+  text-align: right;
+  font-size: 12px;
+}
+.footer a {
+  color: #21346B;
+}
+.footer a:hover {
+  color: #ce3333;
+}
+  </style>
+</head>
+<body>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://d3js.org/d3-collection.v1.min.js"></script>
+    <script src="https://unpkg.com/d3-simple-slider"></script>
+    <script src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js?config=TeX-MML-AM_CHTML' async></script>
+    <script src="cross_fade.js"></script>
+    
+<div class="content">
+   <section class="title">
+    <a href="/">Visualizing Gradient Attributions</a>
+  </section>
+
+   <section>
+    <p>
+      <strong>Team Members</strong>: Pascal Sturmfels
+    </p>
+  </section>
+
+   <section>
+    <p>
+        <a href='Visualizing_Gradient_Attributions.pdf' target='_blank'>Link to the paper</a><br>
+        <a href='FinalProjectPoster_psturm.pdf' target='_blank'>Link to the poster</a>
+    </p>
+  </section>
+
+  <section>
+    <h2>Abstract</h2>
+    <p>
+        This project first introduces the idea of interpreting image classification models 
+        using feature attribution methods. Such methods tell us which pixels were most important
+        to a classifier when making a decision about what is in an image. Then, this project aims to visualize 
+        integrated gradients, a popular method for pixel-wise feature attribution. The visualization
+        uses interactive displays to show how integrated gradients is calculated, and the issues
+        involved with calculating integrated gradient values. It then visualizes expected gradients,
+        the method our lab proposed that fixes certain issues with integrated gradients. 
+    </p>
+  </section>
+  
+  <section>
+      <h2> Visualizing Gradient-Based Atttribution Methods in Image Classification Networks</h2>
+      
+      <h4>Neural networks are good at image classification</h4>
+      <p>
+          The figure below plots the output of the 
+          <a href='https://arxiv.org/abs/1602.07261' target='_blank'>Inception V4</a>
+          network, a convolutional neural network architecture for image classification trained on the ImageNet dataset.
+          Inception V4 achieves a top-1 validation accuracy of over 80%. In the plot, I've visualized
+          4 images from the ImageNet validation set, as well as the top 5 classes the network
+          thinks the image represents. The network correctly guesses the class of each of the 4 images
+          with high probability.
+          
+          <div id='figure1_div'></div>
+          <script src="figure1.js"></script>
+      </p>
+      
+      <h4>But how did the network make the prediction it did?</h4>
+      <p>
+          Our image classification network may be accurate, but why did it make the predictions it did?
+          How can we verify that our network is actually learning what a goldfinch looks like, and
+          not simply predicting all images that have a yellow foreground and a green background to be goldfinches? 
+          <a href='https://arxiv.org/abs/1703.01365' target='_blank'>Integrated gradients</a> proposes to
+          solve this method. Given a prediction on an image, it highlights which features were most 
+          important in making the prediction. In the case of images, features are pixels, and we can
+          plot the most important pixels by highlighting them in white. In the next figure, I've
+          plotted the pixels that integrated gradients highlights as important for each prediction. 
+          For some images, the network behaves intuitively, but for others, the network
+          seems to be using looking at arbitrary pixels in the background.
+          
+          <div id='figure2_div'></div>
+          <script src="figure2.js"></script>
+      </p>
+      
+      <h4>How exactly does integrated gradients work?</h4>
+      <p>
+          To understand why certain pixels were highlighted as important, we need to 
+          better understand the integrated gradients method. We plot a visualization of the method in the next figure, below.
+          Integrated gradients works by integrating the input gradients of our network between 
+          a reference image (black) and our current image (the goldfinch, for example).
+          You can think of this integration as averaging the gradients at all images between the reference and the bird.
+          Intuitively, this is akin to asking our network: "Why do you see a bird and not nothing (a black image)?"
+          
+          We also plot in the figure the cumulative sum of gradients as a function of alpha. This tells us two things: first,
+          it tells us that the gradients with the highest magnitudes typically come from small alpha values, which means that
+          the image is seeing the most signal at a level that is not visible to humans. Second, it tells us how
+          well we approximated the integral. Remember that integrated gradients uses an integral, but in practice we calculate
+          this with a discrete sum approximation. If the approximation is good, then the cumulative sum at alpha (plotted in red) should
+          be close to the output of the network (plotted in blue). 
+        
+          <br><br>
+          
+          For the sake of time, I've skipped over many of the mathematical details of 
+          integrated gradients. If you would like a more formal definition of integrated gradients, see
+          <a href='https://arxiv.org/abs/1703.01365' target='_blank'>the arXiv paper</a>.
+          
+          <div id='figure3_div'></div>
+          <script src="figure3.js"></script>
+      </p>
+  </section>
+  
+  <section>
+      <h4>The crucial flaw with integrated gradients</h4>
+      <p>
+          I intuitively described integrated gradients as asking the question: 
+          "Why do you see what you see in the image and not nothing?". For mathematical reasons, it turns
+          out that this type of counter-factual question is essential to interpreting neural networks. 
+          To explain a prediction, a network needs some reference: the explanations are relative to
+          the reference. This reference is meant to encode "nothingness" or "lack of information".
+          Integrated gradients recommends using the all black image as a reference, but black is as meaningful
+          a color as any other. It is not clear why black should be chosen as a reference. In fact, 
+          if we choose the reference to be a constant color, than integrated gradients
+          is biased against that color. Due to its mathematical definition, it tends not 
+          to highlight colors in the original image that are the same as the reference color.
+          
+          <br><br>
+          In the figure below, you can hover over the image
+          to choose different reference values for integrated gradients. Observe how, as you 
+          choose different reference colors, which pixels are highlighted as important
+          can change drastically. Which reference color is the <em>correct</em> one for interpreting
+          our network?
+          
+          <div id='figure4_div'></div>
+          <script src="figure4.js"></script>
+      </p>
+  </section>
+  
+  <section>
+      <h4>Why use a constant image as a reference?</h4>
+      <p>
+          You might be wondering: why use a constant image as a reference? Could 
+          we instead ask the question: "why is this image a goldfinch and 
+          not a killer whale?" It turns out, we can! We can use images from the 
+          ImageNet dataset as a references when asking counter-factual questions, which gives us
+          different explanations. We plot some of these explanations in the next figure below. Here, you can
+          choose both a background referene image and a target image. Notice how
+          the explanations change when you ask for explanations relative to different
+          background images. Also note that the gradients accumulate more evenly when
+          you interpolate between two natural images.
+          
+          <div id='figure5_div'></div>
+          <script src="figure5.js"></script>
+      </p>
+  </section>
+  
+  <section>
+      <h4>Why use only one reference image?</h4>
+      <p>
+          You might now want to know whether or not you can integrate over multiple images
+          to get explanations. This is akin to asking the question: "Why is this image
+          a goldfinch relative to a background distribution of images?" Instead of 
+          arbitrarily modeling lack of information using a black image, we can model
+          lack of information by using the original training distribution. This avoids
+          the choice of hyper-parameter, and better models the notion of "nothingness".
+          This is the basis of our proposed method, expected gradients. We plot 
+          expected gradients in the figure below.
+          Instead of interpolating over a single reference image, we do the following sampling procedure:
+          we sample an image from the training set, and an alpha value between 0 and 1 uniformly at random.
+          We then calculate the gradients (times the relative input) at the interpolated image between
+          the sampled reference and the input image. This allows us to explain how our network views
+          an image relative to all of the other images it has seen.
+          
+          <div id='figure6_div'></div>
+          <script src="figure6.js"></script>
+      </p>
+  </section>
+  
+  <section>
+      <h4>Comparing methods</h4>
+      <p>
+          In our final figure, we compare integrated gradients
+          using black as a reference with our method, called expected gradients. Even 
+          if some of the explanations using integrated gradients may be "sharper", we still 
+          believe that expected gradients is a better explanation method. The explanations by integrated
+          gradients may look sharp simply because the object in the image has pixels that are far away from black,
+          not because the network actually has sharp explanations.
+          
+          <div id='figure7_div'></div>
+          <script src="figure7.js"></script>
+      </p>
+  </section>
+
+  <div class="footer">
+    <a href="https://courses.cs.washington.edu/courses/cse512/19sp/">CSE 512 Data Visualization</a>
+    <a href="http://www.washington.edu">University of Washington</a>
+  </div>
+ </div>
+</body>
+</html> 
+
