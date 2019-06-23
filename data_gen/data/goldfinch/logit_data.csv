@@ -1,0 +1,6 @@
+,rank,pred_name,pred_logit
+0,1,goldfinch,0.9238518
+1,2,sea_snake,0.0011214147
+2,3,brambling,0.00078051345
+3,4,admiral,0.00040372738
+4,5,shopping_basket,0.00036185747

@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+python3 ig_pipeline.py --run csv
+python3 ig_pipeline.py --run logits
+
 tmux new-session -d -s acc '
 export CUDA_VISIBLE_DEVICES=0; 
 python3 ig_pipeline.py --run acc; read

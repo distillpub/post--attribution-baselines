@@ -43,7 +43,7 @@ def get_eg_samples(model, sess):
     grad_input_op = grad_op * delta_pl
     
     image_names = ['house_finch', 'rubber_eraser', 'goldfinch', 'killer_whale']
-    num_samples = 201
+    num_samples = 51
     
     reference_images = []
     for sample in range(num_samples):
@@ -154,7 +154,7 @@ def get_eg_pairwise(model, sess):
     grad_op = explainer._grad_across_multi_output(output_tensor=logits, input_tensor=images_pl, sparse_labels_op=labels_pl)
     grad_input_op = grad_op * delta_pl
     
-    alpha_range = np.linspace(0.0, 1.0, num=201)
+    alpha_range = np.linspace(0.0, 1.0, num=51)
     alpha_range = np.rint(alpha_range * 1000) / 1000.0
     
     image_names = ['house_finch', 'rubber_eraser', 'goldfinch', 'killer_whale']
@@ -362,7 +362,7 @@ def get_ig_weights_slic(model, sess):
             selected_slic_mask = mark_boundaries(selected_slic_mask, selection_mask.astype(int), mode='thick')
             
             raw_weights_acc = []
-            for alpha in np.linspace(0.0, 1.0, num=201):
+            for alpha in np.linspace(0.0, 1.0, num=51):
                 interp_input = alpha * image_input + (1.0 - alpha) * input_reference
                 ig_sample = sess.run(grad_input_op, feed_dict = {images_pl: interp_input, 
                                                              labels_pl: label_input,
@@ -371,7 +371,7 @@ def get_ig_weights_slic(model, sess):
             raw_weights_acc = np.array(raw_weights_acc).squeeze()
             ig_weights = np.mean(raw_weights_acc, axis=0)
             
-#             background_reference_images = np.tile(np.expand_dims(input_reference, axis=0), [201, 1, 1, 1])
+#             background_reference_images = np.tile(np.expand_dims(input_reference, axis=0), [51, 1, 1, 1])
             
 #             ig_weights = sess.run(expected_grads_op, feed_dict={
 #                 images_pl: image_input,
@@ -409,7 +409,7 @@ def get_acc_ig_weights(model, sess):
     grad_op = explainer._grad_across_multi_output(output_tensor=logits, input_tensor=images_pl, sparse_labels_op=labels_pl)
     grad_input_op = grad_op * delta_pl
     
-    alpha_range = np.linspace(0.0, 1.0, num=201)
+    alpha_range = np.linspace(0.0, 1.0, num=51)
     alpha_range = np.rint(alpha_range * 1000) / 1000.0
     
     image_names = ['house_finch', 'rubber_eraser', 'goldfinch', 'killer_whale']
