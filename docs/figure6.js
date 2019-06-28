@@ -1,6 +1,6 @@
 function figure6() {
     var margin = ({
-        top: 60,
+        top: 30,
         right: 30,
         bottom: 30,
         left: 30
@@ -104,7 +104,8 @@ function figure6() {
         .style("font-weight", 700)
         .text(function(d) { return d.title })
         .attr('x', function(d) { return (image_size / 2) + d.x })
-        .attr('y', -10);
+        .attr('y', -10)
+        .style('font-size', '22px');
 
     var indicator_group = container
         .append('g')
@@ -122,7 +123,8 @@ function figure6() {
         .attr('y', -indicator_box_top_padding / 2)
         .attr('text-anchor', 'middle')
         .style('font-weight', 700)
-        .text('Click to select a different ImageNet image:')
+        .style('font-size', '18px')
+        .text('Click to select a different image:')
         
     var line_chart = image_group
         .append('g')
@@ -142,7 +144,7 @@ function figure6() {
     line_chart.append("text")             
       .attr("transform", `translate(${(chart_width / 2)}, ${(chart_height + chart_padding / 2)})`)
       .style("text-anchor", "middle")
-      .text("Interpolation Constant (alpha)");
+      .text("Number of Samples");
 
     line_chart.append("text")
       .attr("transform", `translate(${(chart_width) / 2}, -10)`)
@@ -177,9 +179,14 @@ function figure6() {
         if (d.rank > current_samples) { 
             return;
         }
+        var x_pos = d.x + slider_image_size + 5;
+        if (d.rank > 25) {
+            x_pos = d.x - slider_image_size - 5 - reference_image_size;
+        }
+        console.log(x_pos);
         var base_image = slider_image_group.select('#' + d.id);
         var tooltip_image = slider_image_group.append('image')
-            .attr('x', d.x + slider_image_size + 5)
+            .attr('x', x_pos)
             .attr('y', d.y + slider_image_size + 5)
             .attr('width', reference_image_size)
             .attr('height', reference_image_size)
@@ -187,7 +194,7 @@ function figure6() {
             .attr('id', d.id + '_tooltip')
             .attr('z-index', 1);
             
-            base_image.on('mousemove', function() { handle_mousemove(tooltip_image, base_image, d.x, d.y) });
+            base_image.on('mousemove', function() { handle_mousemove(tooltip_image, base_image, d.x, d.y, d.rank) });
     }
 
     function handle_mouseout(d, i) {
@@ -195,12 +202,16 @@ function figure6() {
         tooltip_image.remove();
     }
 
-    function handle_mousemove(image, enter_svg, orig_x, orig_y) {
+    function handle_mousemove(image, enter_svg, orig_x, orig_y, rank) {
         var coordinates = d3.mouse(enter_svg.node());
         var x = coordinates[0] - enter_svg.attr('x');
         var y = coordinates[1] - enter_svg.attr('y');
         
-        image.attr('x', orig_x + slider_image_size + 5 + x)
+        var x_pos = orig_x + slider_image_size + 5 + x;
+        if (rank > 25) {
+            x_pos = orig_x - slider_image_size - 5 - reference_image_size + x;
+        }
+        image.attr('x', x_pos)
              .attr('y', orig_y + slider_image_size + 5 + y);
     }
 
@@ -394,7 +405,7 @@ function figure6() {
             var line = d3.line()
                 .x(function(d) { return x(+d.sample) })
                 .y(function(d) { return y(+d.cumulative_sum)})
-                .curve(d3.curveCardinal);;
+                .curve(d3.curveCardinal);
             
             chart_markings.select('#line_mark')
                 .datum(new_cu_data)
@@ -505,7 +516,7 @@ function figure6() {
             .text('Reference Images:')
             .attr('x', 0)
             .attr('y', -10)
-            .attr('font-size', 16)
+            .attr('font-size', '18px')
             .attr('fill', 'black')
             .style("font-family", "sans-serif");
         

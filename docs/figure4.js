@@ -1,6 +1,6 @@
 function figure4() {
     var margin = ({
-        top: 60,
+        top: 30,
         right: 30,
         bottom: 30,
         left: 30
@@ -55,14 +55,15 @@ function figure4() {
         .attr('y', -indicator_box_top_padding / 2)
         .attr('text-anchor', 'middle')
         .style('font-weight', 700)
-        .text('Click to select a different ImageNet image:')
+        .style('font-size', '18px')
+        .text('Click to select a different image:')
         .style("font-family", "sans-serif");
 
     var base_image_name = 'goldfinch';
     var base_link = 'data_gen/data/' + base_image_name + '/slic/';
 
     var image_data = [
-        { x: 0, y: 0, id: 'reference_image', link: base_link + 'reference_0.png', title: 'Reference Image'},
+        { x: 0, y: 0, id: 'reference_image', link: base_link + 'reference_0.png', title: 'Baseline Input x\''},
         { x: image_size + image_padding, y: 0, id: 'slic_image', link: base_link + 'slic_mask_0.png', title: 'Segmented Image'},
         { x: 2 * (image_size + image_padding), y: 0, id: 'image', link: base_link + 'slic_image_0.png', title: 'Original Image'},
         { x: 3 * (image_size + image_padding), y: 0, id: 'ig_weights', link: base_link + 'ig_weights_0.png', title: 'Integrated Gradients Attribution Map'},
@@ -86,6 +87,7 @@ function figure4() {
         .attr('id', function(d) { return d.id + '_title' })
         .style("text-anchor", "middle")
         .style("font-weight", 700)
+        .style("font-size", '18px')
         .text(function(d) { return d.title })
         .attr('x', function(d) { return (image_size / 2) + d.x })
         .attr('y', -10)

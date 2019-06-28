@@ -1,6 +1,6 @@
 function figure5() {
     var margin = ({
-        top: 60,
+        top: 30,
         right: 30,
         bottom: 30,
         left: 30
@@ -82,7 +82,8 @@ function figure5() {
         .style("font-weight", 700)
         .text(function(d) { return d.title })
         .attr('x', function(d) { return (image_size / 2) + d.x })
-        .attr('y', -10);
+        .attr('y', -10)
+        .style('font-size', '22px');
 
     var indicator_group = container
         .append('g')
@@ -99,7 +100,8 @@ function figure5() {
         .attr('y', -indicator_box_top_padding / 2)
         .attr('text-anchor', 'middle')
         .style('font-weight', 700)
-        .text('Click to select a different ImageNet image:')
+        .style('font-size', '18px')
+        .text('Click to select a different image:')
 
     var reference_group = container
         .append('g')
@@ -116,6 +118,7 @@ function figure5() {
         .attr('y', -indicator_box_top_padding / 2)
         .attr('text-anchor', 'middle')
         .style('font-weight', 700)
+        .style('font-size', '18px')
         .text('Click to select a different reference:')
                 
     var line_chart = image_group
@@ -234,19 +237,8 @@ function figure5() {
             .attr('shape-rendering', 'crispEdges')
             .attr('fill', 'none')
             .attr('stroke', 'gray')
-            .attr('stroke-width', '1px');
-            
-        // line_chart.selectAll('line.verticalGrid').data(x.ticks()).enter()
-        //     .append('line')
-        //     .attr('class', 'verticalGrid')
-        //     .attr('y1', 0)
-        //     .attr('y2', image_size)
-        //     .attr('x1', function(d) { return x(d) + 0.5; })
-        //     .attr('x2', function(d) { return x(d) + 0.5; })
-        //     .attr('shape-rendering', 'crispEdges')
-        //     .attr('fill', 'none')
-        //     .attr('stroke', 'gray')
-        //     .attr('stroke-width', '1px');
+            .attr('stroke-width', '1px')
+            .attr('stroke-opacity', 0.3);
         
         var line = d3.line()
             .x(function(d) { return x(+d.alpha) })
@@ -274,14 +266,14 @@ function figure5() {
             .attr('stroke', 'darkblue')
             .attr('stroke-width', 2);
             
-        chart_markings.selectAll('circle').data(cu_data) 
-            .enter()  
-            .append('circle')
-            .attr('fill', 'firebrick')
-            .attr('stroke', 'none')
-            .attr('cx', function(d) { return x(Number((+d.alpha).toFixed(2))); })
-            .attr('cy', function(d) { return y(+d.cumulative_sum); })
-            .attr('r', 3);
+        // chart_markings.selectAll('circle').data(cu_data) 
+        //     .enter()  
+        //     .append('circle')
+        //     .attr('fill', 'firebrick')
+        //     .attr('stroke', 'none')
+        //     .attr('cx', function(d) { return x(Number((+d.alpha).toFixed(2))); })
+        //     .attr('cy', function(d) { return y(+d.cumulative_sum); })
+        //     .attr('r', 3);
         
         function update_chart(alpha_val, new_data, new_image) {
             var new_cu_data = new_data.filter(function(d) { return filter_method(d, 'IG'); });
@@ -345,7 +337,8 @@ function figure5() {
                 .attr('stroke-width', '1px')
                 .transition(axis_transition)
                 .attr('y1', function(d) { return y(d) + 0.5; })
-                .attr('y2', function(d) { return y(d) + 0.5; });
+                .attr('y2', function(d) { return y(d) + 0.5; })
+                .attr('stroke-opacity', 0.3);
             }
                 
             xaxis.transition(axis_transition).call(d3.axisBottom(x));
@@ -357,7 +350,8 @@ function figure5() {
             
             var line = d3.line()
                 .x(function(d) { return x(+d.alpha) })
-                .y(function(d) { return y(+d.cumulative_sum)});
+                .y(function(d) { return y(+d.cumulative_sum)})
+                .curve(d3.curveCardinal);
             
             chart_markings.select('#line_mark')
                 .datum(new_cu_data)
@@ -369,30 +363,30 @@ function figure5() {
                 .transition(mark_transition)
                 .attr('d', line);
             
-            var circle_marks = chart_markings
-                .selectAll('circle')
-                .data(new_cu_data);
-                
-            circle_marks
-                .exit()
-                .transition(mark_transition)
-                .attr('cx', function(d) { return x(Number((+d.alpha).toFixed(2))); })
-                .attr('cy', function(d) { return y(+d.cumulative_sum); })
-                .remove();
-            
-            circle_marks
-                .transition(mark_transition)
-                .attr('cx', function(d) { return x(Number((+d.alpha).toFixed(2))); })
-                .attr('cy', function(d) { return y(+d.cumulative_sum); });
-                
-            circle_marks.enter()
-                .append('circle')
-                .attr('fill', 'firebrick')
-                .attr('stroke', 'none')
-                .attr('r', 3)
-                .transition(mark_transition)
-                .attr('cx', function(d) { return x(Number((+d.alpha).toFixed(2))); })
-                .attr('cy', function(d) { return y(+d.cumulative_sum); });
+            // var circle_marks = chart_markings
+            //     .selectAll('circle')
+            //     .data(new_cu_data);
+            // 
+            // circle_marks
+            //     .exit()
+            //     .transition(mark_transition)
+            //     .attr('cx', function(d) { return x(Number((+d.alpha).toFixed(2))); })
+            //     .attr('cy', function(d) { return y(+d.cumulative_sum); })
+            //     .remove();
+            // 
+            // circle_marks
+            //     .transition(mark_transition)
+            //     .attr('cx', function(d) { return x(Number((+d.alpha).toFixed(2))); })
+            //     .attr('cy', function(d) { return y(+d.cumulative_sum); });
+            // 
+            // circle_marks.enter()
+            //     .append('circle')
+            //     .attr('fill', 'firebrick')
+            //     .attr('stroke', 'none')
+            //     .attr('r', 3)
+            //     .transition(mark_transition)
+            //     .attr('cx', function(d) { return x(Number((+d.alpha).toFixed(2))); })
+            //     .attr('cy', function(d) { return y(+d.cumulative_sum); });
                     
             prev_alpha = alpha_val;
         }
@@ -414,7 +408,8 @@ function figure5() {
             .attr('y', slider_text_spacing)
             .attr('font-size', 20)
             .attr('fill', 'black')
-            .style("font-family", "sans-serif");
+            .style("font-family", "sans-serif")
+            .style('font-size', '22px');
             
         var slider2 = slid3r()
             .width(width - 2 * slider_padding)

@@ -1,0 +1,471 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8">
+        <script src="https://distill.pub/template.v1.js"></script>
+        <script src="https://d3js.org/d3.v5.min.js"></script>
+        <script src="https://d3js.org/d3-collection.v1.min.js"></script>
+        <script src="https://rawgit.com/nstrayer/slid3r/master/dist/slid3r.js"></script>
+        <script src="cross_fade.js"></script>
+        
+        <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css" integrity="sha384-yFRtMMDnQtDRO8rLpMIKrtPCD5jdktao2TV19YiZYWMDkUR5GQZR/NOVTdquEx1j" crossorigin="anonymous">
+        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.js" integrity="sha384-9Nhn55MVVN0/4OFx7EE5kpFBPsEMZxKTCnA+4fqDmg12eCTqGi6+BB2LjY8brQxJ" crossorigin="anonymous"></script>
+        <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"
+            onload="renderMathInElement(document.body);"></script>
+
+        <script type="text/front-matter">
+          title: "Article Title"
+          description: "Description of the post"
+          authors:
+          - Pascal Sturmfels: http://psturmfels.github.io
+          - Scott Lundberg: http://scottlundberg.com
+          - Su In Lee: https://suinlee.cs.washington.edu
+          affiliations:
+          - University of Washington: https://www.cs.washington.edu
+          - University of Washington: https://www.cs.washington.edu
+          - University of Washington: https://www.cs.washington.edu
+        </script>
+    </head>
+    <dt-article>
+        <h1>Visualizing Reference Inputs in Attribution Methods</h1>
+        <p>Many feature attribution methods require choosing a baseline input.
+           What does this parameter choice mean, and how important is it? In this article,
+           we investigate this hyper-parameter choice - and demonstrate how you can avoid it.</p>
+        <dt-byline></dt-byline>
+        <h2>The Power of Modern Deep Learning</h2>
+        <p>
+          Deep learning is a powerful tool that has found success in a wide variety of
+          applications, from transcribing text from raw audio signals to learning to outplay humans
+          at the game of Go. One of the most canonical tasks in deep learning and in computer vision
+          is image classification: determining what object appears in an image
+          from a fixed list of objects (classes). The last decade of research has focused
+          on pushing state of the art on the ImageNet dataset, which contains over a million images
+          and 1000 different classes <dt-cite key="deng2009imagenet"></dt-cite>. 
+          
+        </p>
+        <p>
+          Inception V4 is one of the more recent convolutional neural networks (CNNs) developed
+          for classification on the ImageNet dataset. It achieves an astounding 80% top-1, single-crop
+          accuracy on the ImageNet 2012 validation set <dt-cite key="szegedy2017inception"></dt-cite>.
+          If we let the model have five guesses as opposed to 1, it achieves a top-5, single-crop
+          accuracy of 95%, which surpasses human-level performance <dt-cite key="he2015delving"></dt-cite>.
+          We download the weights of the Inception V4 network from TensorFlow-Slim 
+          <dt-cite key="silberman2016tensorflow"></dt-cite>, and visualize the output of the network
+           in the figure below for a few different images from the ImageNet validation set. 
+          <figure>
+              <div id='figure1_div'></div>
+              <script src="figure1.js"></script>
+              <figcaption>
+                  The Inception V4 network classifies all images above correctly with high confidence.
+              </figcaption>
+          </figure>
+        </p>
+        <p>
+          Although our models perform very well on unseen data,
+          users may still be left wondering: <i>how</i> did the model make
+          the prediction it did? This question may be critical when models
+          are making high stakes decisions about, say, an individual's health or finances.
+          Although there are many ways to interpret deep neural networks, here we focus 
+          on feature attributions. 
+        </p>
+        <p>
+          Given a target input \(x\) and a network function \(f\), 
+          feature attribution methods assign a weight \(\phi_i^{IG}(f, x)\)
+          to the \(i\)-th feature value representing how important that
+          feature was toward computing \(f(x)\). There are many such methods for
+          neural networks, including DeepLIFT <dt-cite key="shrikumar2017learning"></dt-cite>,
+          Layer-wise Relevance Propagation <dt-cite key="binder2016layer"></dt-cite>
+          and Integrated Gradients <dt-cite key="sundararajan2017axiomatic"></dt-cite>.
+        </p>
+        <p>
+            Below, we visualize which pixels were most important to the network's correct
+            prediction using Integrated Gradients.<dt-fn>Throughout this paper, we 
+            use 50 samples when approximating any integral or expectation.</dt-fn>
+            The pixels in white indicate more important pixels. Note here
+            that the feature attributions are capped at the 99th percentile to avoid
+            high-magnitude attributions dominating the color scheme, as done in 
+            <dt-cite key="smilkov2017smoothgrad"></dt-cite>.
+            <figure class="l-body">
+                <div id='figure2_div'></div>
+                <script src="figure2.js"></script>
+                <figcaption>
+                    Pixel-wise attributions of the Inception V4 network using Integrated Gradients.
+                    You might notice that some attributions highlight pixels that do not seem important
+                    relative to the true class label.
+                </figcaption>
+            </figure>
+        </p>
+        <h2>A Better Understanding of Integrated Gradients</h2>  
+        <p>
+          As you look through the attribution maps, you might find some of them
+          unintuitive. To better understand this behavior, we need to explore how
+          we generated feature attributions. Formally, Integrated Gradients
+          defines the importance value for the \(i\)th feature value as follows:
+          $$\phi_i^{IG}(f, x, x') = (x_i - x'_i) \times \int_{\alpha = 0}^ 1
+            \frac{\delta f(x' + \alpha (x - x'))}{\delta x_i} d \alpha
+          $$
+          where \(x\) is the current input,
+          \(f\) is the model function and \(x'\) is some baseline input that is meant to represent 
+          "absence" of feature input. The subscript \(i\) is used
+          to denote indexing into the \(i\)th feature.
+        </p>
+        <p>
+            To better understand how this summation accumulates
+            feature importances between the baseline input and the current input,
+            we can break it down and visualize it in three separate parts:
+            $$
+                \tag{1} x' + \alpha (x - x')
+            $$
+            $$
+                \tag{2} (x_i - x'_i) \times \frac{\delta f(x' + \alpha (x - x'))}{\delta x_i}
+            $$
+            $$
+                \tag{3} (x_i - x'_i) \times \int_{\alpha' = 0}^{\alpha} \frac{\delta f(x' + \alpha' (x - x'))}{\delta x_i} d \alpha'
+            $$
+            We visualize these three equations below.<dt-fn>Note that in practice, we use a discrete sum
+            approximation of the integral with 50 linearly-spaced points between 0 and 1.</dt-fn>
+            <figure class="l-page-outset">
+                <div id='figure3_div'></div>
+                <script src="figure3.js"></script>
+                <figcaption>
+                    Integrated Gradients, visualized. In the line chart, the red line refers to
+                    equation (4) and the blue line refers to \(f(x) - f(x')\). Notice how high magnitude gradients
+                    accumulate at small values of \(\alpha\).
+                </figcaption>
+            </figure>
+        </p>
+        <p>
+            The line chart above plots the following equation:
+            $$
+                \tag{4} \sum_i \bigg( (x_i - x'_i) \times \int_{\alpha' = 0}^{\alpha} 
+                \frac{\delta f(x' + \alpha' (x - x'))}{\delta x_i} d \alpha' \bigg)
+            $$
+            That is, it sums all of the pixel attributions in equation (3).
+            It turns out that Integrated Gradients attributions have
+            the following property. If we were able to compute the true integral,
+            we would find that:
+            $$
+                \sum_i \phi_i^{IG}(f, x, x') = f(x) - f(x')
+            $$ 
+            This means that we can plot the summation of attributions over \(\alpha\)
+            and see both how good our approximation of the integral is. But this property
+            goes deeper than that: it is one of several axioms that uniquely characterize 
+            Integrated Gradients (and, under different assumptions,
+             <a href="https://github.com/slundberg/shap" target="_blank"></a>SHAP 
+            <dt-cite key="lundberg2017unified"></dt-cite>). 
+        </p>
+        
+        <h3>The Aumann-Shapley Value</h3>
+        <p>
+            Integrated Gradients is inspired by work
+            from cooperative game theory, specifically the Aumann-Shapley value
+            <dt-cite key="aumann2015values"></dt-cite>. In cooperative game theory,
+            a non-atomic game is a construction used to model large-scale economic systems
+            where there are enough participants that it is desirable to model them continuously.
+        </p>
+        <p>
+            Formally, let \(I\) be an infinite set of players,
+            and \(C\) be the \(\sigma\)-algebra on \(I\). We define
+            a game \(v\) as a real-valued function on \(C\) such that
+            \(v(\varnothing) = 0\). The Aumann-Shapley value
+            defines a way to allocate credit among the players \(i \in I\).
+            We can use these values to, for example, determine which
+            players are most responsible for the output of an economic system.
+        </p>
+        <p>
+            This foray into cooperative game theory might seem both abstract and vague.
+            It isn't important to understand all of the game theoretic background. The important
+            take away is this: <b>games are functions defined on sets of players</b>. 
+            Given a set \(S \in C\) and a player \(i \in S\), we can evaluate
+            \(v\) both with \(i\), e.g. \(v(S)\), and more critically, without
+            \(i\), e.g. \(v(S \setminus i)\).
+        </p>
+        <p>
+            This fact is important because, when we translate these methods into
+            interpreting machine learning models, we draw an analogy between
+            <i>games</i> and <i>models</i>. A model is similar to a game, the
+            input features to a model are similar to players in a game, and the
+            output of a model is analogous to the value of a game. The Aumann-Shapley
+            Value is used to allocate credit to players among a game, and analogously, 
+            Integrated Gradients allocates credit among input features to a model.
+        </p>
+        <p>
+            The only tricky part
+            is this: how do you evaluate a model \(f\) on a <i>subset</i> of features?
+            It is easy to do this with games: they are by definition functions
+            over subsets of players. But how would you evaluate a deep network
+            on subsets of its input features? Most deep learning models
+            cannot handle arbitrary patterns of missingness.
+        </p>
+        
+        <p>
+            "Aha!" you say. "To simulate missingness, simply replace the value of missing features
+            with 0!" It turns out, this is exactly what most people do when they 
+            use Integrated Gradients. It appears to be common practice
+            to choose a baseline input \(x'\) to be the vector of
+            all zeros. But consider the following scenario: you've learned a model
+            on a healthcare dataset, and one of the features is blood sugar level.
+            The model has correctly learned that excessively low levels of blood sugar,
+            which correspond to hypoglycemia, is dangerous. Do you think
+            a blood sugar level of 0 is the appropriate value to model missingness?
+        </p>
+        <p>
+            The point here is that fixed feature values may have unintended meaning.
+            The problem compounds further when you consider the mathematical formulation
+            of integrated gradients: it has a multiplicative \(x_i - x'_i\) term.
+            For the sake of a thought experiment, suppose a patient had a blood sugar level of 0. 
+            To understand why our machine learning model thinks this patient
+            is at high risk, you run Integrated Gradients on this data point with a
+            baseline of the all-zeros vector. The blood sugar level of the patient would have 0 feature importance,
+            because \(x_i - x'_i = 0\). This is despite the fact that 
+            a blood sugar level of 0 would be fatal!
+        </p>
+        <p>
+          We find similar problems when we move to the image domain.
+          The all-zeros image is a constant black image, which means
+          that Integrated Gradients with this baseline 
+          tends not to highlight black or dark pixels as important.
+          In fact, depending on the baseline input you choose,
+          which pixels are highlighted as important can vary drastically, as
+          illustrated below.
+          <figure class="l-page-outset">
+              <div id='figure4_div'></div>
+              <script src="figure4.js"></script>
+              <figcaption>
+                  Mouse over the segmented image to choose a different color
+                  as a baseline input \(x'\). Notice that pixels
+                  of the baseline color are not highlighted as important, 
+                  even if they make up part of the main object in the image.
+              </figcaption>
+          </figure>
+        </p>
+        <h2>Integrating out the Baseline</h2>
+        <p>
+            It seems like no matter what we choose \(x'\) to be,
+            we will run into this issue: there will be a color
+            that Integrated Gradients does not highlight as important. 
+            This issue is not specific to Integrated Gradients - 
+            the previously mentioned DeepLIFT and Layer-wise Relevance Propagation also
+            require a baseline input. This baseline input allows us to compute the 
+            importance of each feature's presence to the output.
+        </p>
+        <p>
+            So is it possible to define a more meaningful notion of a missing feature?
+            Lets suppose you were trying to predict how many inches of rain would fall
+            tomorrow. Like most weather apps, you might aggregate some data, make a statistical
+            model that gives a distribution over amount of rainfall, and then
+            use the mean of that distribution as your prediction. But wouldn't it
+            be so much more informative to simply describe the distribution your model predicted? 
+            Either way, the amount of rainfall
+            tomorrow is an unknown, "missing" quantity.
+        </p>
+        <p>
+            In supervised learning, we make the assumption that the data is drawn
+            from some distribution \(D\). This assumption that the training and testing data 
+            share a common, underlying distribution is what allows us to 
+            do supervised learning and make claims about generalizability. If
+            the data distribution has density \(p_D\), we don't need to
+            model missingness using a constant value. We can use \(p_D\)
+            to integrate out the choice of baseline:
+            $$ \phi_i(f, x, x') = \int_{x'} \bigg( (x_i - x'_i) \times \int_{\alpha = 0}^ 1
+              \frac{\delta f(x' + \alpha (x - x'))}{\delta x_i} d \alpha \bigg) p_D(x') dx'
+            $$
+        </p>
+        <p>
+            In practice, we do not have access to the underlying distribution \(p_D\).
+            However, we can observe that both of these integrals integrate over distributions.
+            The first integrates over \(p_D\), and the second integrates over the uniform distribution.
+            By thinking about these integrals as expectations, we arrive 
+            at our proposed extension of Integrated Gradients, called <b>Expected 
+            Gradients</b>. We collapse both expectations to get the formal definition
+            of Expected Gradients:
+            $$ \phi_i^{EG}(f, x, x') = \mathop{\mathbb{E}}_{x' \sim D, \alpha \sim U(0, 1)} \bigg[ (x_i - x'_i) \times 
+              \frac{\delta f(x' + \alpha (x - x'))}{\delta x_i} \bigg]
+            $$
+        </p>
+        <p>
+          Under the assumption that our training dataset represents 
+          random samples from \(D\), we can draw \(x'\) randomly
+          from our training set, \(\alpha\) from the uniform distribution and
+          use these samples to approximately compute the expectation above.
+          We illustrate this sampling process by breaking it down into three equations:
+          $$
+            \tag{1} x'^k + \alpha (x - x'^k)
+          $$
+          $$
+            \tag{2} (x_i - x'^k_i) \times 
+              \frac{\delta f(x'^k + \alpha (x - x'^k))}{\delta x_i}
+          $$
+          $$
+            \tag{3} \frac{1}{k} \sum_{j=1}^k (x_i - x'^j_i) \times 
+              \frac{\delta f(x'^j + \alpha (x - x'^j))}{\delta x_i}
+          $$
+          where \(x'^k\) and \(x'^j\) represent the \(k\)th and \(j\)th
+          samples from \(D\), and \(k\) is the current sample number.
+          <figure class="l-page-outset">
+              <div id='figure6_div'></div>
+              <script src="figure6.js"></script>
+              <figcaption>
+                  A visual representation of Expected Gradients. Instead of taking contributions
+                  from a single path, Expected Gradients averages contributions from 
+                  all paths defined by the underlying data distribution.
+              </figcaption>
+          </figure>
+        </p>
+        
+        <p>
+          Integrated Gradients is part of a family of methods called path methods,
+          which integrate contributions along a path between two points. It turns out
+          that, if you are generating feature attributions
+          relative to some baseline, diagonal path methods are the only methods that have certain theoretical
+          guarantees <dt-cite key="friedman2004paths"></dt-cite>. So does Expected Gradients come with these same theoretical guarantees?
+          It turns out it does. The key difference is that Expected Gradients
+          allows contributions over multiple paths, not the single path between a
+          fixed \(x'\) and \(x\). Other than that, it is still also a diagonal path
+          method, and in expectation, satisfies the same theoretical guarantees that 
+          Integrated Gradients does.
+        </p>
+        <p>
+            If you are interested in using Expected Gradients to explain
+            your machine learning models, head over 
+            to the <a href="http://github.com/slundberg/shap" target="_blank">SHAP package</a> 
+            <dt-cite key="lundberg2017unified"></dt-cite>,
+            where it is implemented as the <dt-code language="python">GradientExplainer</dt-code>
+            object for TensorFlow, Keras, and PyTorch models.
+        </p>
+        
+        <h2>Conclusion</h2>
+        <p>
+            The purpose of this article is not to criticize Integrated Gradients.
+            Its an important method that makes key parallels between
+            machine learning and game theory, and provides solid theoretical 
+            foundation for feature attribution methods. Expected Gradients
+            is a direct extension of Integrated Gradients, and wouldn't exist
+            without it.
+        </p>
+        <p>
+            Instead, our hope is that this article provides more
+            insight about what the choice of baseline \(x'\) means,
+            and to convince you that the choice is important
+            when you are interpreting your machine learning models. If you
+            have a natural way to define \(x'\) in your particular application,
+            that's great, and you shouldn't hesitate to use it. But if you don't,
+            consider letting your data decide for you.
+            <figure>
+                <div id='figure7_div'></div>
+                <script src="figure7.js"></script>
+                <figcaption>
+                    A side-by-side comparison of Integrated Gradients
+                    and Expected Gradients.
+                </figcaption>
+            </figure>
+        </p>
+        </dt-article>
+        
+        <dt-appendix>
+        </dt-appendix>
+
+        <script type="text/bibliography">
+        @inproceedings{sundararajan2017axiomatic,
+            title={Axiomatic attribution for deep networks},
+            author={Sundararajan, Mukund and Taly, Ankur and Yan, Qiqi},
+            booktitle={Proceedings of the 34th International Conference on Machine Learning-Volume 70},
+            pages={3319--3328},
+            year={2017},
+            organization={JMLR. org},
+            url={https://arxiv.org/pdf/1703.01365}
+        }
+        
+        @inproceedings{szegedy2017inception,
+          title={Inception-v4, inception-resnet and the impact of residual connections on learning},
+          author={Szegedy, Christian and Ioffe, Sergey and Vanhoucke, Vincent and Alemi, Alexander A},
+          booktitle={Thirty-First AAAI Conference on Artificial Intelligence},
+          year={2017},
+          url={https://www.aaai.org/ocs/index.php/AAAI/AAAI17/paper/viewFile/14806/14311}
+        }
+         
+        @inproceedings{deng2009imagenet,
+            title={Imagenet: A large-scale hierarchical image database},
+            author={Deng, Jia and Dong, Wei and Socher, Richard and Li, Li-Jia and Li, Kai and Fei-Fei, Li},
+            booktitle={2009 IEEE conference on computer vision and pattern recognition},
+            pages={248--255},
+            year={2009},
+            organization={Ieee},
+            url={https://www.researchgate.net/profile/Li_Jia_Li/publication/221361415_ImageNet_a_Large-Scale_Hierarchical_Image_Database/links/00b495388120dbc339000000/ImageNet-a-Large-Scale-Hierarchical-Image-Database.pdf}
+        }
+
+        @inproceedings{he2015delving,
+          title={Delving deep into rectifiers: Surpassing human-level performance on imagenet classification},
+          author={He, Kaiming and Zhang, Xiangyu and Ren, Shaoqing and Sun, Jian},
+          booktitle={Proceedings of the IEEE international conference on computer vision},
+          pages={1026--1034},
+          year={2015},
+          url={https://www.cv-foundation.org/openaccess/content_iccv_2015/papers/He_Delving_Deep_into_ICCV_2015_paper.pdf}
+        }
+        
+        @article{silberman2016tensorflow,
+          title={Tensorflow-slim image classification model library},
+          author={Silberman, Nathan and Guadarrama, Sergio},
+          year={2016},
+          publisher={Accessed},
+          url={https://github.com/tensorflow/models/tree/master/research/slim}
+        }
+        
+        @inproceedings{shrikumar2017learning,
+          title={Learning important features through propagating activation differences},
+          author={Shrikumar, Avanti and Greenside, Peyton and Kundaje, Anshul},
+          booktitle={Proceedings of the 34th International Conference on Machine Learning-Volume 70},
+          pages={3145--3153},
+          year={2017},
+          organization={JMLR. org},
+          url={https://arxiv.org/pdf/1704.02685}
+        }
+        
+        @inproceedings{binder2016layer,
+          title={Layer-wise relevance propagation for neural networks with local renormalization layers},
+          author={Binder, Alexander and Montavon, Gregoire and Lapuschkin, Sebastian and Muller, Klaus-Robert and Samek, Wojciech},
+          booktitle={International Conference on Artificial Neural Networks},
+          pages={63--71},
+          year={2016},
+          organization={Springer},
+          url={https://arxiv.org/pdf/1604.00825.pdf}
+        }
+        
+        @article{smilkov2017smoothgrad,
+          title={Smoothgrad: removing noise by adding noise},
+          author={Smilkov, Daniel and Thorat, Nikhil and Kim, Been and Viegas, Fernanda and Wattenberg, Martin},
+          journal={arXiv preprint arXiv:1706.03825},
+          year={2017},
+          url={https://arxiv.org/pdf/1706.03825.pdf}
+        }
+        
+        @inproceedings{lundberg2017unified,
+          title={A unified approach to interpreting model predictions},
+          author={Lundberg, Scott M and Lee, Su-In},
+          booktitle={Advances in Neural Information Processing Systems},
+          pages={4765--4774},
+          year={2017},
+          url={http://papers.nips.cc/paper/7062-a-unified-approach-to-interpreting-model-predictions.pdf}
+        }
+        
+        @book{aumann2015values,
+          title={Values of non-atomic games},
+          author={Aumann, Robert J and Shapley, Lloyd S},
+          year={2015},
+          publisher={Princeton University Press}
+        }
+        
+        @article{friedman2004paths,
+          title={Paths and consistency in additive cost sharing},
+          author={Friedman, Eric J},
+          journal={International Journal of Game Theory},
+          volume={32},
+          number={4},
+          pages={501--518},
+          year={2004},
+          publisher={Springer},
+          url={https://link.springer.com/content/pdf/10.1007/s001820400173.pdf}
+        }
+        </script>
+    </body>
+</html>

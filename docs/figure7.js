@@ -1,6 +1,6 @@
 function figure7() {
     var margin = ({
-        top: 60,
+        top: 30,
         right: 30,
         bottom: 30,
         left: 30
@@ -23,8 +23,8 @@ function figure7() {
 
     var image_data = [
         { x: 0, y: 0, id: 'display_image', title: 'Predicted Class: ' + base_image_name},
-        { x: image_size + image_padding, y: 0, id: 'ig_weights', title: 'Integrated Gradients Attribution Maps'},
-        { x: 2 * (image_size + image_padding), y: 0, id: 'eg_weights', title: 'Expected Gradients Attribution Maps'},
+        { x: image_size + image_padding, y: 0, id: 'ig_weights', title: 'Integrated Gradients Attributions'},
+        { x: 2 * (image_size + image_padding), y: 0, id: 'eg_weights', title: 'Expected Gradients Attributions'},
     ];
 
     var indicator_data = [
@@ -59,7 +59,8 @@ function figure7() {
         .style("font-weight", 700)
         .text(function(d) { return d.title })
         .attr('x', function(d) { return (image_size / 2) + d.x })
-        .attr('y', -10);
+        .attr('y', -10)
+        .style('font-size', '18px');
 
     var display_text = image_group
         .select('#display_image_title');
@@ -78,7 +79,8 @@ function figure7() {
         .attr('y', -indicator_box_top_padding / 2)
         .attr('text-anchor', 'middle')
         .style('font-weight', 700)
-        .text('Click to select a different ImageNet image:');
+        .text('Click to select a different image:')
+        .style('font-size', '18px');
 
     container.selectAll('text').style("font-family", "sans-serif");
 
@@ -130,7 +132,7 @@ function figure7() {
                 } else if (d.id === 'ig_weights') {
                     return base_dir + 'integrated_gradients/cumulative_weights_1.0.png';
                 } else if (d.id === 'eg_weights') {
-                    return base_dir + 'eg_samples/cumulative_weights_200.png';
+                    return base_dir + 'eg_samples/cumulative_weights_50.png';
                 }
                 else {
                     return '404.png';

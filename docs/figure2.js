@@ -1,6 +1,6 @@
 function figure2() {
     var margin = ({
-        top: 60,
+        top: 30,
         right: 30,
         bottom: 30,
         left: 30
@@ -23,7 +23,7 @@ function figure2() {
 
     var image_data = [
         { x: 0, y: 0, id: 'display_image_fig2', title: 'Predicted Class: ' + base_image_name},
-        { x: image_size + image_padding, y: 0, id: 'ig_weights_fig2', title: 'Integrated Gradients Attribution Map'},
+        { x: image_size + image_padding, y: 0, id: 'ig_weights_fig2', title: 'Integrated Gradients Attributions'},
     ];
 
     var indicator_data = [
@@ -56,6 +56,7 @@ function figure2() {
         .attr('id', function(d) { return d.id + '_title' })
         .style("text-anchor", "middle")
         .style("font-weight", 700)
+        .style('font-size', '18px')
         .text(function(d) { return d.title })
         .attr('x', function(d) { return (image_size / 2) + d.x })
         .attr('y', -10);
@@ -77,7 +78,8 @@ function figure2() {
         .attr('y', -indicator_box_top_padding / 2)
         .attr('text-anchor', 'middle')
         .style('font-weight', 700)
-        .text('Click to select a different ImageNet image:');
+        .style('font-size', '18px')
+        .text('Click to select a different image:');
 
     container.selectAll('text').style("font-family", "sans-serif");
 

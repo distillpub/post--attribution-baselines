@@ -1,6 +1,6 @@
 function figure1() {
     var margin = ({
-        top: 60,
+        top: 30,
         right: 30,
         bottom: 30,
         left: 30
@@ -11,7 +11,7 @@ function figure1() {
     var chart_height = 300;
     var chart_image_padding = 150;
     var chart_axis_padding = 50;
-    var chart_bottom_label_padding = 40;
+    var chart_bottom_label_padding = 60;
 
     var indicator_image_size = 75;
     var indicator_image_padding = 10;
@@ -67,7 +67,8 @@ function figure1() {
         .attr('y', -10)
         .attr('text-anchor', 'middle')
         .style('font-weight', 700)
-        .text('Click to select a different ImageNet image:')
+        .text('Click to select a different image:')
+        .style('font-size', '18px')
         .style("font-family", "sans-serif");
 
     var base_image_name = 'goldfinch';
@@ -88,6 +89,7 @@ function figure1() {
         .attr('text-anchor', 'middle')
         .attr('x', image_size / 2)
         .attr('y', -10)
+        .style('font-size', '20px')
         .style('font-family', 'sans-serif');
 
     var bar_chart = image_group.append('g')
@@ -102,7 +104,7 @@ function figure1() {
         .attr("x", 0 - chart_height / 2)
         .attr("dy", "1em")
         .style("text-anchor", "middle")
-        .text("Class Output Probability");
+        .text("Log-Scaled Softmax Logits");
 
     bar_chart.append("text")        
         .attr("transform", `translate(${(chart_width / 2)}, ${(chart_height + chart_axis_padding + chart_bottom_label_padding)})`)
@@ -113,7 +115,8 @@ function figure1() {
         .attr('transform', `translate(${chart_width / 2}, -10)`)
         .attr('text-anchor', 'middle')
         .attr('font-weight', 700)
-        .text('Predicted Probabilities for the Top 5 Classes')
+        .style('font-size', '18px')
+        .text('Softmax Output for the Top 5 Classes')
         
     container.selectAll('text').style("font-family", "sans-serif");
 
@@ -159,9 +162,11 @@ function figure1() {
                 .attr('shape-rendering', 'crispEdges')
                 .attr('fill', 'none')
                 .attr('stroke', 'gray')
+                .attr('stroke-opacity', 0.3)
                 .attr('stroke-width', '1px');
             
             xaxis.selectAll('text')
+                .style('font-size', '12px')
                 .attr('transform', 'rotate(315)')
                 .attr('text-anchor', 'end');
         }
@@ -173,6 +178,7 @@ function figure1() {
             yaxis.call(d3.axisLeft(y));
             
             xaxis.selectAll('text')
+                .style('font-size', '12px')
                 .attr('transform', 'rotate(315)')
                 .attr('text-anchor', 'end');
         }
