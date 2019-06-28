@@ -66,7 +66,7 @@ function figure4() {
         { x: 0, y: 0, id: 'reference_image', link: base_link + 'reference_0.png', title: 'Baseline Input x\''},
         { x: image_size + image_padding, y: 0, id: 'slic_image', link: base_link + 'slic_mask_0.png', title: 'Segmented Image'},
         { x: 2 * (image_size + image_padding), y: 0, id: 'image', link: base_link + 'slic_image_0.png', title: 'Original Image'},
-        { x: 3 * (image_size + image_padding), y: 0, id: 'ig_weights', link: base_link + 'ig_weights_0.png', title: 'Integrated Gradients Attribution Map'},
+        { x: 3 * (image_size + image_padding), y: 0, id: 'ig_weights', link: base_link + 'ig_weights_0.png', title: 'Integrated Gradients Attributions'},
     ];
 
     var images = image_group.selectAll('image').data(image_data);
