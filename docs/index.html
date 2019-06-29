@@ -14,8 +14,10 @@
             onload="renderMathInElement(document.body);"></script>
 
         <script type="text/front-matter">
-          title: "Article Title"
-          description: "Description of the post"
+          title: "Integrating out the Baseline in Integrated Gradients"
+          description: "Many feature attribution methods require choosing a baseline input.
+             What does this parameter choice mean, and how important is it? In this article,
+             we investigate this hyper-parameter choice - and demonstrate how you can avoid it"
           authors:
           - Pascal Sturmfels: http://psturmfels.github.io
           - Scott Lundberg: http://scottlundberg.com
@@ -277,7 +279,12 @@
             The first integrates over \(p_D\), and the second integrates over the uniform distribution.
             By thinking about these integrals as expectations, we arrive 
             at our proposed extension of Integrated Gradients, called <b>Expected 
-            Gradients</b>. We collapse both expectations to get the formal definition
+            Gradients</b>, which we introduced in <dt-cite key="erion2019learning"></dt-cite>.<dt-fn>
+            Our work that introduces Expected Gradients does not actually discuss the nuances presented here. Instead, 
+            it is about how you can train models to be 
+            more interpretable and achieve better generalization performance by imposing priors
+            on their feature attributions.
+            </dt-fn> We collapse both expectations to get the formal definition
             of Expected Gradients:
             $$ \phi_i^{EG}(f, x, x') = \mathop{\mathbb{E}}_{x' \sim D, \alpha \sim U(0, 1)} \bigg[ (x_i - x'_i) \times 
               \frac{\delta f(x' + \alpha (x - x'))}{\delta x_i} \bigg]
@@ -332,6 +339,7 @@
             <dt-cite key="lundberg2017unified"></dt-cite>,
             where it is implemented as the <dt-code language="python">GradientExplainer</dt-code>
             object for TensorFlow, Keras, and PyTorch models.
+        </dt>
         </p>
         
         <h2>Conclusion</h2>
@@ -465,6 +473,16 @@
           year={2004},
           publisher={Springer},
           url={https://link.springer.com/content/pdf/10.1007/s001820400173.pdf}
+        }
+        
+        @misc{erion2019learning,
+            title={Learning Explainable Models Using Attribution Priors},
+            author={Gabriel Erion and Joseph D. Janizek and Pascal Sturmfels and Scott Lundberg and Su-In Lee},
+            year={2019},
+            eprint={1906.10670},
+            archivePrefix={arXiv},
+            primaryClass={cs.LG},
+            url={https://arxiv.org/pdf/1906.10670.pdf}
         }
         </script>
     </body>
