@@ -14,14 +14,17 @@
             onload="renderMathInElement(document.body);"></script>
 
         <script type="text/front-matter">
-          title: "Integrating out the Baseline in Integrated Gradients"
-          description: "Many feature attribution methods require choosing a baseline input.
-             What does this parameter choice mean, and how important is it? In this article,
-             we investigate this hyper-parameter choice - and demonstrate how you can avoid it"
+          title: "Data-Driven Feature Attributions with Expected Gradients"
+          description: "Feature Attrtibution Methods are a popular way of explaining
+             deep models. Most require choosing a
+             hyper-parameter known as the 'baseline input'.
+             What does this hyper-parameter mean, and how important is it? In this article,
+             we investigate these questions, and discuss why it is useful 
+             to extend the notion of a baseline from a single input to a distribution."
           authors:
           - Pascal Sturmfels: http://psturmfels.github.io
           - Scott Lundberg: http://scottlundberg.com
-          - Su In Lee: https://suinlee.cs.washington.edu
+          - Su-In Lee: https://suinlee.cs.washington.edu
           affiliations:
           - University of Washington: https://www.cs.washington.edu
           - University of Washington: https://www.cs.washington.edu
@@ -29,31 +32,63 @@
         </script>
     </head>
     <dt-article>
-        <h1>Integrating out the Baseline in Integrated Gradients</h1>
-        <p>Many feature attribution methods require choosing a baseline input.
-           What does this parameter choice mean, and how important is it? In this article,
-           we investigate this hyper-parameter choice - and demonstrate how you can avoid it.</p>
+        <h1>Data-Driven Feature Attributions with Expected Gradients</h1>
+        <p>Feature Attrtibution Methods are a popular way of explaining
+           deep models. Most require choosing a
+           hyper-parameter known as the "baseline input".
+           What does this hyper-parameter mean, and how important is it? In this article,
+           we investigate these questions, and discuss why it is useful 
+           to extend the notion of a baseline from a single input to a distribution. </p>
         <dt-byline></dt-byline>
-        <h2>The Power of Modern Deep Learning</h2>
+        <h2>Introduction</h2>
         <p>
-          Deep learning is a powerful tool that has found success in a wide variety of
-          applications, from transcribing text from raw audio signals to learning to outplay humans
-          at the game of Go. One of the most canonical tasks in deep learning and in computer vision
-          is image classification: determining what object appears in an image
-          from a fixed list of objects (classes). The last decade of research has focused
-          on pushing state of the art on the ImageNet dataset, which contains over a million images
-          and 1000 different classes <dt-cite key="deng2009imagenet"></dt-cite>. 
-          
+            If you are in the business of training neural networks,
+            you might have heard of the integrated gradients method, which
+            was introduced at ICML two years ago 
+            <dt-cite key="sundararajan2017axiomatic"></dt-cite>.
+            The method computes which features are important 
+            to a neural network in making a prediction on a 
+            particular data point, helping users
+            understand what patterns their models are learning.
+            Since its introduction,
+            integrated gradients has been used to interpret 
+            networks trained on a variety of data types, 
+            including retinal fundus images <dt-cite key="sayres2019using"></dt-cite>
+            and electrocardiogram recordings <dt-cite key="warrick2018ensembling"></dt-cite>.
         </p>
         <p>
-          Inception V4 is one of the more recent convolutional neural networks (CNNs) developed
-          for classification on the ImageNet dataset. It achieves an astounding 80% top-1, single-crop
-          accuracy on the ImageNet 2012 validation set <dt-cite key="szegedy2017inception"></dt-cite>.
-          If we let the model have five guesses as opposed to 1, it achieves a top-5, single-crop
-          accuracy of 95%, which surpasses human-level performance <dt-cite key="he2015delving"></dt-cite>.
-          We download the weights of the Inception V4 network from TensorFlow-Slim 
-          <dt-cite key="silberman2016tensorflow"></dt-cite>, and visualize the output of the network
-           in the figure below for a few different images from the ImageNet validation set. 
+            If you've ever used integrated gradients, 
+            or for that matter, any of a similar family of
+            attribution methods <dt-cite key="lundberg2017unified,binder2016layer,shrikumar2017learning"></dt-cite>,
+            you also know that you need to define a baseline input \(x'\) before
+            using the method. There is scarce information about this hyper-parameter choice
+            in aforementioned literature. Is integrated gradients sensitive to the 
+            hyper-parameter choice? Are there any guidelines for choosing \(x'\) other
+            than setting it to be a vector of zeros?
+            And why does the method require this hyper-parameter in the first place?
+        </p>
+        <p>
+            In this article, we will delve into how this hyper-parameter choice arises,
+            and why understanding it is important when you are doing model interpretation.
+            As a case-study, we will focus on image classification models in order 
+            to visualize the effects of the baseline input. Our visualizations will
+            lead us to describe an extension of integrated gradients, called <i>expected gradients</i>, which we 
+            introduced in <dt-cite key="erion2019learning"></dt-cite>. In brief,
+            expected gradients extends integrated gradients by using a data distribution
+            as a baseline instead of a single input.
+        </p>
+        <h2>Image Classification</h2>
+        <p>
+          We focus on image classification as a task, as it will allow us to visually
+          plot integrated gradients attributions, and compare them with our intuition
+          about which pixels we think should be important. We use on the Inception V4 architecture 
+          <dt-cite key="szegedy2017inception"></dt-cite>, a convolutional 
+          neural network designed for the ImageNet dataset <dt-cite key="deng2009imagenet"></dt-cite>,
+          in which the task is to determine which class an image belongs to out of 1000 classes.
+          On the ImageNet validation set, Inception V4 has a top-1 accuracy of over 80%.
+          We download weights from TensorFlow-Slim <dt-cite key="silberman2016tensorflow"></dt-cite>,
+          and visualize the predictions of the network on four different images from the 
+          validation set.
           <figure>
               <div id='figure1_div'></div>
               <script src="figure1.js"></script>
@@ -68,7 +103,7 @@
           the prediction it did? This question may be critical when models
           are making high stakes decisions about, say, an individual's health or finances.
           Although there are many ways to interpret deep neural networks, here we focus 
-          on feature attributions. 
+          on feature attributions.
         </p>
         <p>
           Given a target input \(x\) and a network function \(f\), 
@@ -483,6 +518,79 @@
             archivePrefix={arXiv},
             primaryClass={cs.LG},
             url={https://arxiv.org/pdf/1906.10670.pdf}
+        }
+        
+        @article{olah2018the,
+          author = {Olah, Chris and Satyanarayan, Arvind and Johnson, Ian and Carter, Shan and Schubert, Ludwig and Ye, Katherine and Mordvintsev, Alexander},
+          title = {The Building Blocks of Interpretability},
+          journal = {Distill},
+          year = {2018},
+          note = {https://distill.pub/2018/building-blocks},
+          doi = {10.23915/distill.00010}
+        }
+        
+        @article{olah2017feature,
+          author = {Olah, Chris and Mordvintsev, Alexander and Schubert, Ludwig},
+          title = {Feature Visualization},
+          journal = {Distill},
+          year = {2017},
+          note = {https://distill.pub/2017/feature-visualization},
+          doi = {10.23915/distill.00007}
+        }
+        
+        @article{kim2017interpretability,
+          title={Interpretability beyond feature attribution: Quantitative testing with concept activation vectors (tcav)},
+          author={Kim, Been and Wattenberg, Martin and Gilmer, Justin and Cai, Carrie and Wexler, James and Viegas, Fernanda and Sayres, Rory},
+          journal={arXiv preprint arXiv:1711.11279},
+          year={2017}
+        }
+        
+        @inproceedings{fong2017interpretable,
+          title={Interpretable explanations of black boxes by meaningful perturbation},
+          author={Fong, Ruth C and Vedaldi, Andrea},
+          booktitle={Proceedings of the IEEE International Conference on Computer Vision},
+          pages={3429--3437},
+          year={2017}
+        }
+        
+        @inproceedings{selvaraju2017grad,
+          title={Grad-cam: Visual explanations from deep networks via gradient-based localization},
+          author={Selvaraju, Ramprasaath R and Cogswell, Michael and Das, Abhishek and Vedantam, Ramakrishna and Parikh, Devi and Batra, Dhruv},
+          booktitle={Proceedings of the IEEE International Conference on Computer Vision},
+          pages={618--626},
+          year={2017}
+        }
+        
+        @inproceedings{zeiler2014visualizing,
+          title={Visualizing and understanding convolutional networks},
+          author={Zeiler, Matthew D and Fergus, Rob},
+          booktitle={European conference on computer vision},
+          pages={818--833},
+          year={2014},
+          organization={Springer}
+        }
+        
+        @article{sayres2019using,
+          title={Using a deep learning algorithm and integrated gradients explanation to assist grading for diabetic retinopathy},
+          author={Sayres, Rory and Taly, Ankur and Rahimy, Ehsan and Blumer, Katy and Coz, David and Hammel, Naama and Krause, Jonathan and Narayanaswamy, Arunachalam and Rastegar, Zahra and Wu, Derek and others},
+          journal={Ophthalmology},
+          volume={126},
+          number={4},
+          pages={552--564},
+          year={2019},
+          publisher={Elsevier},
+          url={https://www.sciencedirect.com/science/article/pii/S0161642018315756}
+        }
+        @article{warrick2018ensembling,
+          title={Ensembling convolutional and long short-term memory networks for electrocardiogram arrhythmia detection},
+          author={Warrick, Philip A and Homsi, Masun Nabhan},
+          journal={Physiological measurement},
+          volume={39},
+          number={11},
+          pages={114002},
+          year={2018},
+          publisher={IOP Publishing},
+          url={https://iopscience.iop.org/article/10.1088/1361-6579/aad386/meta}
         }
         </script>
     </body>

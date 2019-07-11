@@ -166,7 +166,7 @@ function figure1() {
                 .attr('stroke-width', '1px');
             
             xaxis.selectAll('text')
-                .style('font-size', '12px')
+                .style('font-size', '14px')
                 .attr('transform', 'rotate(315)')
                 .attr('text-anchor', 'end');
         }
@@ -178,7 +178,7 @@ function figure1() {
             yaxis.call(d3.axisLeft(y));
             
             xaxis.selectAll('text')
-                .style('font-size', '12px')
+                .style('font-size', '14px')
                 .attr('transform', 'rotate(315)')
                 .attr('text-anchor', 'end');
         }
