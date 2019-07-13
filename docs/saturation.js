@@ -196,15 +196,9 @@ function saturation_figure() {
               var d = x0 - d0.alpha > d1.alpha - x0 ? d1 : d0;
               
               var alpha_val = Number((Math.floor(+d.alpha * 50) / 50).toFixed(2));
-              if (alpha_val == 0.0) {
-                  alpha_val = '0.0';
-              }
-              else if (alpha_val == 1.0) {
-                  alpha_val = '1.0';
-              }
               var base_dir = `data_gen/data/${base_image_name}/integrated_gradients/`;
               var interp_im_file = 'interpolated_image_';
-              var interp_file = base_dir + interp_im_file + alpha_val + '.png';
+              var interp_file = base_dir + interp_im_file + alpha_val.toFixed(2) + '.png';
               
               focus_circle.attr('fill', bar_colors[[base_image_name]]);
               focus.attr("transform", "translate(" + x(d.alpha) + "," + y(d[[base_image_name]]) + ")");
@@ -250,7 +244,7 @@ function saturation_figure() {
         .attr('width', indicator_image_size)
         .attr('height', indicator_image_size)
         .attr('xlink:href', function(d) {
-            return 'data_gen/data/' + d.id + '/integrated_gradients/interpolated_image_1.0.png';
+            return 'data_gen/data/' + d.id + '/integrated_gradients/interpolated_image_1.00.png';
         })
         .attr('id', function(d) { return d.id; })
         .attr('x', function(d) { return d.x; })

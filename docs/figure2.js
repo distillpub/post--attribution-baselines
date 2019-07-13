@@ -102,8 +102,8 @@ function figure2() {
         var display_image = image_group.select('#display_image_fig2');
         var weights_image = image_group.select('#ig_weights_fig2');
         
-        var interp_file = base_dir + 'interpolated_image_1.0.png';
-        var weights_file = base_dir + 'cumulative_weights_1.0.png';
+        var interp_file = base_dir + 'interpolated_image_1.00.png';
+        var weights_file = base_dir + 'cumulative_weights_1.00.png';
         
         cross_fade_image(display_image, interp_file, image_group, 500);
         cross_fade_image(weights_image, weights_file, image_group, 500);
@@ -124,9 +124,9 @@ function figure2() {
             .attr('height', image_size)
             .attr('xlink:href', function(d) {
                 if (d.id === 'display_image_fig2') {
-                    return base_dir + 'interpolated_image_1.0.png';
+                    return base_dir + 'interpolated_image_1.00.png';
                 } else if (d.id == 'ig_weights_fig2') {
-                    return base_dir + 'cumulative_weights_1.0.png';
+                    return base_dir + 'cumulative_weights_1.00.png';
                 } else {
                     return '404.png';
                 }
@@ -141,7 +141,7 @@ function figure2() {
             .attr('width', indicator_image_size)
             .attr('height', indicator_image_size)
             .attr('xlink:href', function(d) {
-                return 'data_gen/data/' + d.id + '/integrated_gradients/interpolated_image_1.0.png';
+                return 'data_gen/data/' + d.id + '/integrated_gradients/interpolated_image_1.00.png';
             })
             .attr('id', function(d) { return d.id + '_fig2'; })
             .attr('x', function(d) { return d.x; })

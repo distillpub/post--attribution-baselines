@@ -104,9 +104,9 @@ function figure7() {
         var weights_image = image_group.select('#ig_weights');
         var eg_image = image_group.select('#eg_weights');
         
-        var interp_file = base_dir + 'integrated_gradients/interpolated_image_1.0.png';
-        var weights_file = base_dir + 'integrated_gradients/cumulative_weights_1.0.png';
-        var eg_file = base_dir + 'eg_samples/cumulative_weights_50.png';
+        var interp_file = base_dir + 'integrated_gradients/interpolated_image_1.00.png';
+        var weights_file = base_dir + 'integrated_gradients/cumulative_weights_1.00.png';
+        var eg_file = base_dir + 'eg_samples/cumulative_weights_500.png';
         
         cross_fade_image(display_image, interp_file, image_group, 500);
         cross_fade_image(weights_image, weights_file, image_group, 500);
@@ -128,11 +128,11 @@ function figure7() {
             .attr('height', image_size)
             .attr('xlink:href', function(d) {
                 if (d.id === 'display_image') {
-                    return base_dir + 'integrated_gradients/interpolated_image_1.0.png';
+                    return base_dir + 'integrated_gradients/interpolated_image_1.00.png';
                 } else if (d.id === 'ig_weights') {
-                    return base_dir + 'integrated_gradients/cumulative_weights_1.0.png';
+                    return base_dir + 'integrated_gradients/cumulative_weights_1.00.png';
                 } else if (d.id === 'eg_weights') {
-                    return base_dir + 'eg_samples/cumulative_weights_50.png';
+                    return base_dir + 'eg_samples/cumulative_weights_500.png';
                 }
                 else {
                     return '404.png';
@@ -148,7 +148,7 @@ function figure7() {
             .attr('width', indicator_image_size)
             .attr('height', indicator_image_size)
             .attr('xlink:href', function(d) {
-                return 'data_gen/data/' + d.id + '/integrated_gradients/interpolated_image_1.0.png';
+                return 'data_gen/data/' + d.id + '/integrated_gradients/interpolated_image_1.00.png';
             })
             .attr('id', function(d) { return d.id; })
             .attr('x', function(d) { return d.x; })

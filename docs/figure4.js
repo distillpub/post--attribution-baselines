@@ -136,7 +136,7 @@ function figure4() {
         .attr('width', indicator_image_size)
         .attr('height', indicator_image_size)
         .attr('xlink:href', function(d) {
-            return 'data_gen/data/' + d.id + '/integrated_gradients/interpolated_image_1.0.png';
+            return 'data_gen/data/' + d.id + '/integrated_gradients/interpolated_image_1.00.png';
         })
         .attr('id', function(d) { return d.id; })
         .attr('x', function(d) { return d.x; })

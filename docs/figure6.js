@@ -42,7 +42,7 @@ function figure6() {
 
     var slider_width = width - 2 * slider_padding;
 
-    var current_samples = 1;
+    var current_samples = 10;
     var current_data = null;
 
     var base_image_name = 'goldfinch';
@@ -68,11 +68,11 @@ function figure6() {
     slider_data = [];
     for (var i = 0; i < slider_num_images; ++i) {
         slider_data.push({
-            rank: i + 1,
+            rank: i * 10,
             x: (i % slider_image_col_count) * slider_image_size,
             y: Math.floor(i / slider_image_col_count)  * slider_image_size,
-            id: `slider_im_${i}`,
-            url_end: `reference_${i + 1}.png`,
+            id: `slider_im_${i * 10}`,
+            url_end: `reference_${(i + 1) * 10}.png`,
             opacity: (i === 0 ? 1.0 : 0.0)
         });
     }
@@ -183,14 +183,13 @@ function figure6() {
         if (d.rank > 25) {
             x_pos = d.x - slider_image_size - 5 - reference_image_size;
         }
-        console.log(x_pos);
         var base_image = slider_image_group.select('#' + d.id);
         var tooltip_image = slider_image_group.append('image')
             .attr('x', x_pos)
             .attr('y', d.y + slider_image_size + 5)
             .attr('width', reference_image_size)
             .attr('height', reference_image_size)
-            .attr('xlink:href', 'data_gen/data/' + base_image_name + '/eg_samples/' + d.url_end)
+            .attr('xlink:href', 'data_gen/data/house_finch/eg_samples/' + d.url_end)
             .attr('id', d.id + '_tooltip')
             .attr('z-index', 1);
             
@@ -234,16 +233,15 @@ function figure6() {
             cross_fade_image(weights_image, weights_file, image_group, transition_duration);
             cross_fade_image(acc_image, acc_file, image_group, transition_duration);
         }
-        
         var slider_images = slider_image_group.selectAll('image');
         slider_images.attr('opacity', function(d) {
-            return (d.rank <= current_samples ? 1.0 : 0.0)
+            return (d.rank < current_samples ? 1.0 : 0.0)
         });
     }
 
     function draw_chart(data) {
         current_data = data;
-        var sample_domain = [0.0, Math.max(current_samples, 1)];
+        var sample_domain = [0.0, Math.max(current_samples, 0)];
         var sum_domain = d3.extent(data, function(d) { return +d.cumulative_sum; });
         
         var cu_data = current_data.filter(function(d) { return filter_method(d, 'IG'); });
@@ -297,7 +295,7 @@ function figure6() {
         var line = d3.line()
             .x(function(d) { return x(+d.sample) })
             .y(function(d) { return y(+d.cumulative_sum)})
-            .curve(d3.curveCardinal);
+            .curve(d3.curveMonotoneX);
             
         var line1 = d3.line()
             .x(function(d) { return x(+d.sample) })
@@ -340,7 +338,7 @@ function figure6() {
                 transition_duration = 500;
             }
             else if (Math.abs(num_samples - prev_samples) > 10) {
-                transition_duration = 10 * Math.abs(num_samples - prev_samples);
+                transition_duration = 1 * Math.abs(num_samples - prev_samples);
             }
             
             var axis_transition = d3
@@ -353,7 +351,7 @@ function figure6() {
             var xaxis = line_chart.select('#chart-x-axis');
             var yaxis = line_chart.select('#chart-y-axis');
             
-            var sample_domain = [0, Math.max(current_samples, 1)];
+            var sample_domain = [0, Math.max(current_samples, 0)];
             var x = d3.scaleLinear()
                 .range([0, image_size])
                 .domain(sample_domain);
@@ -405,7 +403,7 @@ function figure6() {
             var line = d3.line()
                 .x(function(d) { return x(+d.sample) })
                 .y(function(d) { return y(+d.cumulative_sum)})
-                .curve(d3.curveCardinal);
+                .curve(d3.curveMonotoneX);
             
             chart_markings.select('#line_mark')
                 .datum(new_cu_data)
@@ -459,7 +457,7 @@ function figure6() {
             .attr('id', 'slider_label')
             .style("text-anchor", "middle")
             .style("font-weight", 700)
-            .text(`${current_samples} sample`)
+            .text(`${current_samples} samples`)
             .attr('x', slider_width / 2)
             .attr('y', slider_text_spacing)
             .attr('font-size', 20)
@@ -467,34 +465,26 @@ function figure6() {
             .style("font-family", "sans-serif");
         
         var ticks = [
-            {'pos': 1, 'label': 1},
-            {'pos': 10, 'label': 10},
-            {'pos': 20, 'label': 20},
-            {'pos': 30, 'label': 30},
-            {'pos': 40, 'label': 40},
-            {'pos': 50, 'label': 50},
+            {'pos': 0, 'label': 1},
+            {'pos': 10, 'label': 100},
+            {'pos': 20, 'label': 200},
+            {'pos': 30, 'label': 300},
+            {'pos': 40, 'label': 400},
+            {'pos': 50, 'label': 500},
         ]
         var slider2 = slid3r()
             .width(width - 2 * slider_padding)
             .range([1, 50])
-            .startPos(current_samples)
+            .startPos(1)
             .clamp(true)
             .label(null)
             // .numTicks(6)
             .customTicks(ticks)
             .font('sans-serif')
             .onDrag(function(sample_value) {
-                current_samples = Math.round(sample_value);
-                
-                if (current_samples == 1)
-                {
-                    slider_label.text(`1 sample`);
-                }
-                else 
-                {
-                    slider_label.text(`${current_samples} samples`);
-                }
-                
+                sample_value = Math.round(sample_value);
+                current_samples = sample_value * 10;
+                slider_label.text(`${current_samples} samples`);
                 
                 update_images(current_samples, 0);
                 update_chart(current_samples, current_data, false);
@@ -572,7 +562,7 @@ function figure6() {
                 .attr('width', indicator_image_size)
                 .attr('height', indicator_image_size)
                 .attr('xlink:href', function(d) {
-                    return 'data_gen/data/' + d.id + '/integrated_gradients/interpolated_image_1.0.png';
+                    return 'data_gen/data/' + d.id + '/integrated_gradients/interpolated_image_1.00.png';
                 })
                 .attr('id', function(d) { return d.id; })
                 .attr('x', function(d) { return d.x; })
@@ -585,7 +575,7 @@ function figure6() {
                 .attr('width', slider_image_size)
                 .attr('height', slider_image_size)
                 .attr('xlink:href', function(d) {
-                    return 'data_gen/data/' + base_image_name + '/eg_samples/' + d.url_end;
+                    return 'data_gen/data/house_finch/eg_samples/' + d.url_end;
                 })
                 .attr('id', function(d) { return d.id; })
                 .attr('x', function(d) { return d.x; })

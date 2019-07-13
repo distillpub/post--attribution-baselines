@@ -78,7 +78,7 @@ function figure1() {
         .attr('id', 'display_image_fig1')
         .attr('width', image_size)
         .attr('height', image_size)
-        .attr('xlink:href', base_link + 'integrated_gradients/interpolated_image_1.0.png')
+        .attr('xlink:href', base_link + 'integrated_gradients/interpolated_image_1.00.png')
         .attr('x', 0)
         .attr('y', 0);
 
@@ -226,7 +226,7 @@ function figure1() {
         base_dir = `data_gen/data/${base_image_name}/`;
         
         cross_fade_image(display_image, 
-                         base_dir + 'integrated_gradients/interpolated_image_1.0.png',
+                         base_dir + 'integrated_gradients/interpolated_image_1.00.png',
                          image_group,
                          transition_duration);
                          
@@ -245,7 +245,7 @@ function figure1() {
         .attr('width', indicator_image_size)
         .attr('height', indicator_image_size)
         .attr('xlink:href', function(d) {
-            return 'data_gen/data/' + d.id + '/integrated_gradients/interpolated_image_1.0.png';
+            return 'data_gen/data/' + d.id + '/integrated_gradients/interpolated_image_1.00.png';
         })
         .attr('id', function(d) { return d.id + '_fig1'; })
         .attr('x', function(d) { return d.x; })

@@ -152,19 +152,13 @@ function figure3() {
     function update_images(alpha_val, transition_duration) {
         alpha_val = Number((Math.floor(alpha_val * 50) / 50).toFixed(2));
         
-        if (alpha_val == 0.0) {
-            alpha_val = '0.0';
-        }
-        else if (alpha_val == 1.0) {
-            alpha_val = '1.0';
-        }
-        var interp_file = base_dir + interp_im_file + alpha_val + '.png';
+        var interp_file = base_dir + interp_im_file + alpha_val.toFixed(2) + '.png';
         var interp_image = image_group.select('#interp_alpha');
         
-        var weights_file = base_dir + grad_file + alpha_val + '.png';
+        var weights_file = base_dir + grad_file + alpha_val.toFixed(2) + '.png';
         var weights_image = image_group.select('#weights_alpha');
         
-        var acc_file = base_dir + cumulative_file + alpha_val + '.png';
+        var acc_file = base_dir + cumulative_file + alpha_val.toFixed(2) + '.png';
         var acc_image = image_group.select('#cumulative_alpha');
         
         if (transition_duration === 0.0) {
@@ -223,7 +217,8 @@ function figure3() {
 
         var line = d3.line()
             .x(function(d) { return x(+d.alpha) })
-            .y(function(d) { return y(+d.cumulative_sum)});
+            .y(function(d) { return y(+d.cumulative_sum)})
+            .curve(d3.curveMonotoneX);
             
         var line1 = d3.line()
             .x(function(d) { return x(+d.alpha) })
@@ -333,7 +328,7 @@ function figure3() {
             var line = d3.line()
                 .x(function(d) { return x(+d.alpha) })
                 .y(function(d) { return y(+d.cumulative_sum)})
-                .curve(d3.curveCardinal);
+                .curve(d3.curveMonotoneX);
             
             chart_markings.select('#line_mark')
                 .datum(new_cu_data)
@@ -446,11 +441,11 @@ function figure3() {
                 .attr('height', image_size)
                 .attr('xlink:href', function(d) {
                     if (d.id === 'weights_alpha') {
-                        return base_dir + grad_file + '0.0.png';
+                        return base_dir + grad_file + '0.00.png';
                     } else if (d.id == 'cumulative_alpha') {
-                        return base_dir + cumulative_file + '0.0.png';
+                        return base_dir + cumulative_file + '0.00.png';
                     } else {
-                        return base_dir + interp_im_file + '0.0.png';
+                        return base_dir + interp_im_file + '0.00.png';
                     }})
                 .attr('id', function(d) { return d.id; })
                 .attr('x', function(d) { return d.x; })
@@ -462,7 +457,7 @@ function figure3() {
                 .attr('width', indicator_image_size)
                 .attr('height', indicator_image_size)
                 .attr('xlink:href', function(d) {
-                    return 'data_gen/data/' + d.id + '/integrated_gradients/interpolated_image_1.0.png';
+                    return 'data_gen/data/' + d.id + '/integrated_gradients/interpolated_image_1.00.png';
                 })
                 .attr('id', function(d) { return d.id; })
                 .attr('x', function(d) { return d.x; })

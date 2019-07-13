@@ -188,8 +188,8 @@
             completely saturated towards the correct output class at \(x\).
             Which pixels, when scaled along this path, most
             increased the network output for the correct class?
-            Unfortunately, gradients can only tell us local rate of change
-            at \(\alpha = 1\). We want the rate of change at all points 
+            Unfortunately, gradients can only tell us local rate of change.
+            We want the average rate of change at all points 
             between our baseline and our current input. 
         </p>
         <p>
@@ -245,7 +245,7 @@
             satisfies it in the limit, but it does converge to
             a good approximation given enough samples. </dt-fn>
             $$
-                \textrm{Axiom 1: Completeness} \\
+                \textrm{Axiom 1: Completeness}\\
                 \sum_i \phi_i^{IG}(f, x, x') = f(x) - f(x')
             $$ 
             Intuitively, this axiom is desirable because it means
@@ -380,18 +380,20 @@
           use these samples to approximately compute the expectation above.
           We illustrate this sampling process by breaking it down into three equations:
           $$
-            \tag{1} x'^k + \alpha (x - x'^k)
+            \tag{1} x'^k + \alpha^{k} (x - x'^k)
           $$
           $$
             \tag{2} (x_i - x'^k_i) \times 
-              \frac{\delta f(x'^k + \alpha (x - x'^k))}{\delta x_i}
+              \frac{\delta f(x'^k + \alpha^{k} (x - x'^k))}{\delta x_i}
           $$
           $$
             \tag{3} \frac{1}{k} \sum_{j=1}^k (x_i - x'^j_i) \times 
-              \frac{\delta f(x'^j + \alpha (x - x'^j))}{\delta x_i}
+              \frac{\delta f(x'^j + \alpha^{j} (x - x'^j))}{\delta x_i}
           $$
           where \(x'^k\) and \(x'^j\) represent the \(k\)th and \(j\)th
-          samples from \(D\), and \(k\) is the current sample number.
+          samples from \(D\), \(\alpha^k\) and \(\alpha^j\) 
+          are sampled uniformly from the interval \([0, 1]\),
+          and \(k\) is the current sample number.
           <figure class="l-page-outset">
               <div id='figure6_div'></div>
               <script src="figure6.js"></script>
