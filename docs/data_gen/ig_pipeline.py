@@ -465,8 +465,9 @@ def get_acc_ig_weights(model, sess):
             weights = np.abs(np.sum(weights, axis=-1))
             im_weights = norm_clip(weights)
             interp  = interp_inputs_acc[i]
-            weights = ig_weights_cu[i]
-            im_weights = norm_clip(weights)
+            
+            cumulative_weights = ig_weights_cu[i]
+            im_weights_cumulative = norm_clip(cumulative_weights)
             
             if alpha in alpha_range_save:
                 alpha_formatted = '{:.2f}'.format(alpha)
@@ -474,7 +475,7 @@ def get_acc_ig_weights(model, sess):
                     alpha_formatted = '{}'.format(alpha)
                 scipy.misc.toimage(im_weights).save('data/{}/integrated_gradients/point_weights_{:.2f}.png'.format(name, alpha))
                 scipy.misc.toimage(interp, cmin=-1.0, cmax=1.0).save('data/{}/integrated_gradients/interpolated_image_{:.2f}.png'.format(name, alpha))
-                scipy.misc.toimage(im_weights).save('data/{}/integrated_gradients/cumulative_weights_{:.2f}.png'.format(name, alpha))
+                scipy.misc.toimage(im_weights_cumulative).save('data/{}/integrated_gradients/cumulative_weights_{:.2f}.png'.format(name, alpha))
 
         logit_out = sess.run(logits, feed_dict={images_pl: image_input})
         baseline_logit_out = sess.run(logits, feed_dict={images_pl: reference})
