@@ -44,7 +44,8 @@
         <p>
             If you are in the business of training neural networks,
             you might have heard of the integrated gradients method, which
-            was introduced at ICML two years ago 
+            was introduced at 
+            <a href="https://en.wikipedia.org/wiki/International_Conference_on_Machine_Learning" target="-_blank">ICML</a> two years ago 
             <dt-cite key="sundararajan2017axiomatic"></dt-cite>.
             The method computes which features are important 
             to a neural network in making a prediction on a 
@@ -98,30 +99,34 @@
           </figure>
         </p>
         <p>
-          Although our models perform very well on unseen data,
+          Although state of the art models perform well on unseen data,
           users may still be left wondering: <i>how</i> did the model make
           the prediction it did? This question may be critical when models
           are making high stakes decisions about, say, an individual's health or finances.
-          Although there are many ways to interpret deep neural networks, here we focus 
+          Although there are many ways to interpret deep neural networks 
+          <dt-cite key="olah2018the,olah2017feature,kim2017interpretability,fong2017interpretable,selvaraju2017grad,zeiler2014visualizing"></dt-cite>, here we focus 
           on feature attributions.
         </p>
         <p>
           Given a target input \(x\) and a network function \(f\), 
-          feature attribution methods assign a weight \(\phi_i^{IG}(f, x)\)
+          feature attribution methods assign a weight \(\phi_i(f, x)\)
           to the \(i\)-th feature value representing how important that
-          feature was toward computing \(f(x)\). There are many such methods for
-          neural networks, including DeepLIFT <dt-cite key="shrikumar2017learning"></dt-cite>,
-          Layer-wise Relevance Propagation <dt-cite key="binder2016layer"></dt-cite>
-          and Integrated Gradients <dt-cite key="sundararajan2017axiomatic"></dt-cite>.
+          feature was toward computing \(f(x)\). By assigning numerical importance
+          to each feature, we can both interpret what trends our models
+          are learning and verify that those trends conform to human intuition. 
+          There are many methods that compute attributions for neural networks, including DeepLIFT <dt-cite key="shrikumar2017learning"></dt-cite>,
+          layer-wise relevance propagation <dt-cite key="binder2016layer"></dt-cite>
+          and integrated gradients <dt-cite key="sundararajan2017axiomatic"></dt-cite>.
         </p>
         <p>
             Below, we visualize which pixels were most important to the network's correct
-            prediction using Integrated Gradients.<dt-fn>Throughout this paper, we 
+            prediction using integrated gradients.<dt-fn>Throughout this paper, we 
             use 50 samples when approximating any integral or expectation.</dt-fn>
-            The pixels in white indicate more important pixels. Note here
-            that the feature attributions are capped at the 99th percentile to avoid
-            high-magnitude attributions dominating the color scheme, as done in 
-            <dt-cite key="smilkov2017smoothgrad"></dt-cite>.
+            The pixels in white indicate more important pixels. In order to plot
+            attributions, we follow the same design choices as <dt-cite key="smilkov2017smoothgrad"></dt-cite>.
+            That is, we plot the absolute value of the sum of feature attributions
+            across the channel dimension, and cap feature attributions at the 99th percentile to avoid
+            high-magnitude attributions dominating the color scheme.
             <figure class="l-body">
                 <div id='figure2_div'></div>
                 <script src="figure2.js"></script>
@@ -136,7 +141,7 @@
         <p>
           As you look through the attribution maps, you might find some of them
           unintuitive. To better understand this behavior, we need to explore how
-          we generated feature attributions. Formally, Integrated Gradients
+          we generated feature attributions. Formally, integrated gradients
           defines the importance value for the \(i\)th feature value as follows:
           $$\phi_i^{IG}(f, x, x') = (x_i - x'_i) \times \int_{\alpha = 0}^ 1
             \frac{\delta f(x' + \alpha (x - x'))}{\delta x_i} d \alpha
@@ -147,9 +152,53 @@
           to denote indexing into the \(i\)th feature.
         </p>
         <p>
-            To better understand how this summation accumulates
-            feature importances between the baseline input and the current input,
-            we can break it down and visualize it in three separate parts:
+            What is this formula doing? Recall that the derivative of a function
+            represents rate of change. The derivative of our network with respect
+            to an output class represents which pixels would most increase or
+            decrease the likelihood of that class if perturbed. In a linear model,
+            the pixels with the highest magnitude gradients would have the most
+            impact on the model's output.
+        </p>
+        <p>
+            Unfortunately, there are many problems with using gradients to interpret
+            deep neural networks. One specific issue is that neural networks are prone to a problem
+            known as saturation <dt-cite key="glorot2010understanding,sundararajan2016gradients"></dt-cite>.
+            The gradients of input features may have small magnitudes around a 
+            sample even if the network depends heavily on those features. This can happen
+            if the network function flattens after those features reach a certain magnitude.
+            Intuitively, shifting the pixels in an image by a small amount typically
+            doesn't change what the network sees in the image. We can illustrate
+            saturation by plotting the network output at all
+            images between the baseline \(x'\) and the current image. The network
+            output for the correct class increases initially, but then quickly flattens.
+            <figure class="l-body">
+                <div id='saturation_div'></div>
+                <script src="saturation.js"></script>
+                <figcaption>
+                    A plot of network outputs at \(x' + \alpha (x - x')\).
+                    Notice that the network output saturates the correct class
+                    at small values of \(\alpha\). By the time \(\alpha = 1\),
+                    the network output barely changes.
+                </figcaption>
+            </figure>
+        </p>
+        <p>
+            What we really want to know is how our network got from 
+            predicting essentially nothing at \(x'\) to being 
+            completely saturated towards the correct output class at \(x\).
+            Which pixels, when scaled along this path, most
+            increased the network output for the correct class?
+            Unfortunately, gradients can only tell us local rate of change
+            at \(\alpha = 1\). We want the rate of change at all points 
+            between our baseline and our current input. 
+        </p>
+        <p>
+            With this view, we can see what integrated gradients is doing: 
+            it is simply accumulating all the gradients along the path we've plotted
+            above. By integrating over a path, 
+            the method avoids problems with local gradients being
+            saturated. We can break the original equation
+            down and visualize it in three separate parts:
             $$
                 \tag{1} x' + \alpha (x - x')
             $$
@@ -160,7 +209,10 @@
                 \tag{3} (x_i - x'_i) \times \int_{\alpha' = 0}^{\alpha} \frac{\delta f(x' + \alpha' (x - x'))}{\delta x_i} d \alpha'
             $$
             We visualize these three equations below.<dt-fn>Note that in practice, we use a discrete sum
-            approximation of the integral with 50 linearly-spaced points between 0 and 1.</dt-fn>
+            approximation of the integral with 50 linearly-spaced points between 0 and 1. 50 points
+            seems to be a fairly standard number to use
+            when using the discrete sum approximation of the integral, 
+            which was also desribed in the original integrated gradients paper.</dt-fn>
             <figure class="l-page-outset">
                 <div id='figure3_div'></div>
                 <script src="figure3.js"></script>
@@ -178,81 +230,86 @@
                 \frac{\delta f(x' + \alpha' (x - x'))}{\delta x_i} d \alpha' \bigg)
             $$
             That is, it sums all of the pixel attributions in equation (3).
-            It turns out that Integrated Gradients attributions have
-            the following property. If we were able to compute the true integral,
-            we would find that:
+            This line plot lets us see where the highest magnitude gradients
+            appear in the integral. We can see saturation effects
+            in this plot: the highest magnitude gradients tend to be at low values of 
+            \(\alpha\), which matches our earlier plot.
+        </p>
+        <p>
+            But there is another reason to plot 
+            the sum of the feature attributions. 
+            Integrated gradients attributions satisfy the
+            following axiom:<dt-fn>This is thanks to
+            the fundamental theorem of calculus. The discrete
+            approximation of the integral only
+            satisfies it in the limit, but it does converge to
+            a good approximation given enough samples. </dt-fn>
             $$
+                \textrm{Axiom 1: Completeness} \\
                 \sum_i \phi_i^{IG}(f, x, x') = f(x) - f(x')
             $$ 
-            This means that we can plot the summation of attributions over \(\alpha\)
-            and see both how good our approximation of the integral is. But this property
-            goes deeper than that: it is one of several axioms that uniquely characterize 
-            Integrated Gradients (and, under different assumptions,
-             <a href="https://github.com/slundberg/shap" target="_blank"></a>SHAP 
-            <dt-cite key="lundberg2017unified"></dt-cite>). 
+            Intuitively, this axiom is desirable because it means
+            that the attribution values are breaking down the output of the network
+            in terms of the importance of the input features. It also
+            helps us determine whether our approximation of the integral
+            is converging to the true value, or whether we need to use 
+            more points. More generally, this axiom is part of a deep,
+            underlying theory that uniquely characterizes integrated gradients. 
         </p>
         
-        <h3>The Aumann-Shapley Value</h3>
+        <h2>Game Theory and Missingness</h2>
         <p>
             Integrated Gradients is inspired by work
             from cooperative game theory, specifically the Aumann-Shapley value
             <dt-cite key="aumann2015values"></dt-cite>. In cooperative game theory,
             a non-atomic game is a construction used to model large-scale economic systems
             where there are enough participants that it is desirable to model them continuously.
+            Aumann-Shapley values provide a theoretically grounded way to
+            determine how much different groups of participants contribute to the system.
         </p>
         <p>
-            Formally, let \(I\) be an infinite set of players,
-            and \(C\) be the \(\sigma\)-algebra on \(I\). We define
-            a game \(v\) as a real-valued function on \(C\) such that
-            \(v(\varnothing) = 0\). The Aumann-Shapley value
-            defines a way to allocate credit among the players \(i \in I\).
-            We can use these values to, for example, determine which
-            players are most responsible for the output of an economic system.
+            In game theory, a notion of "missingness" is well-defined. Games are defined
+            on coalitions - sets of participants - and for any specific coalition,
+            a participant of the system can be in or out of that coalition. The fact
+            that games can be evaluated on coalitions is the foundation of
+            the Aumann-Shapley value. Intuitively, it computes how
+            much value a group of participants adds to the game 
+            by computing how much the value of the game would increase
+            if we added more of that group to any given coalition
+            <dt-cite key="aumann2015values"></dt-cite>.
         </p>
         <p>
-            This foray into cooperative game theory might seem both abstract and vague.
-            It isn't important to understand all of the game theoretic background. The important
-            take away is this: <b>games are functions defined on sets of players</b>. 
-            Given a set \(S \in C\) and a player \(i \in S\), we can evaluate
-            \(v\) both with \(i\), e.g. \(v(S)\), and more critically, without
-            \(i\), e.g. \(v(S \setminus i)\).
+            Unfortunately, "missingness" is a more difficult notion when
+            we are speaking about machine learning models. In order
+            to evaluate how important the \(i\)th feature is, we
+            want to be able to compute how much the output of
+            the network would increase if we successively increase
+            the "presence" of the \(i\)th feature. But what does this mean, exactly?
+            In order to increase the presence of a feature, we would need to start
+            with the feature being "missing" and have a way of interpolating 
+            between that "missingness" towards its current, known value.
         </p>
         <p>
-            This fact is important because, when we translate these methods into
-            interpreting machine learning models, we draw an analogy between
-            <i>games</i> and <i>models</i>. A model is similar to a game, the
-            input features to a model are similar to players in a game, and the
-            output of a model is analogous to the value of a game. The Aumann-Shapley
-            Value is used to allocate credit to players among a game, and analogously, 
-            Integrated Gradients allocates credit among input features to a model.
-        </p>
-        <p>
-            The only tricky part
-            is this: how do you evaluate a model \(f\) on a <i>subset</i> of features?
-            It is easy to do this with games: they are by definition functions
-            over subsets of players. But how would you evaluate a deep network
-            on subsets of its input features? Most deep learning models
-            cannot handle arbitrary patterns of missingness.
-        </p>
-        
-        <p>
-            "Aha!" you say. "To simulate missingness, simply replace the value of missing features
-            with 0!" It turns out, this is exactly what most people do when they 
-            use Integrated Gradients. It appears to be common practice
+            Hopefully, this is sounding awfully familiar. Integrated gradients
+            has a baseline input \(x'\) for exactly this reason: to model a
+            feature being absent. But how should you choose
+            \(x'\) in order to best represent this? It seems to be common practice
             to choose a baseline input \(x'\) to be the vector of
             all zeros. But consider the following scenario: you've learned a model
             on a healthcare dataset, and one of the features is blood sugar level.
             The model has correctly learned that excessively low levels of blood sugar,
-            which correspond to hypoglycemia, is dangerous. Do you think
-            a blood sugar level of 0 is the appropriate value to model missingness?
+            which correspond to hypoglycemia, is dangerous. Does
+            a blood sugar level of 0 seem like a good choice to represent missingness?
         </p>
         <p>
             The point here is that fixed feature values may have unintended meaning.
             The problem compounds further when you consider the mathematical formulation
-            of integrated gradients: it has a multiplicative \(x_i - x'_i\) term.
+            of integrated gradients: it has a multiplicative \(x_i - x'_i\) term.<dt-fn>This term arises
+            as a consequence of the completeness axiom, which requires that the derivative of
+            the network be respect to the interpolation constant in the path integral.</dt-fn>
             For the sake of a thought experiment, suppose a patient had a blood sugar level of 0. 
             To understand why our machine learning model thinks this patient
-            is at high risk, you run Integrated Gradients on this data point with a
+            is at high risk, you run integrated gradients on this data point with a
             baseline of the all-zeros vector. The blood sugar level of the patient would have 0 feature importance,
             because \(x_i - x'_i = 0\). This is despite the fact that 
             a blood sugar level of 0 would be fatal!
@@ -260,11 +317,10 @@
         <p>
           We find similar problems when we move to the image domain.
           The all-zeros image is a constant black image, which means
-          that Integrated Gradients with this baseline 
-          tends not to highlight black or dark pixels as important.
-          In fact, depending on the baseline input you choose,
-          which pixels are highlighted as important can vary drastically, as
-          illustrated below.
+          that integrated gradients with this baseline 
+          tends will not highlight black pixels as important.
+          The method is blind to the color you use as a baseline, which
+          we illustrate with the figure below.
           <figure class="l-page-outset">
               <div id='figure4_div'></div>
               <script src="figure4.js"></script>
@@ -280,21 +336,13 @@
         <p>
             It seems like no matter what we choose \(x'\) to be,
             we will run into this issue: there will be a color
-            that Integrated Gradients does not highlight as important. 
-            This issue is not specific to Integrated Gradients - 
-            the previously mentioned DeepLIFT and Layer-wise Relevance Propagation also
-            require a baseline input. This baseline input allows us to compute the 
-            importance of each feature's presence to the output.
-        </p>
-        <p>
+            that integrated gradients does not highlight as important. 
             So is it possible to define a more meaningful notion of a missing feature?
-            Lets suppose you were trying to predict how many inches of rain would fall
-            tomorrow. Like most weather apps, you might aggregate some data, make a statistical
-            model that gives a distribution over amount of rainfall, and then
-            use the mean of that distribution as your prediction. But wouldn't it
-            be so much more informative to simply describe the distribution your model predicted? 
-            Either way, the amount of rainfall
-            tomorrow is an unknown, "missing" quantity.
+            We can re-frame the notion by thinking of a missing feature as <i>lack of information</i>.
+            A missing pixel is a pixel whose value we do not yet know, but could assume
+            any value in our dataset. If our datset was
+            mostly comprised of images of goldfinches, we might assume that
+            a randomly drawn pixel from the dataset would be likely to be yellow!
         </p>
         <p>
             In supervised learning, we make the assumption that the data is drawn
@@ -302,8 +350,8 @@
             share a common, underlying distribution is what allows us to 
             do supervised learning and make claims about generalizability. If
             the data distribution has density \(p_D\), we don't need to
-            model missingness using a constant value. We can use \(p_D\)
-            to integrate out the choice of baseline:
+            model missingness using a single baseline. We can use \(p_D\) to integrate
+            over all possible baselines, weighted by their density:
             $$ \phi_i(f, x, x') = \int_{x'} \bigg( (x_i - x'_i) \times \int_{\alpha = 0}^ 1
               \frac{\delta f(x' + \alpha (x - x'))}{\delta x_i} d \alpha \bigg) p_D(x') dx'
             $$
@@ -313,14 +361,14 @@
             However, we can observe that both of these integrals integrate over distributions.
             The first integrates over \(p_D\), and the second integrates over the uniform distribution.
             By thinking about these integrals as expectations, we arrive 
-            at our proposed extension of Integrated Gradients, called <b>Expected 
-            Gradients</b>, which we introduced in <dt-cite key="erion2019learning"></dt-cite>.<dt-fn>
-            Our work that introduces Expected Gradients does not actually discuss the nuances presented here. Instead, 
+            at our proposed extension of integrated gradients, called <b>expected 
+            gradients</b>, which we introduced in <dt-cite key="erion2019learning"></dt-cite>.<dt-fn>
+            Our work that introduces expected gradients does not actually discuss the nuances presented here. Instead, 
             it is about how you can train models to be 
             more interpretable and achieve better generalization performance by imposing priors
             on their feature attributions.
             </dt-fn> We collapse both expectations to get the formal definition
-            of Expected Gradients:
+            of expected gradients:
             $$ \phi_i^{EG}(f, x, x') = \mathop{\mathbb{E}}_{x' \sim D, \alpha \sim U(0, 1)} \bigg[ (x_i - x'_i) \times 
               \frac{\delta f(x' + \alpha (x - x'))}{\delta x_i} \bigg]
             $$
@@ -348,27 +396,26 @@
               <div id='figure6_div'></div>
               <script src="figure6.js"></script>
               <figcaption>
-                  A visual representation of Expected Gradients. Instead of taking contributions
-                  from a single path, Expected Gradients averages contributions from 
+                  A visual representation of expected gradients. Instead of taking contributions
+                  from a single path, expected gradients averages contributions from 
                   all paths defined by the underlying data distribution.
               </figcaption>
           </figure>
         </p>
         
         <p>
-          Integrated Gradients is part of a family of methods called path methods,
-          which integrate contributions along a path between two points. It turns out
-          that, if you are generating feature attributions
-          relative to some baseline, diagonal path methods are the only methods that have certain theoretical
-          guarantees <dt-cite key="friedman2004paths"></dt-cite>. So does Expected Gradients come with these same theoretical guarantees?
-          It turns out it does. The key difference is that Expected Gradients
+          Integrated gradients is part of a family of methods called path methods,
+          which integrate contributions along a path between two points. Diagonal path methods 
+          are the only methods that satisfy certain axioms, like the aforementioned completeness axiom
+           <dt-cite key="friedman2004paths"></dt-cite>. It turns out that
+           expected gradients also satisfies these axioms. The key difference is that expected gradients
           allows contributions over multiple paths, not the single path between a
           fixed \(x'\) and \(x\). Other than that, it is still also a diagonal path
           method, and in expectation, satisfies the same theoretical guarantees that 
-          Integrated Gradients does.
+          integrated gradients does.
         </p>
         <p>
-            If you are interested in using Expected Gradients to explain
+            If you are interested in using expected gradients to explain
             your machine learning models, head over 
             to the <a href="http://github.com/slundberg/shap" target="_blank">SHAP package</a> 
             <dt-cite key="lundberg2017unified"></dt-cite>,
@@ -379,11 +426,11 @@
         
         <h2>Conclusion</h2>
         <p>
-            The purpose of this article is not to criticize Integrated Gradients.
+            The purpose of this article is not to criticize integrated gradients.
             Its an important method that makes key parallels between
             machine learning and game theory, and provides solid theoretical 
-            foundation for feature attribution methods. Expected Gradients
-            is a direct extension of Integrated Gradients, and wouldn't exist
+            foundation for feature attribution methods. Expected gradients
+            is a direct extension of integrated gradients, and wouldn't exist
             without it.
         </p>
         <p>
@@ -495,7 +542,8 @@
           title={Values of non-atomic games},
           author={Aumann, Robert J and Shapley, Lloyd S},
           year={2015},
-          publisher={Princeton University Press}
+          publisher={Princeton University Press},
+          url={https://www.jstor.org/stable/j.ctt13x149m}
         }
         
         @article{friedman2004paths,
@@ -591,6 +639,32 @@
           year={2018},
           publisher={IOP Publishing},
           url={https://iopscience.iop.org/article/10.1088/1361-6579/aad386/meta}
+        }
+        
+        @article{sundararajan2016gradients,
+          title={Gradients of counterfactuals},
+          author={Sundararajan, Mukund and Taly, Ankur and Yan, Qiqi},
+          journal={arXiv preprint arXiv:1611.02639},
+          year={2016},
+          url={https://arxiv.org/pdf/1611.02639.pdf}
+        }
+        
+        @inproceedings{li2018visualizing,
+          title={Visualizing the loss landscape of neural nets},
+          author={Li, Hao and Xu, Zheng and Taylor, Gavin and Studer, Christoph and Goldstein, Tom},
+          booktitle={Advances in Neural Information Processing Systems},
+          pages={6389--6399},
+          year={2018},
+          url={http://papers.nips.cc/paper/7875-visualizing-the-loss-landscape-of-neural-nets.pdf}
+        }
+        
+        @inproceedings{glorot2010understanding,
+          title={Understanding the difficulty of training deep feedforward neural networks},
+          author={Glorot, Xavier and Bengio, Yoshua},
+          booktitle={Proceedings of the thirteenth international conference on artificial intelligence and statistics},
+          pages={249--256},
+          year={2010},
+          url={http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf}
         }
         </script>
     </body>
