@@ -43,7 +43,9 @@ def get_eg_samples(model, sess):
     grad_input_op = grad_op * delta_pl
     
     image_names = ['house_finch', 'rubber_eraser', 'goldfinch', 'killer_whale']
-    num_samples = 51
+    num_samples = 501
+    num_save_samples = 51
+    save_step = round(num_samples / num_save_samples)
     
     reference_images = []
     for sample in range(num_samples):
@@ -95,7 +97,7 @@ def get_eg_samples(model, sess):
         ig_weights_cu = ig_weights_cu / divisor
 
         print('Saving eg weight images as png files...')
-        for i in tqdm(range(num_samples)):
+        for i in tqdm(range(0, num_samples, save_step)):
             weights = raw_weights_acc[i]
             weights = np.abs(np.sum(weights, axis=-1))
             im_weights = norm_clip(weights)
@@ -154,8 +156,11 @@ def get_eg_pairwise(model, sess):
     grad_op = explainer._grad_across_multi_output(output_tensor=logits, input_tensor=images_pl, sparse_labels_op=labels_pl)
     grad_input_op = grad_op * delta_pl
     
-    alpha_range = np.linspace(0.0, 1.0, num=51)
-    alpha_range = np.rint(alpha_range * 1000) / 1000.0
+    num_samples = 501
+    num_save_samples = 51
+    
+    alpha_range = np.linspace(0.0, 1.0, num=num_samples)
+    alpha_range_save = np.linspace(0.0, 1.0, num=num_save_samples)
     
     image_names = ['house_finch', 'rubber_eraser', 'goldfinch', 'killer_whale']
     for i in range(len(image_names)):
@@ -312,6 +317,8 @@ def get_ig_weights_slic(model, sess):
     expected_grads_op       = model.expected_grads_op
     background_reference_pl = model.background_reference_pl
     
+    num_samples = 501
+    
     delta_pl = tf.placeholder(tf.float32, [None, 299, 299, 3])
     explainer = ops.TFOpsExplainer()
     grad_op = explainer._grad_across_multi_output(output_tensor=logits, input_tensor=images_pl, sparse_labels_op=labels_pl)
@@ -362,7 +369,7 @@ def get_ig_weights_slic(model, sess):
             selected_slic_mask = mark_boundaries(selected_slic_mask, selection_mask.astype(int), mode='thick')
             
             raw_weights_acc = []
-            for alpha in np.linspace(0.0, 1.0, num=51):
+            for alpha in np.linspace(0.0, 1.0, num=num_samples):
                 interp_input = alpha * image_input + (1.0 - alpha) * input_reference
                 ig_sample = sess.run(grad_input_op, feed_dict = {images_pl: interp_input, 
                                                              labels_pl: label_input,
@@ -409,8 +416,10 @@ def get_acc_ig_weights(model, sess):
     grad_op = explainer._grad_across_multi_output(output_tensor=logits, input_tensor=images_pl, sparse_labels_op=labels_pl)
     grad_input_op = grad_op * delta_pl
     
-    alpha_range = np.linspace(0.0, 1.0, num=51)
-    alpha_range = np.rint(alpha_range * 1000) / 1000.0
+    num_samples = 501
+    num_save_samples = 51
+    alpha_range = np.linspace(0.0, 1.0, num=num_samples)
+    alpha_range_save = np.linspace(0.0, 1.0, num=num_save_samples)
     
     image_names = ['house_finch', 'rubber_eraser', 'goldfinch', 'killer_whale']
     for i in range(len(image_names)):
@@ -452,17 +461,20 @@ def get_acc_ig_weights(model, sess):
         print('Saving ig weight images as png files...')
         for i in tqdm(range(len(alpha_range))):
             alpha = alpha_range[i]
-            alpha = np.rint(alpha * 1000) / 1000.0
             weights = raw_weights_acc[i]
             weights = np.abs(np.sum(weights, axis=-1))
             im_weights = norm_clip(weights)
             interp  = interp_inputs_acc[i]
-            scipy.misc.toimage(im_weights).save('data/{}/integrated_gradients/point_weights_{}.png'.format(name, alpha))
-            scipy.misc.toimage(interp, cmin=-1.0, cmax=1.0).save('data/{}/integrated_gradients/interpolated_image_{}.png'.format(name, alpha))
-
             weights = ig_weights_cu[i]
             im_weights = norm_clip(weights)
-            scipy.misc.toimage(im_weights).save('data/{}/integrated_gradients/cumulative_weights_{}.png'.format(name, alpha))
+            
+            if alpha in alpha_range_save:
+                alpha_formatted = '{:.2f}'.format(alpha)
+                if alpha == 0.0 or alpha == 1.0:
+                    alpha_formatted = '{}'.format(alpha)
+                scipy.misc.toimage(im_weights).save('data/{}/integrated_gradients/point_weights_{:.2f}.png'.format(name, alpha))
+                scipy.misc.toimage(interp, cmin=-1.0, cmax=1.0).save('data/{}/integrated_gradients/interpolated_image_{:.2f}.png'.format(name, alpha))
+                scipy.misc.toimage(im_weights).save('data/{}/integrated_gradients/cumulative_weights_{:.2f}.png'.format(name, alpha))
 
         logit_out = sess.run(logits, feed_dict={images_pl: image_input})
         baseline_logit_out = sess.run(logits, feed_dict={images_pl: reference})
