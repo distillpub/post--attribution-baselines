@@ -121,7 +121,9 @@
         <p>
             Below, we visualize which pixels were most important to the network's correct
             prediction using integrated gradients.<dt-fn>Throughout this paper, we 
-            use 50 samples when approximating any integral or expectation.</dt-fn>
+            use 500 samples when approximating any integral or expectation. However,
+            we only display images from every 10th sample in order to avoid
+            loading 500+ images for each figure.</dt-fn>
             The pixels in white indicate more important pixels. In order to plot
             attributions, we follow the same design choices as <dt-cite key="smilkov2017smoothgrad"></dt-cite>.
             That is, we plot the absolute value of the sum of feature attributions
