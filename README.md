@@ -1,5 +1,5 @@
 
-# Integrating out the Baseline in Integrated Gradients
+# Data-Driven Feature Attributions with Expected Gradients
 Article link: https://psturmfels.github.io/VisualizingExpectedGradients/
 
 [Integrated Gradients](https://arxiv.org/pdf/1703.01365) has become a popular method for
