@@ -5,7 +5,7 @@ import numpy as np
 from datasets import dataset_factory
 from nets import nets_factory
 from preprocessing import preprocessing_factory
-from regularized_explanations import ops
+from attributionpriors.ops import AttributionPriorExplainer
 
 import eval_image_classifier
 
@@ -13,7 +13,6 @@ tf.app.flags.DEFINE_string('f', None, '')
 
 slim = tf.contrib.slim
 FLAGS = tf.app.flags.FLAGS
-
 
 def normalize(im_batch, _range=None, _domain=None):
     if len(im_batch.shape) == 2:
@@ -40,7 +39,7 @@ def normalize(im_batch, _range=None, _domain=None):
         norm_batch = norm_batch * (amax - amin) + amin
     return norm_batch
 
-def get_model(dataset_split_name='validation'):
+def get_model(dataset_split_name='validation', random_alpha=True, reference='pl'):
     FLAGS.batch_size = 1
     FLAGS.dataset_name = 'imagenet'
     FLAGS.dataset_split_name = dataset_split_name
@@ -101,8 +100,14 @@ def get_model(dataset_split_name='validation'):
     images_pl = tf.placeholder(tf.float32, (None, 299, 299, 3))
     labels_pl    = tf.placeholder(tf.int64, (None,))
     
-    explainer = ops.TFOpsExplainer(random_alpha=False)
-    cond_input_op, train_eg = explainer.input_to_samples_delta(images_pl, lambda: tf.placeholder(tf.float32, (None, 201, 299, 299, 3)))
+    explainer = AttributionPriorExplainer(random_alpha=random_alpha)
+    if reference == 'pl':
+        cond_input_op, train_eg = explainer.input_to_samples_delta(images_pl, lambda: tf.placeholder(tf.float32, (None, 201, 299, 299, 3)))
+    elif reference == 'black':
+        cond_input_op, train_eg = explainer.input_to_samples_delta(images_pl, lambda: tf.constant(0.0, dtype=tf.float32, shape=(FLAGS.batch_size, 201, 299, 299, 3)))
+    else:
+        raise ValueError('Undefined value `{}` for argument reference.')
+    
     
     logits, _ = network_fn(cond_input_op)
     pred_labels   = tf.argmax(logits, axis=1)
