@@ -1,6 +1,7 @@
 
 # Data-Driven Feature Attributions with Expected Gradients
 Article link: https://psturmfels.github.io/VisualizingExpectedGradients/
+Slides link: https://psturmfels.github.io/VisualizingExpectedGradients/figure1.html
 
 [Integrated Gradients](https://arxiv.org/pdf/1703.01365) has become a popular method for
 interpreting deep neural networks. As a hyper-parameter, the method requires
