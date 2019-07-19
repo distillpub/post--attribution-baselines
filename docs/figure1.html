@@ -5,13 +5,50 @@
     <meta name="Predicted Logits of Inception V4"/>
 </head>
 
-<body>
+<body onkeydown="handleKeyDown(event)">
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="https://d3js.org/d3-collection.v1.min.js"></script>
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script src="cross_fade.js"></script>
-    <div id='figure1_div'></div>
+    <script>
+        function handleKeyDown(event) {
+            if (event.keyCode == 39) {
+                window.location.href = "figure2.html";
+            }
+        }
+    </script>
     
-    <script src="figure1.js"></script>
+    <div class="container">
+        <div class="row">
+            <div class="col s12">
+                <div class="card teal">
+                   <div class="card-content white-text">
+                     <span class="card-title"><b style="font-size:36px;">Image Classification</b></span>
+                     <p style="font-size:20px;">
+                         Modern image classification networks, like Inception V4, 
+                         surpass human-level performance on the ImageNet 2012 dataset.
+                         Here, we visualize the output of Inception V4 on four 
+                         images from the validation set. The network classifies 
+                         all images correctly with high probability, but 
+                         users may still be wondering: how did the network
+                         classify each image?
+                     </p>
+                   </div>
+                 </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s8 offset-s2">
+                <div id='figure1_div'></div>
+                <script src="figure1.js"></script>
+            </div> 
+        </div>
+        <div class="row">
+            <div class="col s2 offset-s10">
+                <a href="figure2.html" class="waves-effect waves-light btn">next</a>
+            </div>    
+        </div>
+    </div>
 </body>
 </html>

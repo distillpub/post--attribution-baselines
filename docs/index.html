@@ -354,7 +354,7 @@
             the data distribution has density \(p_D\), we don't need to
             model missingness using a single baseline. We can use \(p_D\) to integrate
             over all possible baselines, weighted by their density:
-            $$ \phi_i(f, x, x') = \int_{x'} \bigg( (x_i - x'_i) \times \int_{\alpha = 0}^ 1
+            $$ \phi_i(f, x) = \int_{x'} \bigg( (x_i - x'_i) \times \int_{\alpha = 0}^ 1
               \frac{\delta f(x' + \alpha (x - x'))}{\delta x_i} d \alpha \bigg) p_D(x') dx'
             $$
         </p>
@@ -371,7 +371,7 @@
             on their feature attributions.
             </dt-fn> We collapse both expectations to get the formal definition
             of expected gradients:
-            $$ \phi_i^{EG}(f, x, x') = \mathop{\mathbb{E}}_{x' \sim D, \alpha \sim U(0, 1)} \bigg[ (x_i - x'_i) \times 
+            $$ \phi_i^{EG}(f, x) = \mathop{\mathbb{E}}_{x' \sim D, \alpha \sim U(0, 1)} \bigg[ (x_i - x'_i) \times 
               \frac{\delta f(x' + \alpha (x - x'))}{\delta x_i} \bigg]
             $$
         </p>

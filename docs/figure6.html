@@ -5,12 +5,65 @@
     <meta name="Accumulation of Gradients Over Interpolation"/>
 </head>
 
-<body>
+<body onkeydown="handleKeyDown(event)">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css" integrity="sha384-yFRtMMDnQtDRO8rLpMIKrtPCD5jdktao2TV19YiZYWMDkUR5GQZR/NOVTdquEx1j" crossorigin="anonymous">
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.js" integrity="sha384-9Nhn55MVVN0/4OFx7EE5kpFBPsEMZxKTCnA+4fqDmg12eCTqGi6+BB2LjY8brQxJ" crossorigin="anonymous"></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"
+        onload="renderMathInElement(document.body);"></script>
     <script src="https://d3js.org/d3.v5.min.js"></script>
     <script src="https://rawgit.com/nstrayer/slid3r/master/dist/slid3r.js"></script>
-    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
     <script src="cross_fade.js"></script>
-    <div id='figure6_div'></div>
-    <script src="figure6.js"></script>
+    <script>
+        function handleKeyDown(event) {
+            if (event.keyCode == 39) {
+                window.location.href = "figure7.html";
+            }
+            else if (event.keyCode == 37) {
+                window.location.href = "figure5.html";
+            }
+        }
+    </script>
+    
+    <div class="container">
+        <div class="row">
+            <div class="col s12">
+                <div class="card teal">
+                   <div class="card-content white-text">
+                       <span class="card-title"><b style="font-size:36px;">Expected Gradients</b></span>
+                       <p style="font-size:20px;">
+                           How can we better choose a baseline input \(x'\) to represent missingness?
+                           We can use our underlying data distribution. Instead of choosing a fixed baseline,
+                           we can integrate over all possible baselines, weighted by their density:
+                           $$ \phi_i(f, x) = \int_{x'} \bigg( (x_i - x'_i) \times \int_{\alpha = 0}^ 1
+                             \frac{\delta f(x' + \alpha (x - x'))}{\delta x_i} d \alpha \bigg) p_D(x') dx'
+                           $$
+                           How do we calculate this in practice? We collapse the integrals into a single
+                           expectation, and then draw samples from it!
+                           $$ \phi_i^{EG}(f, x) = \mathop{\mathbb{E}}_{x' \sim D, \alpha \sim U(0, 1)} \bigg[ (x_i - x'_i) \times 
+                             \frac{\delta f(x' + \alpha (x - x'))}{\delta x_i} \bigg]
+                           $$
+                           We illustrate the process visually below.
+                       </p>
+                   </div>
+                 </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col s12">
+                <div id='figure6_div'></div>
+                <script src="figure6.js"></script>
+            </div> 
+        </div>
+        <div class="row">
+            <div class="col s2">
+                <a href="figure5.html" class="waves-effect waves-light btn">previous</a>
+            </div>
+            <div class="col s2 offset-s8">
+                <a href="figure7.html" class="waves-effect waves-light btn">next</a>
+            </div>    
+        </div>
+    </div>
 </body>
 </html>

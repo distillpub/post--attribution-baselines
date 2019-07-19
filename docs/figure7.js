@@ -1,9 +1,9 @@
 function figure7() {
     var margin = ({
         top: 30,
-        right: 30,
+        right: 120,
         bottom: 30,
-        left: 30
+        left: 0
     });
 
     var image_size = 300;
@@ -39,7 +39,7 @@ function figure7() {
                         .attr('width',  '100%')
                         .attr('height', '100%')
                         .style('min-width', `${(width + margin.left + margin.right ) / 2}px`)
-                        .style('max-width', `${width + margin.left + margin.right}px`)
+                        // .style('max-width', `${width + margin.left + margin.right}px`)
                         .attr('viewBox', `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`);
 
     var image_group = container
