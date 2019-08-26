@@ -41,9 +41,9 @@ function figure4() {
     var cumulative_file = 'cumulative_weights_';
 
     var image_data = [
-        { x: 0, y: 0, id: 'interp_alpha', title: '(1)'},
-        { x: image_size + image_padding, y: 0, id: 'weights_alpha', title: "(2)"},
-        { x: 2*(image_size + image_padding), y: 0, id: 'cumulative_alpha', title: '(3)'}
+        { x: 0, y: 0, id: 'interp_alpha', title: '(1): Interpolated Image'},
+        { x: image_size + image_padding, y: 0, id: 'weights_alpha', title: "(2): Gradients at Interpolation"},
+        { x: 2*(image_size + image_padding), y: 0, id: 'cumulative_alpha', title: '(3): Cumulative Gradients'}
     ];
 
     var indicator_data = [
@@ -124,7 +124,8 @@ function figure4() {
       .attr("transform", `translate(${(chart_width) / 2}, -10)`)
       .style("text-anchor", "middle")
       .style("font-weight", 700)
-      .text("(4)");
+      .style('font-size', '22px')
+      .text("(4): Sum of Cumulative Grads");
           
     var chart_svg_border = image_group
         .append('g')

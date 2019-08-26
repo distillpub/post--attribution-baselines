@@ -52,9 +52,9 @@ function figure6() {
     var cumulative_file = 'cumulative_weights_';
 
     var image_data = [
-        { x: 0, y: 0, id: 'display_image', title: '(1)'},
-        { x: image_size + image_padding, y: 0, id: 'weights_alpha', title: '(2)'},
-        { x: 2 * (image_size + image_padding), y: 0, id: 'cumulative_samples', title: '(3)'}
+        { x: 0, y: 0, id: 'display_image', title: '(1): Interpolated Image'},
+        { x: image_size + image_padding, y: 0, id: 'weights_alpha', title: '(2): Gradients at Interpolation'},
+        { x: 2 * (image_size + image_padding), y: 0, id: 'cumulative_samples', title: '(3): Cumulative Gradients'}
     ];
 
 
@@ -150,7 +150,8 @@ function figure6() {
       .attr("transform", `translate(${(chart_width) / 2}, -10)`)
       .style("text-anchor", "middle")
       .style("font-weight", 700)
-      .text("(4)");
+      .style('font-size', '22px')
+      .text("(4): Sum of Cumulative Grads");
           
     var chart_svg_border = image_group
         .append('g')
@@ -207,7 +208,7 @@ function figure6() {
         var y = coordinates[1] - enter_svg.attr('y');
         
         var x_pos = orig_x + slider_image_size + 5 + x;
-        if (rank > 25) {
+        if (rank > 250) {
             x_pos = orig_x - slider_image_size - 5 - reference_image_size + x;
         }
         image.attr('x', x_pos)

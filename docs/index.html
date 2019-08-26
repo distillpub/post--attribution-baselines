@@ -14,7 +14,7 @@
             onload="renderMathInElement(document.body);"></script>
 
         <script type="text/front-matter">
-          title: "Data-Driven Feature Attributions with Expected Gradients"
+          title: "On the Impact of a Baseline Input for Feature Attributions"
           description: "Feature Attrtibution Methods are a popular way of explaining
              deep models. Most require choosing a
              hyper-parameter known as the 'baseline input'.
@@ -32,7 +32,7 @@
         </script>
     </head>
     <dt-article>
-        <h1>Data-Driven Feature Attributions with Expected Gradients</h1>
+        <h1>On the Impact of a Baseline Input for Feature Attributions</h1>
         <p>Feature attribution methods are a popular way of explaining
            deep models. Most require choosing a
            hyper-parameter known as the "baseline input".
@@ -49,7 +49,7 @@
             <dt-cite key="sundararajan2017axiomatic"></dt-cite>.
             The method computes which features are important 
             to a neural network in making a prediction on a 
-            particular data point, helping users
+            particular data point, which helps users
             understand what patterns their models are learning.
             Since its introduction,
             integrated gradients has been used to interpret 
@@ -63,7 +63,7 @@
             attribution methods <dt-cite key="lundberg2017unified,binder2016layer,shrikumar2017learning"></dt-cite>,
             you also know that you need to define a baseline input \(x'\) before
             using the method. There is scarce information about this hyper-parameter choice
-            in aforementioned literature. Is integrated gradients sensitive to the 
+            in the aforementioned literature. Is integrated gradients sensitive to the 
             hyper-parameter choice? Are there any guidelines for choosing \(x'\) other
             than setting it to be a vector of zeros?
             And why does the method require this hyper-parameter in the first place?
@@ -110,7 +110,7 @@
         <p>
           Given a target input \(x\) and a network function \(f\), 
           feature attribution methods assign a weight \(\phi_i(f, x)\)
-          to the \(i\)-th feature value representing how important that
+          to the \(i\)th feature value representing how important that
           feature was toward computing \(f(x)\). By assigning numerical importance
           to each feature, we can both interpret what trends our models
           are learning and verify that those trends conform to human intuition. 
@@ -142,7 +142,9 @@
         <h2>A Better Understanding of Integrated Gradients</h2>  
         <p>
           As you look through the attribution maps, you might find some of them
-          unintuitive. To better understand this behavior, we need to explore how
+          unintuitive. Why does the attribution for "goldfinch" highlight the green background?
+          Why doesn't the attribution for "killer whale" highlight the black parts of the killer whale?
+          To better understand this behavior, we need to explore how
           we generated feature attributions. Formally, integrated gradients
           defines the importance value for the \(i\)th feature value as follows:
           $$\phi_i^{IG}(f, x, x') = (x_i - x'_i) \times \int_{\alpha = 0}^ 1
@@ -200,7 +202,10 @@
             above. By integrating over a path, 
             the method avoids problems with local gradients being
             saturated. We can break the original equation
-            down and visualize it in three separate parts:
+            down and visualize it in three separate parts: (1) interpolating between
+            the baseline image and the target image, (2) the gradients at the interpolated
+            image times the difference between the baseline and the target images, and (3) 
+            accumulating these gradients over the interpolation constant, \(\alpha\).
             $$
                 \tag{1} x' + \alpha (x - x')
             $$
@@ -255,7 +260,7 @@
             in terms of the importance of the input features. It also
             helps us determine whether our approximation of the integral
             is converging to the true value, or whether we need to use 
-            more points. More generally, this axiom is part of a deep,
+            more points. More generally, this axiom is part of a larger
             underlying theory that uniquely characterizes integrated gradients. 
         </p>
         
@@ -277,8 +282,7 @@
             the Aumann-Shapley value. Intuitively, it computes how
             much value a group of participants adds to the game 
             by computing how much the value of the game would increase
-            if we added more of that group to any given coalition
-            <dt-cite key="aumann2015values"></dt-cite>.
+            if we added more of that group to any given coalition.
         </p>
         <p>
             Unfortunately, "missingness" is a more difficult notion when
@@ -301,7 +305,7 @@
             on a healthcare dataset, and one of the features is blood sugar level.
             The model has correctly learned that excessively low levels of blood sugar,
             which correspond to hypoglycemia, is dangerous. Does
-            a blood sugar level of 0 seem like a good choice to represent missingness?
+            a blood sugar level of \(0\) seem like a good choice to represent missingness?
         </p>
         <p>
             The point here is that fixed feature values may have unintended meaning.
@@ -309,18 +313,18 @@
             of integrated gradients: it has a multiplicative \(x_i - x'_i\) term.<dt-fn>This term arises
             as a consequence of the completeness axiom, which requires that the derivative of
             the network be respect to the interpolation constant in the path integral.</dt-fn>
-            For the sake of a thought experiment, suppose a patient had a blood sugar level of 0. 
+            For the sake of a thought experiment, suppose a patient had a blood sugar level of \(0\). 
             To understand why our machine learning model thinks this patient
             is at high risk, you run integrated gradients on this data point with a
-            baseline of the all-zeros vector. The blood sugar level of the patient would have 0 feature importance,
+            baseline of the all-zeros vector. The blood sugar level of the patient would have \(0\) feature importance,
             because \(x_i - x'_i = 0\). This is despite the fact that 
-            a blood sugar level of 0 would be fatal!
+            a blood sugar level of \(0\) would be fatal!
         </p>
         <p>
           We find similar problems when we move to the image domain.
           The all-zeros image is a constant black image, which means
           that integrated gradients with this baseline 
-          tends will not highlight black pixels as important.
+          will not highlight black pixels as important.
           The method is blind to the color you use as a baseline, which
           we illustrate with the figure below.
           <figure class="l-page-outset">
@@ -365,7 +369,7 @@
             By thinking about these integrals as expectations, we arrive 
             at our proposed extension of integrated gradients, called <b>expected 
             gradients</b>, which we introduced in <dt-cite key="erion2019learning"></dt-cite>.<dt-fn>
-            Our work that introduces expected gradients does not actually discuss the nuances presented here. Instead, 
+            Our work that introduces expected gradients does not fully discuss the nuances presented here. Instead, 
             it is about how you can train models to be 
             more interpretable and achieve better generalization performance by imposing priors
             on their feature attributions.
@@ -380,7 +384,11 @@
           random samples from \(D\), we can draw \(x'\) randomly
           from our training set, \(\alpha\) from the uniform distribution and
           use these samples to approximately compute the expectation above.
-          We illustrate this sampling process by breaking it down into three equations:
+          We illustrate this sampling process by breaking it down into three equations: 
+          (1) interpolating between the \(k\)th baseline sample and the target input, (2) 
+          the gradients at the interpolated image times the difference between the \(k\)th baseline sample
+          and the target image, and (3) accumulating these gradients over multiple different
+          reference samples,
           $$
             \tag{1} x'^k + \alpha^{k} (x - x'^k)
           $$
