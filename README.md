@@ -1,5 +1,5 @@
 
-# Data-Driven Feature Attributions with Expected Gradients
+# Visualizing the Impact of Feature Attribution Baselines
 Article link: https://psturmfels.github.io/VisualizingExpectedGradients/  
 Slides link: https://psturmfels.github.io/VisualizingExpectedGradients/figure1.html
 
