@@ -3,7 +3,7 @@ function figure1() {
         top: 30,
         right: 30,
         bottom: 30,
-        left: 0
+        left: 30
     });
 
     var image_size = 300;

@@ -2,37 +2,47 @@
 <html lang="en">
     <head>
         <meta charset="utf-8">
-        <script src="https://distill.pub/template.v1.js"></script>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <script src="https://distill.pub/template.v2.js"></script>
         <script src="https://d3js.org/d3.v5.min.js"></script>
         <script src="https://d3js.org/d3-collection.v1.min.js"></script>
         <script src="https://rawgit.com/nstrayer/slid3r/master/dist/slid3r.js"></script>
         <script src="cross_fade.js"></script>
+        <link rel="stylesheet" href="style.css">
         
         <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.css" integrity="sha384-yFRtMMDnQtDRO8rLpMIKrtPCD5jdktao2TV19YiZYWMDkUR5GQZR/NOVTdquEx1j" crossorigin="anonymous">
         <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/katex.min.js" integrity="sha384-9Nhn55MVVN0/4OFx7EE5kpFBPsEMZxKTCnA+4fqDmg12eCTqGi6+BB2LjY8brQxJ" crossorigin="anonymous"></script>
         <script defer src="https://cdn.jsdelivr.net/npm/katex@0.10.2/dist/contrib/auto-render.min.js" integrity="sha384-kWPLUVMOks5AQFrykwIup5lo0m3iMkkHrD0uJ4H5cjeGihAutqP0yW0J6dpFiVkI" crossorigin="anonymous"
             onload="renderMathInElement(document.body);"></script>
-
-        <script type="text/front-matter">
-          title: "Visualizing the Impact of Feature Attribution Baselines"
-          description: "Feature Attrtibution Methods are a popular way of explaining
-             deep models. Most require choosing a
-             hyper-parameter known as the 'baseline input'.
-             What does this hyper-parameter mean, and how important is it? In this article,
-             we investigate these questions, and discuss why it is useful 
-             to extend the notion of a baseline from a single input to a distribution."
-          authors:
-          - Pascal Sturmfels: http://psturmfels.github.io
-          - Scott Lundberg: http://scottlundberg.com
-          - Su-In Lee: https://suinlee.cs.washington.edu
-          affiliations:
-          - University of Washington: https://www.cs.washington.edu
-          - University of Washington: https://www.cs.washington.edu
-          - University of Washington: https://www.cs.washington.edu
-        </script>
     </head>
-    <dt-article>
-        <h1>Visualizing the Impact of Feature Attribution Baselines</h1>
+    <body>
+        <d-front-matter>
+        <script type="text/json">{
+          "title": "Visualizing the Impact of Feature Attribution Baselines",
+          "description": "Exploring the baseline input hyper-parameter, and how it impacts interpretations of neural network behavior.",
+          "authors": [
+            {
+              "author": "Pascal Sturmfels",
+              "authorURL": "https://psturmfels.github.io/",
+              "affiliation": "University of Washington",
+              "affiliationURL": "https://www.cs.washington.edu"
+            },
+            {
+              "author": "Scott Lundberg",
+              "authorURL": "https://scottlundberg.com",
+              "affiliation": "University of Washington",
+              "affiliationURL": "https://www.cs.washington.edu"
+          },
+          {
+            "author": "Su-In Lee",
+            "authorURL": "https://suinlee.cs.washington.edu/su-in-lee",
+            "affiliation": "University of Washington",
+            "affiliationURL": "https://www.cs.washington.edu"
+          }
+          ]
+        }</script>
+      </d-front-matter>
+    <d-article>
         <p>Feature attribution methods are a popular way of explaining
            deep models. Most require choosing a
            hyper-parameter known as the "baseline input".
@@ -41,14 +51,14 @@
            to extend the notion of a baseline from a single input to a distribution. We focus
            on the Integrated Gradients method as a case study. However, our
            discussion of baselines is applicable to many existing feature attribution methods. </p>
-        <dt-byline></dt-byline>
+
         <h2>Introduction</h2>
         <p>
             If you are in the business of training neural networks,
             you might have heard of the integrated gradients method, which
             was introduced at 
             <a href="https://en.wikipedia.org/wiki/International_Conference_on_Machine_Learning" target="-_blank">ICML</a> two years ago 
-            <dt-cite key="sundararajan2017axiomatic"></dt-cite>.
+            <d-cite key="sundararajan2017axiomatic"></d-cite>.
             The method computes which features are important 
             to a neural network in making a prediction on a 
             particular data point, which helps users
@@ -56,13 +66,13 @@
             Since its introduction,
             integrated gradients has been used to interpret 
             networks trained on a variety of data types, 
-            including retinal fundus images <dt-cite key="sayres2019using"></dt-cite>
-            and electrocardiogram recordings <dt-cite key="warrick2018ensembling"></dt-cite>.
+            including retinal fundus images <d-cite key="sayres2019using"></d-cite>
+            and electrocardiogram recordings <d-cite key="warrick2018ensembling"></d-cite>.
         </p>
         <p>
             If you've ever used integrated gradients, 
             or for that matter, any of a similar family of
-            attribution methods <dt-cite key="lundberg2017unified,binder2016layer,shrikumar2017learning"></dt-cite>,
+            attribution methods <d-cite key="lundberg2017unified,binder2016layer,shrikumar2017learning"></d-cite>,
             you also know that you need to define a baseline input \(x'\) before
             using the method. There is scarce information about this hyper-parameter choice
             in the aforementioned literature. Is integrated gradients sensitive to the 
@@ -76,7 +86,7 @@
             As a case-study, we will focus on image classification models in order 
             to visualize the effects of the baseline input. Our visualizations will
             lead us to describe an extension of integrated gradients, called <i>expected gradients</i>, which we 
-            introduced in <dt-cite key="erion2019learning"></dt-cite>. In brief,
+            introduced in <d-cite key="erion2019learning"></d-cite>. In brief,
             expected gradients extends integrated gradients by using a data distribution
             as a baseline instead of a single input.
         </p>
@@ -85,20 +95,23 @@
           We focus on image classification as a task, as it will allow us to visually
           plot integrated gradients attributions, and compare them with our intuition
           about which pixels we think should be important. We use on the Inception V4 architecture 
-          <dt-cite key="szegedy2017inception"></dt-cite>, a convolutional 
-          neural network designed for the ImageNet dataset <dt-cite key="deng2009imagenet"></dt-cite>,
+          <d-cite key="szegedy2017inception"></d-cite>, a convolutional 
+          neural network designed for the ImageNet dataset <d-cite key="deng2009imagenet"></d-cite>,
           in which the task is to determine which class an image belongs to out of 1000 classes.
           On the ImageNet validation set, Inception V4 has a top-1 accuracy of over 80%.
-          We download weights from TensorFlow-Slim <dt-cite key="silberman2016tensorflow"></dt-cite>,
+          We download weights from TensorFlow-Slim <d-cite key="silberman2016tensorflow"></d-cite>,
           and visualize the predictions of the network on four different images from the 
           validation set.
-          <figure>
-              <div id='figure1_div'></div>
-              <script src="figure1.js"></script>
-              <figcaption>
-                  The Inception V4 network classifies all images above correctly with high confidence.
-              </figcaption>
-          </figure>
+          <d-figure>
+              <figure class='l-body'>
+                  <div id='figure1_div'></div>
+                  <script src="figure1.js"></script>
+                  <figcaption>
+                      The Inception V4 network classifies all images above correctly with high confidence.
+                  </figcaption>
+              </figure>
+          </d-figure>
+          
         </p>
         <p>
           Although state of the art models perform well on unseen data,
@@ -106,7 +119,7 @@
           the prediction it did? This question may be critical when models
           are making high stakes decisions about, say, an individual's health or finances.
           Although there are many ways to interpret deep neural networks 
-          <dt-cite key="olah2018the,olah2017feature,kim2017interpretability,fong2017interpretable,selvaraju2017grad,zeiler2014visualizing"></dt-cite>, here we focus 
+          <d-cite key="olah2018the,olah2017feature,kim2017interpretability,fong2017interpretable,selvaraju2017grad,zeiler2014visualizing"></d-cite>, here we focus 
           on feature attributions.
         </p>
         <p>
@@ -116,30 +129,32 @@
           feature was toward computing \(f(x)\). By assigning numerical importance
           to each feature, we can both interpret what trends our models
           are learning and verify that those trends conform to human intuition. 
-          There are many methods that compute attributions for neural networks, including DeepLIFT <dt-cite key="shrikumar2017learning"></dt-cite>,
-          layer-wise relevance propagation <dt-cite key="binder2016layer"></dt-cite>
-          and integrated gradients <dt-cite key="sundararajan2017axiomatic"></dt-cite>.
+          There are many methods that compute attributions for neural networks, including DeepLIFT <d-cite key="shrikumar2017learning"></d-cite>,
+          layer-wise relevance propagation <d-cite key="binder2016layer"></d-cite>
+          and integrated gradients <d-cite key="sundararajan2017axiomatic"></d-cite>.
         </p>
         <p>
             Below, we visualize which pixels were most important to the network's correct
-            prediction using integrated gradients.<dt-fn>Throughout this paper, we 
+            prediction using integrated gradients.<d-footnote>Throughout this paper, we 
             use 500 samples when approximating any integral or expectation. However,
             we only display images from every 10th sample in order to avoid
-            loading 500+ images for each figure.</dt-fn>
+            loading 500+ images for each figure.</d-footnote>
             The pixels in white indicate more important pixels. In order to plot
-            attributions, we follow the same design choices as <dt-cite key="smilkov2017smoothgrad"></dt-cite>.
+            attributions, we follow the same design choices as <d-cite key="smilkov2017smoothgrad"></d-cite>.
             That is, we plot the absolute value of the sum of feature attributions
             across the channel dimension, and cap feature attributions at the 99th percentile to avoid
             high-magnitude attributions dominating the color scheme.
-            <figure class="l-body">
-                <div id='figure2_div'></div>
-                <script src="figure2.js"></script>
-                <figcaption>
-                    Pixel-wise attributions of the Inception V4 network using Integrated Gradients.
-                    You might notice that some attributions highlight pixels that do not seem important
-                    relative to the true class label.
-                </figcaption>
-            </figure>
+            <d-figure>
+                <figure class="l-body">
+                    <div id='figure2_div'></div>
+                    <script src="figure2.js"></script>
+                    <figcaption>
+                        Pixel-wise attributions of the Inception V4 network using Integrated Gradients.
+                        You might notice that some attributions highlight pixels that do not seem important
+                        relative to the true class label.
+                    </figcaption>
+                </figure>
+            </d-figure>
         </p>
         <h2>A Better Understanding of Integrated Gradients</h2>  
         <p>
@@ -168,7 +183,7 @@
         <p>
             Unfortunately, there are many problems with using gradients to interpret
             deep neural networks. One specific issue is that neural networks are prone to a problem
-            known as saturation <dt-cite key="glorot2010understanding,sundararajan2016gradients"></dt-cite>.
+            known as saturation <d-cite key="glorot2010understanding,sundararajan2016gradients"></d-cite>.
             The gradients of input features may have small magnitudes around a 
             sample even if the network depends heavily on those features. This can happen
             if the network function flattens after those features reach a certain magnitude.
@@ -177,16 +192,18 @@
             saturation by plotting the network output at all
             images between the baseline \(x'\) and the current image. The network
             output for the correct class increases initially, but then quickly flattens.
-            <figure class="l-body">
-                <div id='figure3_div'></div>
-                <script src="figure3.js"></script>
-                <figcaption>
-                    A plot of network outputs at \(x' + \alpha (x - x')\).
-                    Notice that the network output saturates the correct class
-                    at small values of \(\alpha\). By the time \(\alpha = 1\),
-                    the network output barely changes.
-                </figcaption>
-            </figure>
+            <d-figure>
+                <figure class="l-body">
+                    <div id='figure3_div'></div>
+                    <script src="figure3.js"></script>
+                    <figcaption>
+                        A plot of network outputs at \(x' + \alpha (x - x')\).
+                        Notice that the network output saturates the correct class
+                        at small values of \(\alpha\). By the time \(\alpha = 1\),
+                        the network output barely changes.
+                    </figcaption>
+                </figure>
+            </d-figure>
         </p>
         <p>
             What we really want to know is how our network got from 
@@ -217,20 +234,22 @@
             $$
                 \tag{3} (x_i - x'_i) \times \int_{\alpha' = 0}^{\alpha} \frac{\delta f(x' + \alpha' (x - x'))}{\delta x_i} d \alpha'
             $$
-            We visualize these three equations below.<dt-fn>Note that in practice, we use a discrete sum
+            We visualize these three equations below.<d-footnote>Note that in practice, we use a discrete sum
             approximation of the integral with 50 linearly-spaced points between 0 and 1. 50 points
             seems to be a fairly standard number to use
             when using the discrete sum approximation of the integral, 
-            which was also described in the original integrated gradients paper.</dt-fn>
-            <figure class="l-page-outset">
-                <div id='figure4_div'></div>
-                <script src="figure4.js"></script>
-                <figcaption>
-                    Integrated Gradients, visualized. In the line chart, the red line refers to
-                    equation (4) and the blue line refers to \(f(x) - f(x')\). Notice how high magnitude gradients
-                    accumulate at small values of \(\alpha\).
-                </figcaption>
-            </figure>
+            which was also described in the original integrated gradients paper.</d-footnote>
+            <d-figure>
+                <figure class="l-page">
+                    <div id='figure4_div'></div>
+                    <script src="figure4.js"></script>
+                    <figcaption>
+                        Integrated Gradients, visualized. In the line chart, the red line refers to
+                        equation (4) and the blue line refers to \(f(x) - f(x')\). Notice how high magnitude gradients
+                        accumulate at small values of \(\alpha\).
+                    </figcaption>
+                </figure>
+            </d-figure>
         </p>
         <p>
             The line chart above plots the following equation:
@@ -248,11 +267,11 @@
             But there is another reason to plot 
             the sum of the feature attributions. 
             Integrated gradients attributions satisfy the
-            following axiom:<dt-fn>This is thanks to
+            following axiom:<d-footnote>This is thanks to
             the fundamental theorem of calculus. The discrete
             approximation of the integral only
             satisfies it in the limit, but it does converge to
-            a good approximation given enough samples. </dt-fn>
+            a good approximation given enough samples. </d-footnote>
             $$
                 \textrm{Axiom 1: Completeness}\\
                 \sum_i \phi_i^{IG}(f, x, x') = f(x) - f(x')
@@ -270,7 +289,7 @@
         <p>
             Integrated Gradients is inspired by work
             from cooperative game theory, specifically the Aumann-Shapley value
-            <dt-cite key="aumann2015values"></dt-cite>. In cooperative game theory,
+            <d-cite key="aumann2015values"></d-cite>. In cooperative game theory,
             a non-atomic game is a construction used to model large-scale economic systems
             where there are enough participants that it is desirable to model them continuously.
             Aumann-Shapley values provide a theoretically grounded way to
@@ -312,9 +331,9 @@
         <p>
             The point here is that fixed feature values may have unintended meaning.
             The problem compounds further when you consider the mathematical formulation
-            of integrated gradients: it has a multiplicative \(x_i - x'_i\) term.<dt-fn>This term arises
+            of integrated gradients: it has a multiplicative \(x_i - x'_i\) term.<d-footnote>This term arises
             as a consequence of the completeness axiom, which requires that the derivative of
-            the network be respect to the interpolation constant in the path integral.</dt-fn>
+            the network be respect to the interpolation constant in the path integral.</d-footnote>
             For the sake of a thought experiment, suppose a patient had a blood sugar level of \(0\). 
             To understand why our machine learning model thinks this patient
             is at high risk, you run integrated gradients on this data point with a
@@ -329,16 +348,19 @@
           will not highlight black pixels as important.
           The method is blind to the color you use as a baseline, which
           we illustrate with the figure below.
-          <figure class="l-page-outset">
-              <div id='figure5_div'></div>
-              <script src="figure5.js"></script>
-              <figcaption>
-                  Mouse over the segmented image to choose a different color
-                  as a baseline input \(x'\). Notice that pixels
-                  of the baseline color are not highlighted as important, 
-                  even if they make up part of the main object in the image.
-              </figcaption>
-          </figure>
+          <d-figure>
+              <figure class="l-page">
+                  <div id='figure5_div'></div>
+                  <script src="figure5.js"></script>
+                  <figcaption>
+                      Mouse over the segmented image to choose a different color
+                      as a baseline input \(x'\). Notice that pixels
+                      of the baseline color are not highlighted as important, 
+                      even if they make up part of the main object in the image.
+                  </figcaption>
+              </figure>
+          </d-figure>
+          
         </p>
         <h2>Integrating out the Baseline</h2>
         <p>
@@ -370,12 +392,12 @@
             The first integrates over \(p_D\), and the second integrates over the uniform distribution.
             By thinking about these integrals as expectations, we arrive 
             at our proposed extension of integrated gradients, called <b>expected 
-            gradients</b>, which we introduced in <dt-cite key="erion2019learning"></dt-cite>.<dt-fn>
+            gradients</b>, which we introduced <d-footnote>
             Our work that introduces expected gradients does not fully discuss the nuances presented here. Instead, 
             it is about how you can train models to be 
             more interpretable and achieve better generalization performance by imposing priors
             on their feature attributions.
-            </dt-fn> We collapse both expectations to get the formal definition
+            </d-footnote> in <d-cite key="erion2019learning"></d-cite>. We collapse both expectations to get the formal definition
             of expected gradients:
             $$ \phi_i^{EG}(f, x) = \mathop{\mathbb{E}}_{x' \sim D, \alpha \sim U(0, 1)} \bigg[ (x_i - x'_i) \times 
               \frac{\delta f(x' + \alpha (x - x'))}{\delta x_i} \bigg]
@@ -406,23 +428,25 @@
           samples from \(D\), \(\alpha^k\) and \(\alpha^j\) 
           are sampled uniformly from the interval \([0, 1]\),
           and \(k\) is the current sample number.
-          <figure class="l-page-outset">
-              <div id='figure6_div'></div>
-              <script src="figure6.js"></script>
-              <figcaption>
-                  A visual representation of expected gradients. Instead of taking contributions
-                  from a single path, expected gradients averages contributions from 
-                  all paths defined by the underlying data distribution. Note that
-                  this figure only displays every 10th sample to avoid loading many images.
-              </figcaption>
-          </figure>
+          <d-figure>
+              <figure class="l-page-outset">
+                  <div id='figure6_div'></div>
+                  <script src="figure6.js"></script>
+                  <figcaption>
+                      A visual representation of expected gradients. Instead of taking contributions
+                      from a single path, expected gradients averages contributions from 
+                      all paths defined by the underlying data distribution. Note that
+                      this figure only displays every 10th sample to avoid loading many images.
+                  </figcaption>
+              </figure>
+          </d-figure>
         </p>
         
         <p>
           Integrated gradients is part of a family of methods called path methods,
           which integrate contributions along a path between two points. Diagonal path methods 
           are the only methods that satisfy certain axioms, like the aforementioned completeness axiom
-           <dt-cite key="friedman2004paths"></dt-cite>. It turns out that
+           <d-cite key="friedman2004paths"></d-cite>. It turns out that
            expected gradients also satisfies these axioms. The key difference is that expected gradients
           allows contributions over multiple paths, not the single path between a
           fixed \(x'\) and \(x\). Other than that, it is still also a diagonal path
@@ -433,8 +457,8 @@
             If you are interested in using expected gradients to explain
             your machine learning models, head over 
             to the <a href="http://github.com/slundberg/shap" target="_blank">SHAP package</a> 
-            <dt-cite key="lundberg2017unified"></dt-cite>,
-            where it is implemented as the <dt-code language="python">GradientExplainer</dt-code>
+            <d-cite key="lundberg2017unified"></d-cite>,
+            where it is implemented as the <d-code language="python">GradientExplainer</d-code>
             object for TensorFlow, Keras, and PyTorch models.
         </dt>
         </p>
@@ -456,231 +480,35 @@
             have a natural way to define \(x'\) in your particular application,
             that's great, and you shouldn't hesitate to use it. But if you don't,
             consider letting your data decide for you.
-            <figure>
-                <div id='figure7_div'></div>
-                <script src="figure7.js"></script>
-                <figcaption>
-                    A side-by-side comparison of Integrated Gradients
-                    and Expected Gradients.
-                </figcaption>
-            </figure>
+            <d-figure>
+                <figure class='l-body'>
+                    <div id='figure7_div'></div>
+                    <script src="figure7.js"></script>
+                    <figcaption>
+                        A side-by-side comparison of Integrated Gradients
+                        and Expected Gradients.
+                    </figcaption>
+                </figure>
+            </d-figure>
+            
         </p>
-        </dt-article>
-        
-        <dt-appendix>
-        </dt-appendix>
+        </d-article>
+        <d-appendix>
+            <h3>Acknowledgments</h3>
+            <p>
+              I'm sure I have people I need to acknowledge here,
+              but I can't remember who right now. I'll get to this later.
+            </p>
+          
+            <d-footnote-list></d-footnote-list>
+            <d-citation-list></d-citation-list>
+        </d-appendix>
+
+          <!-- bibliography will be inlined during Distill pipeline's pre-rendering -->
+        <d-bibliography src="bibliography.bib"></d-bibliography>
 
         <script type="text/bibliography">
-        @inproceedings{sundararajan2017axiomatic,
-            title={Axiomatic attribution for deep networks},
-            author={Sundararajan, Mukund and Taly, Ankur and Yan, Qiqi},
-            booktitle={Proceedings of the 34th International Conference on Machine Learning-Volume 70},
-            pages={3319--3328},
-            year={2017},
-            organization={JMLR. org},
-            url={https://arxiv.org/pdf/1703.01365}
-        }
         
-        @inproceedings{szegedy2017inception,
-          title={Inception-v4, inception-resnet and the impact of residual connections on learning},
-          author={Szegedy, Christian and Ioffe, Sergey and Vanhoucke, Vincent and Alemi, Alexander A},
-          booktitle={Thirty-First AAAI Conference on Artificial Intelligence},
-          year={2017},
-          url={https://www.aaai.org/ocs/index.php/AAAI/AAAI17/paper/viewFile/14806/14311}
-        }
-         
-        @inproceedings{deng2009imagenet,
-            title={Imagenet: A large-scale hierarchical image database},
-            author={Deng, Jia and Dong, Wei and Socher, Richard and Li, Li-Jia and Li, Kai and Fei-Fei, Li},
-            booktitle={2009 IEEE conference on computer vision and pattern recognition},
-            pages={248--255},
-            year={2009},
-            organization={Ieee},
-            url={https://www.researchgate.net/profile/Li_Jia_Li/publication/221361415_ImageNet_a_Large-Scale_Hierarchical_Image_Database/links/00b495388120dbc339000000/ImageNet-a-Large-Scale-Hierarchical-Image-Database.pdf}
-        }
-
-        @inproceedings{he2015delving,
-          title={Delving deep into rectifiers: Surpassing human-level performance on imagenet classification},
-          author={He, Kaiming and Zhang, Xiangyu and Ren, Shaoqing and Sun, Jian},
-          booktitle={Proceedings of the IEEE international conference on computer vision},
-          pages={1026--1034},
-          year={2015},
-          url={https://www.cv-foundation.org/openaccess/content_iccv_2015/papers/He_Delving_Deep_into_ICCV_2015_paper.pdf}
-        }
-        
-        @article{silberman2016tensorflow,
-          title={Tensorflow-slim image classification model library},
-          author={Silberman, Nathan and Guadarrama, Sergio},
-          year={2016},
-          publisher={Accessed},
-          url={https://github.com/tensorflow/models/tree/master/research/slim}
-        }
-        
-        @inproceedings{shrikumar2017learning,
-          title={Learning important features through propagating activation differences},
-          author={Shrikumar, Avanti and Greenside, Peyton and Kundaje, Anshul},
-          booktitle={Proceedings of the 34th International Conference on Machine Learning-Volume 70},
-          pages={3145--3153},
-          year={2017},
-          organization={JMLR. org},
-          url={https://arxiv.org/pdf/1704.02685}
-        }
-        
-        @inproceedings{binder2016layer,
-          title={Layer-wise relevance propagation for neural networks with local renormalization layers},
-          author={Binder, Alexander and Montavon, Gregoire and Lapuschkin, Sebastian and Muller, Klaus-Robert and Samek, Wojciech},
-          booktitle={International Conference on Artificial Neural Networks},
-          pages={63--71},
-          year={2016},
-          organization={Springer},
-          url={https://arxiv.org/pdf/1604.00825.pdf}
-        }
-        
-        @article{smilkov2017smoothgrad,
-          title={Smoothgrad: removing noise by adding noise},
-          author={Smilkov, Daniel and Thorat, Nikhil and Kim, Been and Viegas, Fernanda and Wattenberg, Martin},
-          journal={arXiv preprint arXiv:1706.03825},
-          year={2017},
-          url={https://arxiv.org/pdf/1706.03825.pdf}
-        }
-        
-        @inproceedings{lundberg2017unified,
-          title={A unified approach to interpreting model predictions},
-          author={Lundberg, Scott M and Lee, Su-In},
-          booktitle={Advances in Neural Information Processing Systems},
-          pages={4765--4774},
-          year={2017},
-          url={http://papers.nips.cc/paper/7062-a-unified-approach-to-interpreting-model-predictions.pdf}
-        }
-        
-        @book{aumann2015values,
-          title={Values of non-atomic games},
-          author={Aumann, Robert J and Shapley, Lloyd S},
-          year={2015},
-          publisher={Princeton University Press},
-          url={https://www.jstor.org/stable/j.ctt13x149m}
-        }
-        
-        @article{friedman2004paths,
-          title={Paths and consistency in additive cost sharing},
-          author={Friedman, Eric J},
-          journal={International Journal of Game Theory},
-          volume={32},
-          number={4},
-          pages={501--518},
-          year={2004},
-          publisher={Springer},
-          url={https://link.springer.com/content/pdf/10.1007/s001820400173.pdf}
-        }
-        
-        @misc{erion2019learning,
-            title={Learning Explainable Models Using Attribution Priors},
-            author={Gabriel Erion and Joseph D. Janizek and Pascal Sturmfels and Scott Lundberg and Su-In Lee},
-            year={2019},
-            eprint={1906.10670},
-            archivePrefix={arXiv},
-            primaryClass={cs.LG},
-            url={https://arxiv.org/pdf/1906.10670.pdf}
-        }
-        
-        @article{olah2018the,
-          author = {Olah, Chris and Satyanarayan, Arvind and Johnson, Ian and Carter, Shan and Schubert, Ludwig and Ye, Katherine and Mordvintsev, Alexander},
-          title = {The Building Blocks of Interpretability},
-          journal = {Distill},
-          year = {2018},
-          note = {https://distill.pub/2018/building-blocks},
-          doi = {10.23915/distill.00010}
-        }
-        
-        @article{olah2017feature,
-          author = {Olah, Chris and Mordvintsev, Alexander and Schubert, Ludwig},
-          title = {Feature Visualization},
-          journal = {Distill},
-          year = {2017},
-          note = {https://distill.pub/2017/feature-visualization},
-          doi = {10.23915/distill.00007}
-        }
-        
-        @article{kim2017interpretability,
-          title={Interpretability beyond feature attribution: Quantitative testing with concept activation vectors (tcav)},
-          author={Kim, Been and Wattenberg, Martin and Gilmer, Justin and Cai, Carrie and Wexler, James and Viegas, Fernanda and Sayres, Rory},
-          journal={arXiv preprint arXiv:1711.11279},
-          year={2017}
-        }
-        
-        @inproceedings{fong2017interpretable,
-          title={Interpretable explanations of black boxes by meaningful perturbation},
-          author={Fong, Ruth C and Vedaldi, Andrea},
-          booktitle={Proceedings of the IEEE International Conference on Computer Vision},
-          pages={3429--3437},
-          year={2017}
-        }
-        
-        @inproceedings{selvaraju2017grad,
-          title={Grad-cam: Visual explanations from deep networks via gradient-based localization},
-          author={Selvaraju, Ramprasaath R and Cogswell, Michael and Das, Abhishek and Vedantam, Ramakrishna and Parikh, Devi and Batra, Dhruv},
-          booktitle={Proceedings of the IEEE International Conference on Computer Vision},
-          pages={618--626},
-          year={2017}
-        }
-        
-        @inproceedings{zeiler2014visualizing,
-          title={Visualizing and understanding convolutional networks},
-          author={Zeiler, Matthew D and Fergus, Rob},
-          booktitle={European conference on computer vision},
-          pages={818--833},
-          year={2014},
-          organization={Springer}
-        }
-        
-        @article{sayres2019using,
-          title={Using a deep learning algorithm and integrated gradients explanation to assist grading for diabetic retinopathy},
-          author={Sayres, Rory and Taly, Ankur and Rahimy, Ehsan and Blumer, Katy and Coz, David and Hammel, Naama and Krause, Jonathan and Narayanaswamy, Arunachalam and Rastegar, Zahra and Wu, Derek and others},
-          journal={Ophthalmology},
-          volume={126},
-          number={4},
-          pages={552--564},
-          year={2019},
-          publisher={Elsevier},
-          url={https://www.sciencedirect.com/science/article/pii/S0161642018315756}
-        }
-        @article{warrick2018ensembling,
-          title={Ensembling convolutional and long short-term memory networks for electrocardiogram arrhythmia detection},
-          author={Warrick, Philip A and Homsi, Masun Nabhan},
-          journal={Physiological measurement},
-          volume={39},
-          number={11},
-          pages={114002},
-          year={2018},
-          publisher={IOP Publishing},
-          url={https://iopscience.iop.org/article/10.1088/1361-6579/aad386/meta}
-        }
-        
-        @article{sundararajan2016gradients,
-          title={Gradients of counterfactuals},
-          author={Sundararajan, Mukund and Taly, Ankur and Yan, Qiqi},
-          journal={arXiv preprint arXiv:1611.02639},
-          year={2016},
-          url={https://arxiv.org/pdf/1611.02639.pdf}
-        }
-        
-        @inproceedings{li2018visualizing,
-          title={Visualizing the loss landscape of neural nets},
-          author={Li, Hao and Xu, Zheng and Taylor, Gavin and Studer, Christoph and Goldstein, Tom},
-          booktitle={Advances in Neural Information Processing Systems},
-          pages={6389--6399},
-          year={2018},
-          url={http://papers.nips.cc/paper/7875-visualizing-the-loss-landscape-of-neural-nets.pdf}
-        }
-        
-        @inproceedings{glorot2010understanding,
-          title={Understanding the difficulty of training deep feedforward neural networks},
-          author={Glorot, Xavier and Bengio, Yoshua},
-          booktitle={Proceedings of the thirteenth international conference on artificial intelligence and statistics},
-          pages={249--256},
-          year={2010},
-          url={http://proceedings.mlr.press/v9/glorot10a/glorot10a.pdf}
-        }
         </script>
     </body>
 </html>

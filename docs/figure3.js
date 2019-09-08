@@ -5,9 +5,9 @@ String.prototype.capitalize = function() {
 function figure3() {
     var margin = ({
         top: 30,
-        right: 120,
+        right: 30,
         bottom: 30,
-        left: 60
+        left: 30
     });
     
     var indicator_image_size = 75;

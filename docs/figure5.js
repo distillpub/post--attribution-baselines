@@ -1,9 +1,9 @@
 function figure5() {
     var margin = ({
         top: 30,
-        right: 120,
+        right: 30,
         bottom: 30,
-        left: 0
+        left: 30
     });
 
     var image_size = 299;
