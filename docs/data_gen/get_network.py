@@ -39,16 +39,16 @@ def normalize(im_batch, _range=None, _domain=None):
         norm_batch = norm_batch * (amax - amin) + amin
     return norm_batch
 
-def get_model(dataset_split_name='validation', random_alpha=True, reference='pl'):
+def get_model(dataset_split_name='validation', random_alpha=True, reference='pl', num_samples=201, model_name='inception_v4'):
     FLAGS.batch_size = 1
     FLAGS.dataset_name = 'imagenet'
     FLAGS.dataset_split_name = dataset_split_name
-    FLAGS.dataset_dir = '/data/image_datasets/imagenet/'
+    FLAGS.dataset_dir = '/projects/leelab3/image_datasets/imagenet/'
     FLAGS.eval_image_size = 299
-    FLAGS.model_name = 'inception_v4'
-    FLAGS.checkpoint_path = 'inception_v4.ckpt'
+    FLAGS.model_name = model_name
+    FLAGS.checkpoint_path = model_name + '.ckpt'
 
-    tf.logging.set_verbosity(tf.logging.ERROR)
+    tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
     tf_global_step = slim.get_or_create_global_step()
 
     ######################
@@ -102,9 +102,9 @@ def get_model(dataset_split_name='validation', random_alpha=True, reference='pl'
     
     explainer = AttributionPriorExplainer(random_alpha=random_alpha)
     if reference == 'pl':
-        cond_input_op, train_eg = explainer.input_to_samples_delta(images_pl, lambda: tf.placeholder(tf.float32, (None, 201, 299, 299, 3)))
+        cond_input_op, train_eg = explainer.input_to_samples_delta(images_pl, lambda: tf.placeholder(tf.float32, (None, num_samples, 299, 299, 3)))
     elif reference == 'black':
-        cond_input_op, train_eg = explainer.input_to_samples_delta(images_pl, lambda: tf.constant(0.0, dtype=tf.float32, shape=(FLAGS.batch_size, 201, 299, 299, 3)))
+        cond_input_op, train_eg = explainer.input_to_samples_delta(images_pl, lambda: tf.constant(0.0, dtype=tf.float32, shape=(FLAGS.batch_size, num_samples, 299, 299, 3)))
     else:
         raise ValueError('Undefined value `{}` for argument reference.')
     
