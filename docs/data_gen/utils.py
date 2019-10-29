@@ -32,6 +32,51 @@ def get_gaussian_image(image, sigma, mean_image=None, minval=-1.0, maxval=1.0):
         mean_image = image
     gaussian_image = np.random.randn(*image.shape) * sigma + mean_image
     return np.clip(gaussian_image, a_min=minval, a_max=maxval)
+
+def _get_top_indices(saliency):
+    '''
+    Returns the indices of saliency ranked in descending order.
+    
+    Args:
+        saliency: A 2D array
+    
+    Returns:
+        An array of shape [np.prod(saliency.shape), 2] representing
+        the indices of saliency in descending order of magnitude.
+    '''
+    return np.flip(np.squeeze(np.dstack(np.unravel_index(np.argsort(saliency.ravel()), 
+                                                         saliency.shape))), axis=0)
+
+def ablate_top_k(image, saliency, k, method='mean'):
+    '''
+    Ablates the top k% pixels in the image as ranked by saliency. 
+    
+    Args:
+        image:    A (width, height, channels) array
+        saliency: A (width, height) array of absolute values
+        k:        A floating point number between 0.0 and 1.0. The fraction
+                  of top pixels to ablate. If the method is `mass_center` or
+                  `blur_center`, k instead represents the fraction of the total image to cover.
+        method:   One of `mean`, `blur`, `mean_center`, `blur_center`.
+        
+    Returns:
+        An ablated image. Used for interpretability experiments.
+    '''
+    ablated_image = image.copy()
+    if method == 'mean' or method == 'mean_center':
+        baseline_image = np.ones(image.shape) * np.mean(image, axis=(0, 1), keepdims=True)
+    elif method == 'blur' or method == 'blur_center':
+        baseline_image = get_blurred_image(image, sigma=20.0)
+    
+    if method == 'mean' or method == 'blur':
+        indices     = _get_top_indices(saliency)
+        max_to_flip = int(k * indices.shape[0])
+        ablated_image[indices[:max_to_flip, 0], 
+                      indices[:max_to_flip, 1]] = baseline_image[indices[:max_to_flip, 0],
+                                                                 indices[:max_to_flip, 1]]
+    elif method == 'mean_center' or method == 'blur_center':
+        
+    
     
 def normalize(im_batch, _range=None, _domain=None):
     if len(im_batch.shape) == 2:
