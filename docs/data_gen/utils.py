@@ -1,6 +1,13 @@
 import tensorflow as tf
 import numpy as np
 from scipy.ndimage import gaussian_filter
+from tqdm import tqdm
+from PIL import Image
+
+def save_image(image, filename, minval=-1.0, maxval=1.0):
+    normalized_image = normalize(image, _domain=(minval, maxval), _range=(0.0, 255.0))
+    normalized_image = normalized_image.astype(np.uint8)
+    Image.fromarray(normalized_image).save(filename)
 
 def get_max_distance_image(image, minval=-1.0, maxval=1.0):
     meanval = (minval + maxval) * 0.5
@@ -20,9 +27,12 @@ def get_blurred_image(image, sigma=10):
 def get_uniform_image(image, minval=-1.0, maxval=1.0):
     return np.random.uniform(low=minval, high=maxval, size=image.shape)
 
-def get_mean_image(image, sigma):
-    return np.random.randn(*image.shape) * sigma + image
-
+def get_gaussian_image(image, sigma, mean_image=None, minval=-1.0, maxval=1.0):
+    if mean_image is None:
+        mean_image = image
+    gaussian_image = np.random.randn(*image.shape) * sigma + mean_image
+    return np.clip(gaussian_image, a_min=minval, a_max=maxval)
+    
 def normalize(im_batch, _range=None, _domain=None):
     if len(im_batch.shape) == 2:
         axis = (0, 1)
@@ -53,7 +63,7 @@ def norm_clip(x):
     clipped = np.clip(normalized, a_min=np.min(normalized), a_max=np.percentile(normalized, 99.9))
     return clipped
 
-def _grad_across_multi_output(self, output_tensor, input_tensor, sparse_labels_op=None):
+def _grad_across_multi_output(output_tensor, input_tensor, sparse_labels_op=None):
     '''
     Calculates the gradients for each output with respect to each input.
     Args:
@@ -147,7 +157,10 @@ def get_path_attributions(model, sess, saliency_op, delta_pl,
     
     for j in iterable:
         current_alphas     = alphas[j:min(j + batch_size, num_samples)]
+        current_alphas     = current_alphas[:, np.newaxis, np.newaxis, np.newaxis]
         current_references = background_reference[sample_indices[j:min(j + batch_size, num_samples)]]
+        
+        current_label = np.tile(target_label, (min(batch_size, num_samples - j),))
         
         interp_input = current_alphas * target_image + \
                       (1.0 - current_alphas) * current_references
@@ -158,7 +171,7 @@ def get_path_attributions(model, sess, saliency_op, delta_pl,
         
         current_saliency = sess.run(saliency_op, feed_dict={
             model.images_pl: interp_input,
-            model.labels_pl: target_label,
+            model.labels_pl: current_label,
             delta_pl:        delta_input,
         })
         saliency_array.append(current_saliency)

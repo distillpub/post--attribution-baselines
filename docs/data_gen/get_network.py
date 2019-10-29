@@ -39,14 +39,18 @@ def normalize(im_batch, _range=None, _domain=None):
         norm_batch = norm_batch * (amax - amin) + amin
     return norm_batch
 
-def get_model(dataset_split_name='validation', random_alpha=True, reference='pl', num_samples=201, model_name='inception_v4'):
+def get_model(dataset_split_name='validation', random_alpha=True, reference='pl', num_samples=201, model_name='inception_v4', checkpoint_path=None):
     FLAGS.batch_size = 1
     FLAGS.dataset_name = 'imagenet'
     FLAGS.dataset_split_name = dataset_split_name
-    FLAGS.dataset_dir = '/projects/leelab3/image_datasets/imagenet/'
+    FLAGS.dataset_dir = '/data/image_datasets/imagenet/'
     FLAGS.eval_image_size = 299
     FLAGS.model_name = model_name
-    FLAGS.checkpoint_path = model_name + '.ckpt'
+    
+    if checkpoint_path is not None:
+        FLAGS.checkpoint_path = checkpoint_path
+    else:
+        FLAGS.checkpoint_path = model_name + '.ckpt'
 
     tf.compat.v1.logging.set_verbosity(tf.compat.v1.logging.ERROR)
     tf_global_step = slim.get_or_create_global_step()
