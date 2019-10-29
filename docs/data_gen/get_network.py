@@ -5,7 +5,7 @@ import numpy as np
 from datasets import dataset_factory
 from nets import nets_factory
 from preprocessing import preprocessing_factory
-from attributionpriors.ops import AttributionPriorExplainer
+from ops import AttributionPriorExplainer
 
 import eval_image_classifier
 

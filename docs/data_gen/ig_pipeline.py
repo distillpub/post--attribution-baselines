@@ -4,13 +4,13 @@ import altair as alt
 import pandas as pd
 import matplotlib.pyplot as plt
 from get_network import get_model, normalize
-from regularized_explanations import ops, ig
 from tqdm import tqdm
 from scipy import special
 import scipy.misc
 import os
 import json
 import shap
+import ops
 
 from skimage.segmentation import felzenszwalb, slic, quickshift, watershed, mark_boundaries
 
@@ -378,14 +378,6 @@ def get_ig_weights_slic(model, sess):
             raw_weights_acc = np.array(raw_weights_acc).squeeze()
             ig_weights = np.mean(raw_weights_acc, axis=0)
             
-#             background_reference_images = np.tile(np.expand_dims(input_reference, axis=0), [51, 1, 1, 1])
-            
-#             ig_weights = sess.run(expected_grads_op, feed_dict={
-#                 images_pl: image_input,
-#                 background_reference_pl: background_reference_images,
-#                 train_eg: True,
-#                 labels_pl: label_input
-#             })
             sum_ig_weights = np.sum(ig_weights, axis=-1)
             sum_abs_ig_weights = np.abs(sum_ig_weights)
             ig_im = norm_clip(sum_abs_ig_weights.squeeze())
