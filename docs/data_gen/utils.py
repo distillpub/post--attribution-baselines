@@ -1,6 +1,6 @@
 import tensorflow as tf
 import numpy as np
-from scipy.ndimage import gaussian_filter
+from scipy.ndimage import gaussian_filter, center_of_mass
 from tqdm import tqdm
 from PIL import Image
 
@@ -62,6 +62,9 @@ def ablate_top_k(image, saliency, k, method='mean'):
     Returns:
         An ablated image. Used for interpretability experiments.
     '''
+    if k == 0.0:
+        return image
+    
     ablated_image = image.copy()
     if method == 'mean' or method == 'mean_center':
         baseline_image = np.ones(image.shape) * np.mean(image, axis=(0, 1), keepdims=True)
@@ -75,8 +78,14 @@ def ablate_top_k(image, saliency, k, method='mean'):
                       indices[:max_to_flip, 1]] = baseline_image[indices[:max_to_flip, 0],
                                                                  indices[:max_to_flip, 1]]
     elif method == 'mean_center' or method == 'blur_center':
+        center_indices = np.array(center_of_mass(saliency))
+        lower_bounds   = (center_indices * (1.0 - k)).astype(int)
+        upper_bounds   = ((np.array(saliency.shape) - center_indices) * k + center_indices).astype(int)
         
-    
+        ablated_image[lower_bounds[0]:upper_bounds[0], 
+                      lower_bounds[1]:upper_bounds[1]] = baseline_image[lower_bounds[0]:upper_bounds[0],
+                                                                        lower_bounds[1]:upper_bounds[1]]
+    return ablated_image
     
 def normalize(im_batch, _range=None, _domain=None):
     if len(im_batch.shape) == 2:

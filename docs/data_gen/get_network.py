@@ -114,6 +114,7 @@ def get_model(dataset_split_name='validation', random_alpha=True, reference='pl'
     
     
     logits, _ = network_fn(cond_input_op)
+    softmax_logits = tf.nn.softmax(logits)
     pred_labels   = tf.argmax(logits, axis=1)
     
     expected_grads_op = explainer.shap_value_op(logits, cond_input_op, sparse_labels_op=labels_pl)
@@ -137,6 +138,7 @@ def get_model(dataset_split_name='validation', random_alpha=True, reference='pl'
     model.images_pl = images_pl
     model.labels_pl = labels_pl
     model.logits = logits
+    model.softmax_logits = softmax_logits
     model.pred_labels = pred_labels
     model.image_op  = images
     model.label_op  = labels
