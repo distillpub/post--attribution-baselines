@@ -23,6 +23,32 @@ FLAGS = flags.FLAGS
 flags.DEFINE_string('ablation_type', 'mean', 'One of `mean`, `blur`, `mean_center`, `blur_center`')
 flags.DEFINE_string('saliency_type', 'eg', 'One of `eg`, `blur`, `gaussian`, `uniform`, `ig`, `max_dist`')
 flags.DEFINE_integer('num_samples', 1000, 'Number of samples to average over')
+flags.DEFINE_boolean('save_examples', False, 'Set to true to save examples of ablation images')
+
+def save_ablation_examples(model, sess, images, labels, delta_pl, grad_op, grad_input_op):
+    baseline_image = np.load('data/ignored/reference_images.npy')
+    k_vals = np.linspace(0.0, 1.0, num=11)
+    names = ['house_finch', 'rubber_eraser', 'goldfinch', 'killer_whale']
+    for i in tqdm(range(len(images))):
+        image = images[i]
+        label = labels[i]
+        name  = names[i]
+        os.makedirs('data/{}/ablation/'.format(name) , exist_ok=True)
+        saliency = utils.get_path_attributions(model, sess, grad_input_op, delta_pl, 
+                          image, label, baseline_image, num_samples=100,
+                          batch_size=32, random_alpha=True, random_sample=True,
+                          verbose=False, take_difference=True)
+        sum_abs_saliency = np.abs(np.sum(saliency, axis=-1))
+        norm_clipped_saliency = utils.norm_clip(sum_abs_saliency)
+        utils.save_image(norm_clipped_saliency, 'data/{}/ablation/saliency.png'.format(name),
+                         minval=0.0, maxval=norm_clipped_saliency.max())
+        for k in k_vals:
+            ablated_image = utils.ablate_top_k(image, sum_abs_saliency, k, method=FLAGS.ablation_type)
+            utils.save_image(ablated_image, 'data/{}/ablation/{}_{:.2f}.png'.format(name, 
+                                                                                    FLAGS.ablation_type, 
+                                                                                    k), 
+                             minval=-1.0, maxval=1.0)
+        
 
 def save_samples(model, sess, images, labels, delta_pl, grad_op, grad_input_op):
     random_alpha  = True
@@ -149,7 +175,11 @@ def main(argv=None):
     grad_op = utils._grad_across_multi_output(output_tensor=model.logits, input_tensor=model.images_pl, sparse_labels_op=model.labels_pl)
     grad_input_op = grad_op * delta_pl
     
-    run_ablation(model, sess, images, labels, delta_pl, grad_op, grad_input_op)
+    
+    if FLAGS.save_examples:
+        save_ablation_examples(model, sess, images, labels, delta_pl, grad_op, grad_input_op)
+    else:
+        run_ablation(model, sess, images, labels, delta_pl, grad_op, grad_input_op)
         
 if __name__ == '__main__':
     app.run(main)
