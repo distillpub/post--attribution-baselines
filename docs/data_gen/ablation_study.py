@@ -21,7 +21,7 @@ from absl import flags
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string('ablation_type', 'mean', 'One of `mean`, `blur`, `mean_center`, `blur_center`')
-flags.DEFINE_string('saliency_type', 'eg', 'One of `eg`, `blur`, `gaussian`, `uniform`, `ig`')
+flags.DEFINE_string('saliency_type', 'eg', 'One of `eg`, `blur`, `gaussian`, `uniform`, `ig`, `max_dist`')
 flags.DEFINE_integer('num_samples', 1000, 'Number of samples to average over')
 
 def save_samples(model, sess, images, labels, delta_pl, grad_op, grad_input_op):
@@ -63,6 +63,10 @@ def save_samples(model, sess, images, labels, delta_pl, grad_op, grad_input_op):
                 random_sample = False
             elif FLAGS.saliency_type == 'gaussian':
                 baseline_image = np.stack([utils.get_gaussian_image(current_image, sigma=1.0) for _ in range(num_interp_points)], axis=0)
+            elif FLAGS.saliency_type == 'max_dist':
+                baseline_image = utils.get_max_distance_image(current_image)
+                random_alpha  = False
+                random_sample = False
             
             saliency = utils.get_path_attributions(model, sess, grad_input_op, delta_pl, 
                           current_image, current_label, baseline_image, num_samples=num_interp_points,

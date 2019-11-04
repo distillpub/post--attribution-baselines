@@ -1,5 +1,14 @@
 #!/usr/bin/env bash
 
+tmux new-session -d -s max_dist '
+export CUDA_VISIBLE_DEVICES=0; 
+python ablation_study.py --num_samples 1000 --saliency_type max_dist --ablation_type mean;
+python ablation_study.py --num_samples 1000 --saliency_type max_dist --ablation_type blur;
+python ablation_study.py --num_samples 1000 --saliency_type max_dist --ablation_type mean_center;
+python ablation_study.py --num_samples 1000 --saliency_type max_dist --ablation_type blur_center;
+read
+'
+
 tmux new-session -d -s blur '
 export CUDA_VISIBLE_DEVICES=0; 
 python ablation_study.py --num_samples 1000 --saliency_type blur --ablation_type mean;
