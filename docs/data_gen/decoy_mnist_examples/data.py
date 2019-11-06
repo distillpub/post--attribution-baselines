@@ -1,7 +1,7 @@
 import tensorflow as tf
 import numpy as np
 
-def decoy_mnist(alter_test=True):
+def decoy_mnist(alter_test=True, alter_train=True):
     (x_train, y_train), (x_test, y_test) = tf.keras.datasets.mnist.load_data()    
     x_train = x_train.astype('float32')
     x_test  = x_test.astype('float32')
@@ -15,7 +15,8 @@ def decoy_mnist(alter_test=True):
     x_train = x_train * (1. / 255) - 0.5
     x_test  = x_test  * (1. / 255) - 0.5
     
-    x_train[:, 0:3, 0:3, :] = y_train[:, np.newaxis, np.newaxis, np.newaxis] / 10.0 - 0.5
+    if alter_train:
+        x_train[:, 0:3, 0:3, :] = y_train[:, np.newaxis, np.newaxis, np.newaxis] / 10.0 - 0.5
     if alter_test:
         x_test[:, 0:3, 0:3, :]  = y_test[:, np.newaxis, np.newaxis, np.newaxis] / 10.0 - 0.5
         

@@ -3,7 +3,6 @@ from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Activation, Flatten, Input
 from tensorflow.keras.layers import Conv2D, MaxPooling2D, BatchNormalization
 from tensorflow.keras import regularizers
-from tensorflow.contrib.slim.nets import vgg
 
 def build_model(input_shape=(28, 28, 1)):    
     model = Sequential()
