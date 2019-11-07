@@ -43,7 +43,8 @@ def get_model(dataset_split_name='validation', random_alpha=True, reference='pl'
     FLAGS.batch_size = 1
     FLAGS.dataset_name = 'imagenet'
     FLAGS.dataset_split_name = dataset_split_name
-    FLAGS.dataset_dir = '/data/image_datasets/imagenet/'
+    FLAGS.dataset_dir = '/projects/leelab3/image_datasets/imagenet/'
+    
     FLAGS.eval_image_size = 299
     FLAGS.model_name = model_name
     

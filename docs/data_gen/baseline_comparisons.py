@@ -112,7 +112,7 @@ def run_gaussian(model, sess, images, labels, delta_pl, grad_op, grad_input_op):
             gaussian_baseline = utils.get_gaussian_image(image, sigma)
             ig_saliency = utils.get_path_attributions(model, sess, grad_input_op, delta_pl, 
                           image, label, gaussian_baseline, num_samples=501,
-                          batch_size=32, random_alpha=False, random_sample=False,
+                          batch_size=16, random_alpha=False, random_sample=False,
                           verbose=False, take_difference=True)
             sum_abs_ig = np.abs(np.sum(ig_saliency, axis=-1))
             sum_abs_ig = utils.norm_clip(sum_abs_ig)
@@ -120,10 +120,10 @@ def run_gaussian(model, sess, images, labels, delta_pl, grad_op, grad_input_op):
             utils.save_image(gaussian_baseline, base_dir + 'baseline_sigma{}.png'.format(sigma), minval=-1.0, maxval=1.0)
             utils.save_image(sum_abs_ig, base_dir + 'saliency_sigma{}.png'.format(sigma), minval=0.0, maxval=sum_abs_ig.max())
             
-            gaussian_baseline_eg = np.stack([utils.get_uniform_image(image) for _ in range(501)], axis=0)
+            gaussian_baseline_eg = np.stack([utils.get_gaussian_image(image, sigma) for _ in range(501)], axis=0)
             eg_saliency = utils.get_path_attributions(model, sess, grad_input_op, delta_pl, 
                           image, label, gaussian_baseline_eg, num_samples=501,
-                          batch_size=32, random_alpha=True, random_sample=True,
+                          batch_size=16, random_alpha=True, random_sample=True,
                           verbose=False, take_difference=True)
             sum_abs_eg = np.abs(np.sum(eg_saliency, axis=-1))
             sum_abs_eg = utils.norm_clip(sum_abs_eg)
@@ -134,7 +134,7 @@ def run_gaussian(model, sess, images, labels, delta_pl, grad_op, grad_input_op):
             
             sg_saliency = utils.get_path_attributions(model, sess, grad_input_op, delta_pl, 
                           image, label, gaussian_baseline_eg, num_samples=501,
-                          batch_size=32, random_alpha=True, random_sample=True,
+                          batch_size=16, random_alpha=True, random_sample=True,
                           verbose=False, take_difference=False)
             sum_abs_sg = np.abs(np.sum(sg_saliency, axis=-1))
             sum_abs_sg = utils.norm_clip(sum_abs_sg)
