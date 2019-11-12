@@ -1,427 +1,400 @@
-/*
-    D3.js Slider
-    Inspired by jQuery UI Slider
-    Copyright (c) 2013, Bjorn Sandvik - http://blog.thematicmapping.org
-    BSD license: http://opensource.org/licenses/BSD-3-Clause
-*/
-(function (root, factory) {
-  if (typeof define === 'function' && define.amd) {
-    // AMD. Register as an anonymous module.
-    define(['d3'], factory);
-  } else if (typeof exports === 'object') {
-    if (process.browser) {
-      // Browserify. Import css too using cssify.
-      require('./d3.slider.css');
-    }
-    // Node. Does not work with strict CommonJS, but
-    // only CommonJS-like environments that support module.exports,
-    // like Node.
-    module.exports = factory(require('d3'));
-  } else {
-    // Browser globals (root is window)
-    root.d3.slider = factory(root.d3);
-  }
-}(this, function (d3) {
-return function module() {
-  "use strict";
+(function webpackUniversalModuleDefinition(root, factory) {
+	if(typeof exports === 'object' && typeof module === 'object')
+		module.exports = factory(require("d3"));
+	else if(typeof define === 'function' && define.amd)
+		define(["d3"], factory);
+	else if(typeof exports === 'object')
+		exports["slid3r"] = factory(require("d3"));
+	else
+		root["slid3r"] = factory(root["d3"]);
+})(this, function(__WEBPACK_EXTERNAL_MODULE_4__) {
+return /******/ (function(modules) { // webpackBootstrap
+/******/ 	// The module cache
+/******/ 	var installedModules = {};
+/******/
+/******/ 	// The require function
+/******/ 	function __webpack_require__(moduleId) {
+/******/
+/******/ 		// Check if module is in cache
+/******/ 		if(installedModules[moduleId]) {
+/******/ 			return installedModules[moduleId].exports;
+/******/ 		}
+/******/ 		// Create a new module (and put it into the cache)
+/******/ 		var module = installedModules[moduleId] = {
+/******/ 			i: moduleId,
+/******/ 			l: false,
+/******/ 			exports: {}
+/******/ 		};
+/******/
+/******/ 		// Execute the module function
+/******/ 		modules[moduleId].call(module.exports, module, module.exports, __webpack_require__);
+/******/
+/******/ 		// Flag the module as loaded
+/******/ 		module.l = true;
+/******/
+/******/ 		// Return the exports of the module
+/******/ 		return module.exports;
+/******/ 	}
+/******/
+/******/
+/******/ 	// expose the modules object (__webpack_modules__)
+/******/ 	__webpack_require__.m = modules;
+/******/
+/******/ 	// expose the module cache
+/******/ 	__webpack_require__.c = installedModules;
+/******/
+/******/ 	// define getter function for harmony exports
+/******/ 	__webpack_require__.d = function(exports, name, getter) {
+/******/ 		if(!__webpack_require__.o(exports, name)) {
+/******/ 			Object.defineProperty(exports, name, {
+/******/ 				configurable: false,
+/******/ 				enumerable: true,
+/******/ 				get: getter
+/******/ 			});
+/******/ 		}
+/******/ 	};
+/******/
+/******/ 	// getDefaultExport function for compatibility with non-harmony modules
+/******/ 	__webpack_require__.n = function(module) {
+/******/ 		var getter = module && module.__esModule ?
+/******/ 			function getDefault() { return module['default']; } :
+/******/ 			function getModuleExports() { return module; };
+/******/ 		__webpack_require__.d(getter, 'a', getter);
+/******/ 		return getter;
+/******/ 	};
+/******/
+/******/ 	// Object.prototype.hasOwnProperty.call
+/******/ 	__webpack_require__.o = function(object, property) { return Object.prototype.hasOwnProperty.call(object, property); };
+/******/
+/******/ 	// __webpack_public_path__
+/******/ 	__webpack_require__.p = "";
+/******/
+/******/ 	// Load entry module and return exports
+/******/ 	return __webpack_require__(__webpack_require__.s = 0);
+/******/ })
+/************************************************************************/
+/******/ ([
+/* 0 */
+/***/ (function(module, exports, __webpack_require__) {
 
-  // Public variables width default settings
-  var min = 0,
-      max = 100,
-      step = 0.01,
-      animate = true,
-      orientation = "horizontal",
-      axis = false,
-      margin = 50,
-      value,
-      active = 1,
-      snap = false,
-      scale;
-
-  // Private variables
-  var axisScale,
-      dispatch = d3.dispatch("slide", "slideend"),
-      formatPercent = d3.format(".2%"),
-      tickFormat = d3.format(".0"),
-      handle1,
-      handle2 = null,
-      divRange,
-      sliderLength;
-
-  function slider(selection) {
-    selection.each(function() {
-
-      // Create scale if not defined by user
-      if (!scale) {
-        scale = d3.scale.linear().domain([min, max]);
-      }
-
-      // Start value
-      value = value || scale.domain()[0];
-
-      // DIV container
-      var div = d3.select(this).classed("d3-slider d3-slider-" + orientation, true);
-      
-      var drag = d3.behavior.drag();
-      drag.on('dragend', function () {
-        dispatch.slideend(d3.event, value);
-      })
-
-      // Slider handle
-      //if range slider, create two
-      // var divRange;
-
-      if (toType(value) == "array" && value.length == 2) {
-        handle1 = div.append("a")
-          .classed("d3-slider-handle", true)
-          .attr("xlink:href", "#")
-          .attr('id', "handle-one")
-          .on("click", stopPropagation)
-          .call(drag);
-        handle2 = div.append("a")
-          .classed("d3-slider-handle", true)
-          .attr('id', "handle-two")
-          .attr("xlink:href", "#")
-          .on("click", stopPropagation)
-          .call(drag);
-      } else {
-        handle1 = div.append("a")
-          .classed("d3-slider-handle", true)
-          .attr("xlink:href", "#")
-          .attr('id', "handle-one")
-          .on("click", stopPropagation)
-          .call(drag);
-      }
-      
-      // Horizontal slider
-      if (orientation === "horizontal") {
-
-        div.on("click", onClickHorizontal);
-        
-        if (toType(value) == "array" && value.length == 2) {
-          divRange = d3.select(this).append('div').classed("d3-slider-range", true);
-
-          handle1.style("left", formatPercent(scale(value[ 0 ])));
-          divRange.style("left", formatPercent(scale(value[ 0 ])));
-          drag.on("drag", onDragHorizontal);
-
-          var width = 100 - parseFloat(formatPercent(scale(value[ 1 ])));
-          handle2.style("left", formatPercent(scale(value[ 1 ])));
-          divRange.style("right", width+"%");
-          drag.on("drag", onDragHorizontal);
-
-        } else {
-          handle1.style("left", formatPercent(scale(value)));
-          drag.on("drag", onDragHorizontal);
-        }
-        
-        sliderLength = parseInt(div.style("width"), 10);
-
-      } else { // Vertical
-
-        div.on("click", onClickVertical);
-        drag.on("drag", onDragVertical);
-        if (toType(value) == "array" && value.length == 2) {
-          divRange = d3.select(this).append('div').classed("d3-slider-range-vertical", true);
-
-          handle1.style("bottom", formatPercent(scale(value[ 0 ])));
-          divRange.style("bottom", formatPercent(scale(value[ 0 ])));
-          drag.on("drag", onDragVertical);
-
-          var top = 100 - parseFloat(formatPercent(scale(value[ 1 ])));
-          handle2.style("bottom", formatPercent(scale(value[ 1 ])));
-          divRange.style("top", top+"%");
-          drag.on("drag", onDragVertical);
-
-        } else {
-          handle1.style("bottom", formatPercent(scale(value)));
-          drag.on("drag", onDragVertical);
-        }
-        
-        sliderLength = parseInt(div.style("height"), 10);
-
-      }
-      
-      if (axis) {
-        createAxis(div);
-      }
+"use strict";
 
 
-      function createAxis(dom) {
+var _slicedToArray = function () { function sliceIterator(arr, i) { var _arr = []; var _n = true; var _d = false; var _e = undefined; try { for (var _i = arr[Symbol.iterator](), _s; !(_n = (_s = _i.next()).done); _n = true) { _arr.push(_s.value); if (i && _arr.length === i) break; } } catch (err) { _d = true; _e = err; } finally { try { if (!_n && _i["return"]) _i["return"](); } finally { if (_d) throw _e; } } return _arr; } return function (arr, i) { if (Array.isArray(arr)) { return arr; } else if (Symbol.iterator in Object(arr)) { return sliceIterator(arr, i); } else { throw new TypeError("Invalid attempt to destructure non-iterable instance"); } }; }();
 
-        // Create axis if not defined by user
-        if (typeof axis === "boolean") {
+var _typeof = typeof Symbol === "function" && typeof Symbol.iterator === "symbol" ? function (obj) { return typeof obj; } : function (obj) { return obj && typeof Symbol === "function" && obj.constructor === Symbol && obj !== Symbol.prototype ? "symbol" : typeof obj; };
 
-          axis = d3.svg.axis()
-              .ticks(Math.round(sliderLength / 100))
-              .tickFormat(tickFormat)
-              .orient((orientation === "horizontal") ? "bottom" :  "right");
+var _selectAppend = __webpack_require__(1);
 
-        }
+var _selectAppend2 = _interopRequireDefault(_selectAppend);
 
-        // Copy slider scale to move from percentages to pixels
-        axisScale = scale.ticks ? scale.copy().range([0, sliderLength]) : scale.copy().rangePoints([0, sliderLength], 0.5);
-          axis.scale(axisScale);
+var _findClosestTickColor = __webpack_require__(2);
 
-          // Create SVG axis container
-        var svg = dom.append("svg")
-            .classed("d3-slider-axis d3-slider-axis-" + axis.orient(), true)
-            .on("click", stopPropagation);
+var _findClosestTickColor2 = _interopRequireDefault(_findClosestTickColor);
 
-        var g = svg.append("g");
+var _styles = __webpack_require__(3);
 
-        // Horizontal axis
-        if (orientation === "horizontal") {
+function _interopRequireDefault(obj) { return obj && obj.__esModule ? obj : { default: obj }; }
 
-          svg.style("margin-left", -margin + "px");
+var d3 = __webpack_require__(4);
 
-          svg.attr({
-            width: sliderLength + margin * 2,
-            height: margin
-          });
 
-          if (axis.orient() === "top") {
-            svg.style("top", -margin + "px");
-            g.attr("transform", "translate(" + margin + "," + margin + ")");
-          } else { // bottom
-            g.attr("transform", "translate(" + margin + ",0)");
-          }
+// Calculates the beta function between alpha and beta
+/**
+ * @return {object} - A slider object
+ */
+function slid3r() {
+  // Defaults
+  var sliderRange = [0, 10],
+      sliderWidth = 250,
+      onDone = function onDone(x) {
+    return console.log("done dragging", x);
+  },
+      onDrag = function onDrag(x) {
+    return null;
+  },
+      label = "choose value",
+      startPos = 0,
+      xPos = 0.5,
+      yPos = 0.5,
+      intClamp = true,
+      // clamp handle to nearest int?
+  numTicks = 10,
+      customTicks = null,
+      font = "optima",
+      handleColor = "white",
+      vertical = false,
+      transitionLength = 10;
 
-        } else { // Vertical
+  // Calculates the beta function between alpha and beta
+  /**
+     * @param {object} sel - A selection from d3
+     * @return {object} - A slider
+     */
+  function drawSlider(sel) {
+    var trans = d3.transition("sliderTrans").duration(transitionLength);
 
-          svg.style("top", -margin + "px");
+    var xScale = d3.scaleLinear().domain(sliderRange).range([0, sliderWidth]).clamp(true);
 
-          svg.attr({
-            width: margin,
-            height: sliderLength + margin * 2
-          });
+    var getValue = function getValue(eventX) {
+      return xScale.invert(eventX);
+    };
 
-          if (axis.orient() === "left") {
-            svg.style("left", -margin + "px");
-            g.attr("transform", "translate(" + margin + "," + margin + ")");
-          } else { // right          
-            g.attr("transform", "translate(" + 0 + "," + margin + ")");
-          }
+    // tick logic.
+    var tickFormat = xScale.tickFormat(5, intClamp ? ",.0f" : "f");
+    var tickPositions = xScale.ticks(numTicks).map(tickFormat);
 
-        }
+    // use user custom ticks info if provided, otherwise generate with d3.
+    // check if custom ticks are just an array or are the more complex object version
+    var customTickSimple = customTicks && _typeof(customTicks[0]) !== "object";
+    var customColors = customTicks && customTicks[0].color;
 
-        g.call(axis);
-
-      }
-
-      function onClickHorizontal() {
-        if (toType(value) != "array") {
-          var pos = Math.max(0, Math.min(sliderLength, d3.event.offsetX || d3.event.layerX));
-          moveHandle(scale.invert ? 
-                      stepValue(scale.invert(pos / sliderLength))
-                    : nearestTick(pos / sliderLength));
-        }
-      }
-
-      function onClickVertical() {
-        if (toType(value) != "array") {
-          var pos = sliderLength - Math.max(0, Math.min(sliderLength, d3.event.offsetY || d3.event.layerY));
-          moveHandle(scale.invert ? 
-                      stepValue(scale.invert(pos / sliderLength))
-                    : nearestTick(pos / sliderLength));
-        }
-      }
-
-      function onDragHorizontal() {
-        if ( d3.event.sourceEvent.target.id === "handle-one") {
-          active = 1;
-        } else if ( d3.event.sourceEvent.target.id == "handle-two" ) {
-          active = 2;
-        }
-        var pos = Math.max(0, Math.min(sliderLength, d3.event.x));
-        moveHandle(scale.invert ? 
-                    stepValue(scale.invert(pos / sliderLength))
-                  : nearestTick(pos / sliderLength));
-      }
-
-      function onDragVertical() {
-        if ( d3.event.sourceEvent.target.id === "handle-one") {
-          active = 1;
-        } else if ( d3.event.sourceEvent.target.id == "handle-two" ) {
-          active = 2;
-        }
-        var pos = sliderLength - Math.max(0, Math.min(sliderLength, d3.event.y))
-        moveHandle(scale.invert ? 
-                    stepValue(scale.invert(pos / sliderLength))
-                  : nearestTick(pos / sliderLength));
-      }
-
-      function stopPropagation() {
-        d3.event.stopPropagation();
-      }
-
+    var tickData = !customTicks ? tickPositions.map(function (label) {
+      return { label: label, pos: label, color: handleColor };
+    }) : customTickSimple ? customTicks.map(function (d) {
+      return { label: d, pos: d, color: handleColor };
+    }) : customTicks.map(function (d) {
+      return Object.assign({ color: handleColor }, d);
     });
 
-  }
+    var slider = sel.attr("transform", "translate(" + xPos + ", " + yPos + ")");
 
-  // Move slider handle on click/drag
-  function moveHandle(newValue) {
-    var currentValue = toType(value) == "array"  && value.length == 2 ? value[active - 1]: value,
-        oldPos = formatPercent(scale(stepValue(currentValue))),
-        newPos = formatPercent(scale(stepValue(newValue))),
-        position = (orientation === "horizontal") ? "left" : "bottom";
-    if (oldPos !== newPos) {
-
-      if (toType(value) == "array" && value.length == 2) {
-        value[ active - 1 ] = newValue;
-        if (d3.event) {
-          dispatch.slide(d3.event, value );
-        };
-      } else {
-        if (d3.event) {
-          dispatch.slide(d3.event.sourceEvent || d3.event, value = newValue);
-        };
-      }
-
-      if ( value[ 0 ] >= value[ 1 ] ) return;
-      if ( active === 1 ) {
-        if (toType(value) == "array" && value.length == 2) {
-          (position === "left") ? divRange.style("left", newPos) : divRange.style("bottom", newPos);
-        }
-
-        if (animate) {
-          handle1.transition()
-              .styleTween(position, function() { return d3.interpolate(oldPos, newPos); })
-              .duration((typeof animate === "number") ? animate : 250);
-        } else {
-          handle1.style(position, newPos);
-        }
-      } else {
-        
-        var width = 100 - parseFloat(newPos);
-        var top = 100 - parseFloat(newPos);
-
-        (position === "left") ? divRange.style("right", width + "%") : divRange.style("top", top + "%");
-        
-        if (animate) {
-          handle2.transition()
-              .styleTween(position, function() { return d3.interpolate(oldPos, newPos); })
-              .duration((typeof animate === "number") ? animate : 250);
-        } else {
-          handle2.style(position, newPos);
-        }
-      }
-    }
-  }
-
-  // Calculate nearest step value
-  function stepValue(val) {
-
-    if (val === scale.domain()[0] || val === scale.domain()[1]) {
-      return val;
+    if (vertical) {
+      slider.attr("transform", "rotate(90)");
     }
 
-    var alignValue = val;
-    if (snap) {
-      alignValue = nearestTick(scale(val));
-    } else{
-      var valModStep = (val - scale.domain()[0]) % step;
-      alignValue = val - valModStep;
+    var track = (0, _selectAppend2.default)(slider, "line", ".track").attr("x1", xScale.range()[0]).attr("x2", xScale.range()[1]);
 
-      if (Math.abs(valModStep) * 2 >= step) {
-        alignValue += (valModStep > 0) ? step : -step;
-      }
-    };
+    var trackInset = (0, _selectAppend2.default)(slider, "line", ".track-inset").attr("x1", xScale.range()[0]).attr("x2", xScale.range()[1]);
 
-    return alignValue;
+    var trackOverlay = (0, _selectAppend2.default)(slider, "line", ".track-overlay").attr("x1", xScale.range()[0]).attr("x2", xScale.range()[1]);
 
-  }
+    trackOverlay.call(d3.drag().on("start.interrupt", function () {
+      slider.interrupt();
+    }).on("start drag", dragBehavior).on("end", finishBehavior));
 
-  // Find the nearest tick
-  function nearestTick(pos) {
-    var ticks = scale.ticks ? scale.ticks() : scale.domain();
-    var dist = ticks.map(function(d) {return pos - scale(d);});
-    var i = -1,
-        index = 0,
-        r = scale.ticks ? scale.range()[1] : scale.rangeExtent()[1];
-    do {
-        i++;
-        if (Math.abs(dist[i]) < r) {
-          r = Math.abs(dist[i]);
-          index = i;
-        };
-    } while (dist[i] > 0 && i < dist.length - 1);
+    var handle = (0, _selectAppend2.default)(slider, "circle", ".handle").style("pointer-events", "none").attr("class", "handle").attr("r", 8).attr("fill", customColors ? (0, _findClosestTickColor2.default)(tickData, startPos) : handleColor).attr("cx", xScale(startPos));
 
-    return ticks[index];
+    (0, _selectAppend2.default)(slider, "g", ".ticks").style("font", "12px " + font).attr("transform", "translate(0," + 18 + ")").selectAll("text").data(tickData).enter().append("text").attr("x", function (d) {
+      return xScale(d.pos);
+    }).attr("text-anchor", "middle").text(function (d) {
+      return d.label;
+    });
+
+    // write the label
+    (0, _selectAppend2.default)(slider, "text", ".label").attr("y", -14).attr("font-family", font).text(label);
+
+    // apply styles to everything.
+    (0, _styles.roundEndsStyle)(track);
+    (0, _styles.trackStyle)(track);
+    (0, _styles.handleStyle)(handle);
+    (0, _styles.roundEndsStyle)(trackOverlay);
+    (0, _styles.trackOverlayStyle)(trackOverlay);
+    (0, _styles.roundEndsStyle)(trackInset);
+    (0, _styles.trackInsetStyle)(trackInset);
+
+    // setup callbacks
+    // Calculates the beta function between alpha and beta
+    /**
+    * @return {object} - A slider
+    */
+    function dragBehavior() {
+      var scaledPos = getValue(d3.event.x);
+      // by inverting and reverting the position we assert bounds on the slider.
+      handle.attr("cx", xScale(scaledPos));
+      onDrag ? onDrag(scaledPos) : null;
+    }
+
+    // Calculates the beta function between alpha and beta
+    /**
+    * @return {object} - A slider
+    */
+    function finishBehavior() {
+      var dragPos = getValue(d3.event.x);
+      var finalPos = intClamp ? Math.round(dragPos) : dragPos;
+      var closestTickColor = (0, _findClosestTickColor2.default)(tickData, finalPos);
+      handle.transition(trans).attr("cx", xScale(finalPos)).attr("fill", closestTickColor);
+      onDone(finalPos);
+    }
+  } // end drawSlider()
+
+  // Getter and setters for changing settings.
+
+  drawSlider.range = function (range) {
+    if (!arguments.length) return sliderRange;
+    sliderRange = range;
+    return drawSlider;
   };
 
-  // Return the type of an object
-  function toType(v) {
-    return ({}).toString.call(v).match(/\s([a-zA-Z]+)/)[1].toLowerCase();
+  drawSlider.width = function (width) {
+    if (!arguments.length) return sliderWidth;
+    sliderWidth = width;
+    return drawSlider;
   };
 
-  // Getter/setter functions
-  slider.min = function(_) {
-    if (!arguments.length) return min;
-    min = _;
-    return slider;
+  drawSlider.onDone = function (doneFunc) {
+    if (!arguments.length) return onDone;
+    onDone = doneFunc;
+    return drawSlider;
   };
 
-  slider.max = function(_) {
-    if (!arguments.length) return max;
-    max = _;
-    return slider;
+  drawSlider.onDrag = function (dragFunc) {
+    if (!arguments.length) return onDrag;
+    onDrag = dragFunc;
+    return drawSlider;
   };
 
-  slider.step = function(_) {
-    if (!arguments.length) return step;
-    step = _;
-    return slider;
+  drawSlider.label = function (newLabel) {
+    if (!arguments.length) return label;
+    label = newLabel;
+    return drawSlider;
   };
 
-  slider.animate = function(_) {
-    if (!arguments.length) return animate;
-    animate = _;
-    return slider;
+  drawSlider.startPos = function (newStartPos) {
+    if (!arguments.length) return startPos;
+    startPos = newStartPos;
+    return drawSlider;
   };
 
-  slider.orientation = function(_) {
-    if (!arguments.length) return orientation;
-    orientation = _;
-    return slider;
+  drawSlider.loc = function (loc) {
+    if (!arguments.length) return [xPos, yPos];
+
+    var _loc = _slicedToArray(loc, 2);
+
+    xPos = _loc[0];
+    yPos = _loc[1];
+
+    return drawSlider;
   };
 
-  slider.axis = function(_) {
-    if (!arguments.length) return axis;
-    axis = _;
-    return slider;
+  drawSlider.clamp = function (decision) {
+    if (!arguments.length) return intClamp;
+    intClamp = decision;
+    return drawSlider;
   };
 
-  slider.margin = function(_) {
-    if (!arguments.length) return margin;
-    margin = _;
-    return slider;
+  drawSlider.vertical = function (decision) {
+    if (!arguments.length) return vertical;
+    vertical = decision;
+    return drawSlider;
   };
 
-  slider.value = function(_) {
-    if (!arguments.length) return value;
-    if (value) {
-      moveHandle(stepValue(_));
-    };
-    value = _;
-    return slider;
+  drawSlider.numTicks = function (num) {
+    if (!arguments.length) return numTicks;
+    numTicks = num;
+    return drawSlider;
   };
 
-  slider.snap = function(_) {
-    if (!arguments.length) return snap;
-    snap = _;
-    return slider;
+  drawSlider.customTicks = function (tickLabels) {
+    if (!arguments.length) return customTicks;
+    customTicks = tickLabels;
+    return drawSlider;
   };
 
-  slider.scale = function(_) {
-    if (!arguments.length) return scale;
-    scale = _;
-    return slider;
+  drawSlider.handleColor = function (color) {
+    if (!arguments.length) return handleColor;
+    handleColor = color;
+    return drawSlider;
   };
 
-  d3.rebind(slider, dispatch, "on");
+  drawSlider.font = function (newFont) {
+    if (!arguments.length) return font;
+    font = newFont;
+    return drawSlider;
+  };
 
-  return slider;
+  drawSlider.animation = function (speed) {
+    transitionSpeed = speed ? speed : 0; // allow the user to have passed something like 'false' to this.
+    if (!arguments.length) return transitionSpeed;
+    return drawSlider;
+  };
 
+  return drawSlider;
 }
-}));
+
+module.exports = slid3r;
+
+/***/ }),
+/* 1 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+// tries to do a selection, if it's empty, deals with it by appending desired.
+
+exports.default = function (parent, type, identifier) {
+  var attemptedSelection = parent.select("" + type + identifier);
+  var emptySelection = attemptedSelection.empty();
+  var identifierType = identifier.charAt(0) == "." ? "class" : "id";
+  return emptySelection ? parent.append(type).attr(identifierType, identifier) : attemptedSelection;
+};
+
+/***/ }),
+/* 2 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+
+exports.default = function (tickData, finalPos) {
+  var closestTick = tickData.reduce(function (closest, current, i) {
+    var distanceFromTick = Math.abs(finalPos - current.pos);
+    return distanceFromTick < closest.distance || closest.distance === null ? { distance: distanceFromTick, index: i } : closest;
+  }, { distance: null, index: -1 });
+
+  return tickData[closestTick.index].color;
+};
+
+/***/ }),
+/* 3 */
+/***/ (function(module, exports, __webpack_require__) {
+
+"use strict";
+
+
+Object.defineProperty(exports, "__esModule", {
+  value: true
+});
+// styles for the d3 slider
+
+// styles
+var roundEndsStyle = exports.roundEndsStyle = function roundEndsStyle(selection) {
+  return selection.style('stroke-linecap', 'round');
+};
+
+var trackStyle = exports.trackStyle = function trackStyle(selection) {
+  return selection.style('stroke', '#000').style('stroke-opacity', '0.3').style('strokeWidth', '10px');
+};
+
+var trackInsetStyle = exports.trackInsetStyle = function trackInsetStyle(selection) {
+  return selection.style('stroke', '#ddd').style('stroke-width', 8);
+};
+
+var trackOverlayStyle = exports.trackOverlayStyle = function trackOverlayStyle(selection) {
+  return selection.style('pointer-events', 'stroke').style('stroke-width', 50).style('stroke', 'transparent').style('cursor', 'crosshair');
+};
+
+var handleStyle = exports.handleStyle = function handleStyle(selection) {
+  return selection
+  // .style('fill', '#fff')
+  .style('stroke', '#000').style('stroke-opacity', 0.5).style('strokeWidth', '1.25px');
+};
+
+/***/ }),
+/* 4 */
+/***/ (function(module, exports) {
+
+module.exports = __WEBPACK_EXTERNAL_MODULE_4__;
+
+/***/ })
+/******/ ]);
+});

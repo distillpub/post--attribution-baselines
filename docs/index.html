@@ -234,6 +234,11 @@
             $$
                 \tag{3} (x_i - x'_i) \times \int_{\alpha' = 0}^{\alpha} \frac{\delta f(x' + \alpha' (x - x'))}{\delta x_i} d \alpha'
             $$
+            <!-- $$
+            \phi_i^{IG}(f, x, x') = \overbrace{\int_{\alpha = 0}^1}^{(3):\textrm{ Integrating over gradients}}
+              \underbrace{(x_i - x'_i) \times \frac{\delta f(\overbrace{x' + \alpha (x - x')}^{(1):\textrm{ Interpolating between the baseline and the current image}})}{\delta x_i} d \alpha
+          }_{(2):\textrm{ Gradients times difference from reference}}
+            $$ -->
             We visualize these three equations below.<d-footnote>Note that in practice, we use a discrete sum
             approximation of the integral with 50 linearly-spaced points between 0 and 1. 50 points
             seems to be a fairly standard number to use
