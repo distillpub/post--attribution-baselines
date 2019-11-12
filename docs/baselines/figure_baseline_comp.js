@@ -1,4 +1,4 @@
-function figure_blur() {
+function figure_baseline_comp() {
     var margin = ({
         top: 30,
         right: 30,
@@ -80,7 +80,7 @@ function figure_blur() {
         { x: text_width, y: 3 * (indicator_image_size + indicator_image_padding), id: 'gaussian', opacity: 0.2 },
     ]
 
-    var container = d3.select('#figure_blur_div')
+    var container = d3.select('#figure_baseline_comp_div')
                         .append('svg')
                         .attr('width',  '100%')
                         .attr('height', '100%')
@@ -501,4 +501,4 @@ function figure_blur() {
     image_init(image_data);
 }
 
-figure_blur();
+figure_baseline_comp();

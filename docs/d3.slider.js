@@ -175,7 +175,7 @@ function slid3r() {
 
     var handle = (0, _selectAppend2.default)(slider, "circle", ".handle").style("pointer-events", "none").attr("class", "handle").attr("r", 8).attr("fill", customColors ? (0, _findClosestTickColor2.default)(tickData, startPos) : handleColor).attr("cx", xScale(startPos));
 
-    (0, _selectAppend2.default)(slider, "g", ".ticks").style("font", "12px " + font).attr("transform", "translate(0," + 18 + ")").selectAll("text").data(tickData).enter().append("text").attr("x", function (d) {
+    (0, _selectAppend2.default)(slider, "g", ".ticks").style("font", "15px " + font).attr("transform", "translate(0," + 18 + ")").selectAll("text").data(tickData).enter().append("text").attr("x", function (d) {
       return xScale(d.pos);
     }).attr("text-anchor", "middle").text(function (d) {
       return d.label;
