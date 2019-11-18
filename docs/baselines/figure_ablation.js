@@ -19,10 +19,10 @@ function figure_ablation() {
     var chart_width   = 500;
     var chart_height  = 300;
     var chart_padding = 80;
-    var legend_top_padding = 175;
+    var legend_top_padding = 165;
     var legend_left_padding = 10;
     var legend_width  = 160;
-    var legend_height = 113;
+    var legend_height = 126;
     
     var ablated_image_size = 90;
     var ablated_image_top_padding = 25;
@@ -41,7 +41,6 @@ function figure_ablation() {
         x_axis_label_top_padding + ablated_image_size;
     
     var current_ablation_type = 'blur';
-    var base_image_name       = 'goldfinch';
     var current_data = null;
     
     var legend_data = [
@@ -51,6 +50,7 @@ function figure_ablation() {
         { 'baseline': 'max_dist',   'name': 'Max Dist. Baseline',   'x': 30, 'y': 68 },
         { 'baseline': 'uniform',    'name': 'Uniform Baseline',     'x': 30, 'y': 84 },
         { 'baseline': 'blur',       'name': 'Blurred Baseline',     'x': 30, 'y': 100 },
+        { 'baseline': 'null_gaussian',       'name': 'Random Noise',     'x': 30, 'y': 116 }
     ];
     
     var ablation_type_data = [
@@ -79,7 +79,8 @@ function figure_ablation() {
                         .attr('height', '100%')
                         .style('min-width', `${(width + margin.left + margin.right ) / 2}px`)
                         .style('max-width', `${width + margin.left + margin.right}px`)
-                        .attr('viewBox', `0 0 ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`);
+                        .attr('viewBox', `0 0 
+                            ${width + margin.left + margin.right} ${height + margin.top + margin.bottom}`);
 
     var chart_group = container
         .append('g')
@@ -126,15 +127,16 @@ function figure_ablation() {
                 return `../data_gen/data/goldfinch/ablation/${current_ablation_type}_${(d.k).toFixed(2)}.png`;
             })
             .attr('id', function(d) { return 'ablated_image_' + Math.round(10 * d.k) ; })
-            .attr('x', function(d) { return d.x; })
-            .attr('y', function(d) { return d.y; });
+            .attr('x', function(d)  { return d.x; })
+            .attr('y', function(d)  { return d.y; });
     }
     
     function update_ablated_images() {
         var ablated_image_group = chart_group.select('#ablated_image_group');
         ablated_image_data.forEach(function(item) {
             var ablated_image = ablated_image_group.select('#ablated_image_' + Math.round(10 * item.k));
-            var ablated_file  = `../data_gen/data/goldfinch/ablation/${current_ablation_type}_${(item.k).toFixed(2)}.png`;
+            var ablated_file  = 
+                `../data_gen/data/goldfinch/ablation/${current_ablation_type}_${(item.k).toFixed(2)}.png`;
             
             cross_fade_image(ablated_image, ablated_file, ablated_image_group, 500);
         });
@@ -265,7 +267,8 @@ function figure_ablation() {
     function draw_legend() {
         var legend_group = chart_group.append('g')
             .attr('id', 'chart_legend')
-            .attr('transform', `translate(${chart_width - legend_width - legend_left_padding}, ${legend_top_padding})`);
+            .attr('transform', `translate(${chart_width - legend_width - legend_left_padding}, 
+                ${legend_top_padding})`);
         
         legend_group
             .append('rect')
