@@ -21,9 +21,10 @@ from absl import flags
 
 FLAGS = flags.FLAGS
 flags.DEFINE_string('ablation_type', 'mean', 'One of `mean`, `blur`, `mean_center`, `blur_center`')
-flags.DEFINE_string('saliency_type', 'eg', 'One of `eg`, `blur`, `gaussian`, `uniform`, `ig`, `max_dist`')
+flags.DEFINE_string('saliency_type', 'eg', 'One of `eg`, `blur`, `gaussian`, `uniform`, `ig`, `max_dist`, `null_gaussian`')
 flags.DEFINE_integer('num_samples', 1000, 'Number of samples to average over')
 flags.DEFINE_boolean('save_examples', False, 'Set to true to save examples of ablation images')
+flags.DEFINE_boolean('run_everything', False, 'Set to true to run all possible experiments in this file')
 
 def save_ablation_examples(model, sess, images, labels, delta_pl, grad_op, grad_input_op):
     baseline_image = np.load('data/ignored/reference_images.npy')
@@ -35,7 +36,7 @@ def save_ablation_examples(model, sess, images, labels, delta_pl, grad_op, grad_
         name  = names[i]
         os.makedirs('data/{}/ablation/'.format(name) , exist_ok=True)
         saliency = utils.get_path_attributions(model, sess, grad_input_op, delta_pl, 
-                          image, label, baseline_image, num_samples=100,
+                          image, label, baseline_image, num_samples=500,
                           batch_size=32, random_alpha=True, random_sample=True,
                           verbose=False, take_difference=True)
         sum_abs_saliency = np.abs(np.sum(saliency, axis=-1))
@@ -53,7 +54,7 @@ def save_ablation_examples(model, sess, images, labels, delta_pl, grad_op, grad_
 def save_samples(model, sess, images, labels, delta_pl, grad_op, grad_input_op):
     random_alpha  = True
     random_sample = True
-    num_interp_points = 100
+    num_interp_points = 500
     if FLAGS.saliency_type == 'eg':
         #I don't include reference_images.npy in this github repo because of size constraints.
         #You can generate it using notebookts/save_background_references.ipynb
@@ -94,11 +95,15 @@ def save_samples(model, sess, images, labels, delta_pl, grad_op, grad_input_op):
                 random_alpha  = False
                 random_sample = False
             
-            saliency = utils.get_path_attributions(model, sess, grad_input_op, delta_pl, 
-                          current_image, current_label, baseline_image, num_samples=num_interp_points,
-                          batch_size=32, random_alpha=random_alpha, random_sample=random_sample,
-                          verbose=False, take_difference=True)
-            
+            if FLAGS.saliency_type == 'null_gaussian':
+                saliency = np.random.randn(*current_image.shape) 
+            else:
+                saliency = utils.get_path_attributions(model, sess, grad_input_op, delta_pl, 
+                              current_image, current_label, baseline_image, num_samples=num_interp_points,
+                              batch_size=32, random_alpha=random_alpha, random_sample=random_sample,
+                              verbose=False, take_difference=True)
+                
+            saliency = np.abs(np.sum(saliency, axis=-1))
             sample_saliency.append(saliency)
             
             num_read += 1
@@ -129,7 +134,7 @@ def run_ablation(model, sess, images, labels, delta_pl, grad_op, grad_input_op):
                                                                                     images, labels, 
                                                                                     delta_pl, grad_op, 
                                                                                     grad_input_op)
-    
+        
     batch_size = 32
     k_vals     = np.linspace(0.1, 1.0, num=10)
     mean_logits_fractions = []
@@ -175,8 +180,17 @@ def main(argv=None):
     grad_op = utils._grad_across_multi_output(output_tensor=model.logits, input_tensor=model.images_pl, sparse_labels_op=model.labels_pl)
     grad_input_op = grad_op * delta_pl
     
-    
-    if FLAGS.save_examples:
+    if FLAGS.run_everything:
+        ablation_types = ['mean', 'blur', 'mean_center', 'blur_center']
+        saliency_types = ['eg', 'blur', 'gaussian', 'uniform', 'ig', 'max_dist', 'null_gaussian']
+        for ablation_type in ablation_types:
+            FLAGS.ablation_type = ablation_type 
+            save_ablation_examples(model, sess, images, labels, delta_pl, grad_op, grad_input_op)
+            for saliency_type in saliency_types:
+                FLAGS.saliency_type = saliency_type
+                run_ablation(model, sess, images, labels, delta_pl, grad_op, grad_input_op)
+        
+    elif FLAGS.save_examples:
         save_ablation_examples(model, sess, images, labels, delta_pl, grad_op, grad_input_op)
     else:
         run_ablation(model, sess, images, labels, delta_pl, grad_op, grad_input_op)

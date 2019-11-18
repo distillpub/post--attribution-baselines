@@ -1,28 +1,35 @@
 #!/usr/bin/env bash
 
-tmux new-session -d -s mean_examples '
-export CUDA_VISIBLE_DEVICES=0; 
-python ablation_study.py --ablation_type mean --save_examples;
-read
+tmux new-session -d -s all_experiments '
+export CUDA_VISIBLE_DEVICES=4;
+python ablation_study.py --num_samples 1000 --run_everything;
+read;
 '
 
-tmux new-session -d -s blur_examples '
-export CUDA_VISIBLE_DEVICES=1; 
-python ablation_study.py --ablation_type blur --save_examples;
-read
-'
 
-tmux new-session -d -s mean_center_examples '
-export CUDA_VISIBLE_DEVICES=2; 
-python ablation_study.py --ablation_type mean_center --save_examples;
-read
-'
+# tmux new-session -d -s mean_examples '
+# export CUDA_VISIBLE_DEVICES=2; 
+# python ablation_study.py --ablation_type mean --save_examples;
+# read
+# '
 
-tmux new-session -d -s blur_center_examples '
-export CUDA_VISIBLE_DEVICES=3; 
-python ablation_study.py --ablation_type blur_center --save_examples;
-read
-'
+# tmux new-session -d -s blur_examples '
+# export CUDA_VISIBLE_DEVICES=1; 
+# python ablation_study.py --ablation_type blur --save_examples;
+# read
+# '
+
+# tmux new-session -d -s mean_center_examples '
+# export CUDA_VISIBLE_DEVICES=2; 
+# python ablation_study.py --ablation_type mean_center --save_examples;
+# read
+# '
+
+# tmux new-session -d -s blur_center_examples '
+# export CUDA_VISIBLE_DEVICES=3; 
+# python ablation_study.py --ablation_type blur_center --save_examples;
+# read
+# '
 
 # tmux new-session -d -s max_dist '
 # export CUDA_VISIBLE_DEVICES=0; 
