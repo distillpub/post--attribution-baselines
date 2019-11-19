@@ -51,12 +51,25 @@ function figure6() {
     var grad_file = 'point_weights_';
     var cumulative_file = 'cumulative_weights_';
 
-    var image_data = [
+    var title_data = [
         { x: 0, y: 0, id: 'display_image', title: '(1): Interpolated Image'},
         { x: image_size + image_padding, y: 0, id: 'weights_alpha', title: '(2): Gradients at Interpolation'},
         { x: 2 * (image_size + image_padding), y: 0, id: 'cumulative_samples', title: '(3): Cumulative Gradients'}
     ];
-
+    
+    var image_data = [];
+    for (var j = 0; j <= 50; ++j) {
+        var samples = j * 10;
+        image_data.push(
+            { x: 0, y: 0, id: 'interpolated_image_', samples: samples }
+        );
+        image_data.push(
+            { x: image_size + image_padding, y: 0, id: 'point_weights_', samples: samples }
+        );
+        image_data.push(
+            { x: 2*(image_size + image_padding), y: 0, id: 'cumulative_weights_', samples: samples }
+        );
+    }
 
     var indicator_data = [
         { x: 0, y: 0, id: 'goldfinch', opacity: 1.0},
@@ -96,7 +109,7 @@ function figure6() {
 
     image_group
         .selectAll('text')
-        .data(image_data)
+        .data(title_data)
         .enter()
         .append('text')
         .attr('id', function(d) { return d.id + '_title' })
@@ -214,29 +227,71 @@ function figure6() {
         image.attr('x', x_pos)
              .attr('y', orig_y + slider_image_size + 5 + y);
     }
-
-    function update_images(current_samples, transition_duration) {
-        var interp_file = base_dir + interp_im_file + current_samples + '.png';
-        var interp_image = image_group.select('#display_image');
+    
+    function update_images(samples, change_links) {
+        if (samples == current_samples && !change_links) {
+            return;
+        }
         
-        var acc_file = base_dir + cumulative_file + current_samples + '.png';
-        var acc_image = image_group.select('#cumulative_samples');
-        
-        var weights_file = base_dir + grad_file + current_samples + '.png';
-        var weights_image = image_group.select('#weights_alpha');
-        
-        if (transition_duration === 0.0) {
-            interp_image.attr('xlink:href', interp_file);
-            weights_image.attr('xlink:href', weights_file);
-            acc_image.attr('xlink:href', acc_file);
+        if (change_links) {
+            setTimeout(function() {
+                for (var j = 0; j <= 50; ++j) {
+                    var interpolated_image = image_group
+                        .select('#interpolated_image_' + j * 10);
+                    var point_weight_image = image_group
+                        .select('#point_weights_' + j * 10);
+                    var cumulative_weight_image = image_group
+                        .select('#cumulative_weights_' + j * 10);
+                        
+                    var interpolated_image_file = base_dir + 'interpolated_image_' + j * 10 + '.png';
+                    var point_weight_image_file = base_dir + 'point_weights_' + j * 10 + '.png';
+                    var cumulative_weight_image_file = base_dir + 'cumulative_weights_' + j * 10 + '.png';
+                    
+                    interpolated_image.attr('xlink:href', interpolated_image_file);
+                    point_weight_image.attr('xlink:href', point_weight_image_file);
+                    cumulative_weight_image.attr('xlink:href', cumulative_weight_image_file);
+                    
+                }
+            }, 500);
+            
+            var interpolated_image = image_group
+                .select('#interpolated_image_' + samples);
+            var point_weight_image = image_group
+                .select('#point_weights_' + samples);
+            var cumulative_weight_image = image_group
+                .select('#cumulative_weights_' + samples);
+                
+            var interpolated_image_file = base_dir + 'interpolated_image_' + samples + '.png';
+            var point_weight_image_file = base_dir + 'point_weights_' + samples + '.png';
+            var cumulative_weight_image_file = base_dir + 'cumulative_weights_' + samples + '.png';
+            cross_fade_image(interpolated_image, interpolated_image_file, image_group, 500);
+            cross_fade_image(point_weight_image, point_weight_image_file, image_group, 500);
+            cross_fade_image(cumulative_weight_image, cumulative_weight_image_file, image_group,
+                 500); 
         } else {
-            cross_fade_image(interp_image, interp_file, image_group, transition_duration);
-            cross_fade_image(weights_image, weights_file, image_group, transition_duration);
-            cross_fade_image(acc_image, acc_file, image_group, transition_duration);
+            image_group
+                .select('#interpolated_image_' + current_samples)
+                .attr('opacity', 0.0);
+            image_group
+                .select('#point_weights_' + current_samples)
+                .attr('opacity', 0.0);
+            image_group
+                .select('#cumulative_weights_' + current_samples)
+                .attr('opacity', 0.0);
+            
+            image_group
+                .select('#interpolated_image_' + samples)
+                .attr('opacity', 1.0);
+            image_group
+                .select('#point_weights_' + samples)
+                .attr('opacity', 1.0);
+            image_group
+                .select('#cumulative_weights_' + samples)
+                .attr('opacity', 1.0);
         }
         var slider_images = slider_image_group.selectAll('image');
         slider_images.attr('opacity', function(d) {
-            return (d.rank < current_samples ? 1.0 : 0.0)
+            return (d.rank < samples ? 1.0 : 0.0)
         });
     }
 
@@ -483,12 +538,12 @@ function figure6() {
             .customTicks(ticks)
             .font('sans-serif')
             .onDrag(function(sample_value) {
+                update_images(Math.round(sample_value) * 10, false);
+                update_chart(Math.round(sample_value) * 10, current_data, false);
+                
                 sample_value = Math.round(sample_value);
                 current_samples = sample_value * 10;
                 slider_label.text(`${current_samples} samples`);
-                
-                update_images(current_samples, 0);
-                update_chart(current_samples, current_data, false);
             });
 
         slider_group.append('g')
@@ -527,7 +582,7 @@ function figure6() {
             
             base_image_name = row.id;
             base_dir = `data_gen/data/${base_image_name}/eg_samples/`;
-            update_images(current_samples, 500);
+            update_images(current_samples, true);
             
             d3.csv(base_dir + 'cumulative_sums.csv').then(function(x) { 
                 current_data = x;
@@ -546,16 +601,20 @@ function figure6() {
                 .attr('width', image_size)
                 .attr('height', image_size)
                 .attr('xlink:href', function(d) {
-                    if (d.id === 'weights_alpha') {
-                        return base_dir + grad_file + current_samples + '.png';
-                    } else if (d.id == 'cumulative_samples') {
-                        return base_dir + cumulative_file + current_samples + '.png';
-                    } else {
-                        return base_dir + interp_im_file + current_samples + '.png';
-                    }})
-                .attr('id', function(d) { return d.id; })
+                    return base_dir + d.id + d.samples + '.png';
+                    })
+                .attr('id', function(d) { 
+                    return d.id + d.samples; 
+                    })
                 .attr('x', function(d) { return d.x; })
-                .attr('y', function(d) { return d.y; });
+                .attr('y', function(d) { return d.y; })
+                .attr('opacity', function(d) {
+                    if (d.samples == current_samples) {
+                        return 1.0;
+                    } else {
+                        return 0.0;
+                    }
+                });
             
             //Indicator Images
             indicator_images.enter()

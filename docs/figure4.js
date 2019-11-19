@@ -36,15 +36,26 @@ function figure4() {
 
     var base_image_name = 'goldfinch';
     var base_dir = `data_gen/data/${base_image_name}/integrated_gradients/`;
-    var interp_im_file = 'interpolated_image_';
-    var grad_file = 'point_weights_';
-    var cumulative_file = 'cumulative_weights_';
-
-    var image_data = [
+    
+    var title_data = [
         { x: 0, y: 0, id: 'interp_alpha', title: '(1): Interpolated Image'},
         { x: image_size + image_padding, y: 0, id: 'weights_alpha', title: "(2): Gradients at Interpolation"},
         { x: 2*(image_size + image_padding), y: 0, id: 'cumulative_alpha', title: '(3): Cumulative Gradients'}
     ];
+    
+    var image_data = [];
+    for (var j = 0; j <= 50; ++j) {
+        var alpha = j / 50.0;
+        image_data.push(
+            { x: 0, y: 0, id: 'interpolated_image_', alpha: alpha }
+        );
+        image_data.push(
+            { x: image_size + image_padding, y: 0, id: 'point_weights_', alpha: alpha }
+        );
+        image_data.push(
+            { x: 2*(image_size + image_padding), y: 0, id: 'cumulative_weights_', alpha: alpha }
+        );
+    }
 
     var indicator_data = [
         { x: 0, y: 0, id: 'goldfinch', opacity: 1.0},
@@ -72,7 +83,7 @@ function figure4() {
 
     image_group
         .selectAll('text')
-        .data(image_data)
+        .data(title_data)
         .enter()
         .append('text')
         .attr('id', function(d) { return d.id + '_title' })
@@ -150,26 +161,67 @@ function figure4() {
         return +Number((+row.alpha).toFixed(2)) <= alpha;
     }
 
-    function update_images(alpha_val, transition_duration) {
+    function update_images(alpha_val, change_links) {
         alpha_val = Number((Math.floor(alpha_val * 50) / 50).toFixed(2));
+        if (current_alpha == alpha_val && !change_links) {
+            return;
+        }
         
-        var interp_file = base_dir + interp_im_file + alpha_val.toFixed(2) + '.png';
-        var interp_image = image_group.select('#interp_alpha');
-        
-        var weights_file = base_dir + grad_file + alpha_val.toFixed(2) + '.png';
-        var weights_image = image_group.select('#weights_alpha');
-        
-        var acc_file = base_dir + cumulative_file + alpha_val.toFixed(2) + '.png';
-        var acc_image = image_group.select('#cumulative_alpha');
-        
-        if (transition_duration === 0.0) {
-            interp_image.attr('xlink:href', interp_file);
-            weights_image.attr('xlink:href', weights_file);
-            acc_image.attr('xlink:href', acc_file);
+        if (change_links) {
+            setTimeout(function() {
+                for (var j = 0; j <= 50; ++j) {
+                    var interpolated_image = image_group
+                        .select('#interpolated_image_' + j);
+                    var point_weight_image = image_group
+                        .select('#point_weights_' + j);
+                    var cumulative_weight_image = image_group
+                        .select('#cumulative_weights_' + j);
+                        
+                    var interpolated_image_file = base_dir + 'interpolated_image_' + (j / 50).toFixed(2) + '.png';
+                    var point_weight_image_file = base_dir + 'point_weights_' + (j / 50).toFixed(2) + '.png';
+                    var cumulative_weight_image_file = base_dir + 'cumulative_weights_' + (j / 50).toFixed(2) + '.png';
+                    
+                    interpolated_image.attr('xlink:href', interpolated_image_file);
+                    point_weight_image.attr('xlink:href', point_weight_image_file);
+                    cumulative_weight_image.attr('xlink:href', cumulative_weight_image_file);
+                    
+                }
+            }, 500);
+            
+            var interpolated_image = image_group
+                .select('#interpolated_image_' + Math.round(alpha_val * 50));
+            var point_weight_image = image_group
+                .select('#point_weights_' + Math.round(alpha_val * 50));
+            var cumulative_weight_image = image_group
+                .select('#cumulative_weights_' + Math.round(alpha_val * 50));
+                
+            var interpolated_image_file = base_dir + 'interpolated_image_' + alpha_val.toFixed(2) + '.png';
+            var point_weight_image_file = base_dir + 'point_weights_' + alpha_val.toFixed(2) + '.png';
+            var cumulative_weight_image_file = base_dir + 'cumulative_weights_' + alpha_val.toFixed(2) + '.png';
+            cross_fade_image(interpolated_image, interpolated_image_file, image_group, 500);
+            cross_fade_image(point_weight_image, point_weight_image_file, image_group, 500);
+            cross_fade_image(cumulative_weight_image, cumulative_weight_image_file, image_group,
+                 500); 
         } else {
-            cross_fade_image(interp_image, interp_file, image_group, transition_duration);
-            cross_fade_image(weights_image, weights_file, image_group, transition_duration);
-            cross_fade_image(acc_image, acc_file, image_group, transition_duration);
+            image_group
+                .select('#interpolated_image_' + Math.round(current_alpha * 50))
+                .attr('opacity', 0.0);
+            image_group
+                .select('#point_weights_' + Math.round(current_alpha * 50))
+                .attr('opacity', 0.0);
+            image_group
+                .select('#cumulative_weights_' + Math.round(current_alpha * 50))
+                .attr('opacity', 0.0);
+            
+            image_group
+                .select('#interpolated_image_' + Math.round(alpha_val * 50))
+                .attr('opacity', 1.0);
+            image_group
+                .select('#point_weights_' + Math.round(alpha_val * 50))
+                .attr('opacity', 1.0);
+            image_group
+                .select('#cumulative_weights_' + Math.round(alpha_val * 50))
+                .attr('opacity', 1.0);
         }
     }
 
@@ -398,10 +450,11 @@ function figure4() {
             .numTicks(6)
             .font('sans-serif')
             .onDrag(function(alpha_value) {
+                update_images(alpha_value, false);
+                update_chart(alpha_value, current_data, false);
+                
                 current_alpha = Number((Math.floor(alpha_value * 50) / 50).toFixed(2));
                 slider_label.text(`alpha = ${current_alpha.toFixed(2)}`);
-                update_images(current_alpha, 0);
-                update_chart(alpha_value, current_data, false);
             });
         
         slider_group.append('g')
@@ -423,7 +476,7 @@ function figure4() {
             
             base_image_name = row.id;
             base_dir = `data_gen/data/${base_image_name}/integrated_gradients/`;
-            update_images(current_alpha, 500);
+            update_images(current_alpha, true);
             
             d3.csv(base_dir + 'cumulative_sums.csv').then(function(x) { 
                 current_data = x;
@@ -441,16 +494,20 @@ function figure4() {
                 .attr('width', image_size)
                 .attr('height', image_size)
                 .attr('xlink:href', function(d) {
-                    if (d.id === 'weights_alpha') {
-                        return base_dir + grad_file + '0.00.png';
-                    } else if (d.id == 'cumulative_alpha') {
-                        return base_dir + cumulative_file + '0.00.png';
-                    } else {
-                        return base_dir + interp_im_file + '0.00.png';
-                    }})
-                .attr('id', function(d) { return d.id; })
+                    return base_dir + d.id + d.alpha.toFixed(2) + '.png';
+                    })
+                .attr('id', function(d) { 
+                    return d.id + Math.round(d.alpha * 50); 
+                    })
                 .attr('x', function(d) { return d.x; })
-                .attr('y', function(d) { return d.y; });
+                .attr('y', function(d) { return d.y; })
+                .attr('opacity', function(d) {
+                    if (d.alpha == current_alpha) {
+                        return 1.0;
+                    } else {
+                        return 0.0;
+                    }
+                });
             
             //Indicator Images
             indicator_images.enter()
