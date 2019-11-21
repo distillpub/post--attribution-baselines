@@ -17,7 +17,7 @@ function figure_random_mnist() {
     var image_width  = num_columns * image_size + (num_columns - 1) * image_padding;
     var image_height = num_rows * image_size + (num_rows - 1) * image_padding;
 
-    var base_dir = '../data_gen/decoy_mnist_examples/random_images/';
+    var base_dir = 'data_gen/decoy_mnist_examples/random_images/';
     
     var image_data  = [];
     var image_types = ['decoy', 'saliency', 'random_saliency'];
@@ -69,7 +69,7 @@ function figure_random_mnist() {
             .attr('y', function(d) { return d.y; })
             .style("text-anchor", "end")
             .style("font-weight", 700)
-            .style('font-size', '14px');
+            .style('font-size', '12px');
     }
 
     function image_init(image_data) {

@@ -19,7 +19,7 @@ function figure_ablation() {
     var chart_width   = 500;
     var chart_height  = 300;
     var chart_padding = 80;
-    var legend_top_padding = 165;
+    var legend_top_padding = 10;
     var legend_left_padding = 10;
     var legend_width  = 160;
     var legend_height = 126;
@@ -95,14 +95,14 @@ function figure_ablation() {
         .attr("x", 0 - chart_height / 2)
         .attr("dy", "1em")
         .style("text-anchor", "middle")
-        .text("1.0 - (Logit of True Class)");
+        .text("Logit output as a fraction of original logit");
         
     chart_group.append("text")             
         .attr("transform", `translate(${(chart_width / 2)}, 
             ${(chart_height + x_axis_label_top_padding
                + ablated_image_size + ablated_image_top_padding)})`)
         .style("text-anchor", "middle")
-        .text("Fraction of Image Ablated");
+        .text("Fraction of image ablated");
 
     chart_group.append("text")
         .attr('id', 'chart_title')
@@ -124,7 +124,7 @@ function figure_ablation() {
             .attr('width', ablated_image_size)
             .attr('height', ablated_image_size)
             .attr('xlink:href', function(d) {
-                return `../data_gen/data/goldfinch/ablation/${current_ablation_type}_${(d.k).toFixed(2)}.png`;
+                return `data_gen/data/goldfinch/ablation/${current_ablation_type}_${(d.k).toFixed(2)}.png`;
             })
             .attr('id', function(d) { return 'ablated_image_' + Math.round(10 * d.k) ; })
             .attr('x', function(d)  { return d.x; })
@@ -136,7 +136,7 @@ function figure_ablation() {
         ablated_image_data.forEach(function(item) {
             var ablated_image = ablated_image_group.select('#ablated_image_' + Math.round(10 * item.k));
             var ablated_file  = 
-                `../data_gen/data/goldfinch/ablation/${current_ablation_type}_${(item.k).toFixed(2)}.png`;
+                `data_gen/data/goldfinch/ablation/${current_ablation_type}_${(item.k).toFixed(2)}.png`;
             
             cross_fade_image(ablated_image, ablated_file, ablated_image_group, 500);
         });
@@ -199,7 +199,7 @@ function figure_ablation() {
                 .select(`#${d.ablation_type}_button_text`)
                 .attr('opacity', 1.0);
                 
-            d3.csv(`../data_gen/data/ablation_data/${current_ablation_type}/final.csv`).then(function(data) { 
+            d3.csv(`data_gen/data/ablation_data/${current_ablation_type}/final.csv`).then(function(data) { 
                 update_ablated_images();
                 draw_chart(data, false);
             });
@@ -400,7 +400,7 @@ function figure_ablation() {
         
         var line = d3.line()
             .x(function(d) { return x(+d.k) })
-            .y(function(d) { return y(1.0 - +d.mean_logit_fraction)})
+            .y(function(d) { return y(+d.mean_logit_fraction)})
             .curve(d3.curveMonotoneX);
         
         if (should_init) {
@@ -473,7 +473,7 @@ function figure_ablation() {
         }
     }
     
-    d3.csv(`../data_gen/data/ablation_data/${current_ablation_type}/final.csv`).then(function(data) { 
+    d3.csv(`data_gen/data/ablation_data/${current_ablation_type}/final.csv`).then(function(data) { 
         draw_chart(data, true);
         draw_legend();
         create_type_buttons();

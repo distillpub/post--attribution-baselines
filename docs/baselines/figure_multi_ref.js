@@ -48,7 +48,7 @@ function figure_multi_ref() {
     var current_baseline_name = 'gaussian';
     var current_baseline_id   = '#baseline_gaussian' + Math.round(current_sigma * 2);
     var current_attribution_id = '#attributions_gaussian' + Math.round(current_sigma * 2);
-    var base_dir = `../data_gen/data/${base_image_name}/`;
+    var base_dir = `data_gen/data/${base_image_name}/`;
 
     var gaussian_sigmas = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0];
     var display_multi_reference = false;
@@ -609,7 +609,7 @@ function figure_multi_ref() {
             .attr('width',  indicator_image_size)
             .attr('height', indicator_image_size)
             .attr('xlink:href', function(d) {
-                return '../data_gen/data/' + d.id + '/integrated_gradients/interpolated_image_1.00.png' 
+                return 'data_gen/data/' + d.id + '/integrated_gradients/interpolated_image_1.00.png' 
             })
             .attr('id', function(d) { return d.id + '_gaussian'; })
             .attr('x', function(d) { return d.x; })
@@ -813,7 +813,7 @@ function figure_multi_ref() {
         });
         
         base_image_name = row.id;
-        base_dir = `../data_gen/data/${base_image_name}/`;
+        base_dir = `data_gen/data/${base_image_name}/`;
         
         var display_image  = image_group.select('#orig_image_gaussian');
         var display_file  = base_dir + 'integrated_gradients/interpolated_image_1.00.png';

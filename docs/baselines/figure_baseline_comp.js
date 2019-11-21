@@ -41,7 +41,7 @@ function figure_baseline_comp() {
     var current_baseline_name = 'blur';
     var current_baseline_id   = '#baseline_blur' + current_sigma;
     var current_attribution_id = '#attributions_blur' + current_sigma;
-    var base_dir = `../data_gen/data/${base_image_name}/`;
+    var base_dir = `data_gen/data/${base_image_name}/`;
 
     var blur_sigmas = [5.0, 10.0, 15.0, 20.0, 25.0, 30.0, 35.0, 40.0, 45.0, 50.0];
     var gaussian_sigmas = [0.5, 1.0, 1.5, 2.0, 2.5, 3.0];
@@ -309,7 +309,7 @@ function figure_baseline_comp() {
             .attr('width',  indicator_image_size)
             .attr('height', indicator_image_size)
             .attr('xlink:href', function(d) {
-                return '../data_gen/data/' + d.id + '/integrated_gradients/interpolated_image_1.00.png' 
+                return 'data_gen/data/' + d.id + '/integrated_gradients/interpolated_image_1.00.png' 
             })
             .attr('id', function(d) { return d.id + '_blur'; })
             .attr('x', function(d) { return d.x; })
@@ -489,7 +489,7 @@ function figure_baseline_comp() {
         });
         
         base_image_name = row.id;
-        base_dir = `../data_gen/data/${base_image_name}/`;
+        base_dir = `data_gen/data/${base_image_name}/`;
         
         var display_image  = image_group.select('#orig_image_blur');
         var display_file  = base_dir + 'integrated_gradients/interpolated_image_1.00.png';

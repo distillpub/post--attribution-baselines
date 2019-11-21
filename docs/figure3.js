@@ -7,7 +7,7 @@ function figure3() {
         top: 30,
         right: 30,
         bottom: 30,
-        left: 30
+        left: 60
     });
     
     var indicator_image_size = 75;
