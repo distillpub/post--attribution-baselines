@@ -132,7 +132,7 @@
           the model was looking at when making a decision
             <d-cite key="simonyan2013deep,fong2017interpretable,zhou2016learning,selvaraju2017grad,smilkov2017smoothgrad"></d-cite>.
           These categories are not mutually exclusive: for example, an attribution method can be
-          be visualized as a saliency method, and a saliency method can assign importance
+          visualized as a saliency method, and a saliency method can assign importance
           scores to each individual pixel. In this article, we will focus
           on the feature attribution method integrated gradients.
         </p>
@@ -141,7 +141,7 @@
           feature attribution methods assign an importance score \(\phi_i(f, x)\)
           to the \(i\)th feature value representing how much that feature
           adds or subtracts from the network output. A large positive or negative \(\phi_i(f, x)\)
-          indicates that that feature strongly increases or decreases the network output 
+          indicates that feature strongly increases or decreases the network output 
           \(f(x)\) respectively, while an importance score close to zero indicates that
           the feature in question did not influence \(f(x)\).
         </p>
@@ -177,7 +177,7 @@
           defines the importance value for the \(i\)th feature value as follows:
           $$\phi_i^{IG}(f, x, x') = \overbrace{(x_i - x'_i)}^{\text{Difference from baseline}} 
             \times \underbrace{\int_{\alpha = 0}^ 1}_{\text{From baseline to input...}}
-            \overbrace{\frac{\delta f(x' + \alpha (x - x'))}{\delta x_i} d \alpha}^{\text{...acumulate local gradients}}
+            \overbrace{\frac{\delta f(x' + \alpha (x - x'))}{\delta x_i} d \alpha}^{\text{...accumulate local gradients}}
           $$
           where \(x\) is the current input,
           \(f\) is the model function and \(x'\) is some baseline input that is meant to represent 
@@ -191,7 +191,7 @@
             a function represents the direction of maximum increase. The gradient
             is telling us which pixels have the steepest local slope with respect
             to the output. For this reason, the gradient of a network at the input
-            was one of the earlist saliency methods.
+            was one of the earliest saliency methods.
         </p>
         <p>
             Unfortunately, there are many problems with using gradients to interpret
@@ -203,7 +203,8 @@
             Intuitively, shifting the pixels in an image by a small amount typically
             doesn't change what the network sees in the image. We can illustrate
             saturation by plotting the network output at all
-            images between the baseline \(x'\) and the current image. The network
+            images between the baseline \(x'\) and the current image. The figure
+            below displays that the network
             output for the correct class increases initially, but then quickly flattens.
             <d-figure>
                 <figure class="l-body">
@@ -300,7 +301,7 @@
             In practice, we can't compute the exact value of the integral. In order to do so,
             we use a discrete sum approximation with \(k\) linearly-spaced points between
             0 and 1 for some value of \(k\). If we only chose 1 point to 
-            apporximate the integral, that feels like too few. Is 10 enough? 100?
+            approximate the integral, that feels like too few. Is 10 enough? 100?
             Intuitively 1,000 may seem like plenty, but can we be certain?
             As proposed in the original paper, we can use the completeness axiom
             as a sanity check on convergence: run integrated gradients with \(k\)
@@ -928,7 +929,7 @@
             from evaluating our model them?
         </p>
         <p>
-            On the other hand, integrated gradients and expected graidents
+            On the other hand, integrated gradients and expected gradients
             rely on presenting interpolated images to your model, and unless
             you make some strange convexity assumption, those interpolated images 
             don't belong to the to the original training distribution either. The difference is that
@@ -981,7 +982,7 @@
         </p>
         <p>
             But consider the following figure, which is another (modified) version
-            of mnist. We've generated expected gradients attributions using the training
+            of MNIST. We've generated expected gradients attributions using the training
             distribution as a baseline for two different networks. One of the networks
             is a trained model that gets over 99% accuracy on the test set. The other
             network is a randomly initialized model that doesn't do better than random guessing.
@@ -1062,7 +1063,7 @@
         <h2>Honorable Mentions</h2>
         
         <p>
-            This work focuses on a specific interpretability method: integratated gradients
+            This work focuses on a specific interpretability method: integrated gradients
             and its extension, expected gradients. We refer to these
             methods as "path" attribution methods because they integrate 
             importances over a path. Path attribution methods
