@@ -103,7 +103,7 @@ def save_samples(model, sess, images, labels, delta_pl, grad_op, grad_input_op):
                               batch_size=32, random_alpha=random_alpha, random_sample=random_sample,
                               verbose=False, take_difference=True)
                 
-            saliency = np.abs(np.sum(saliency, axis=-1))
+            saliency = np.sum(saliency, axis=-1)
             sample_saliency.append(saliency)
             
             num_read += 1

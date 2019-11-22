@@ -78,7 +78,7 @@ def ablate_top_k(image, saliency, k, method='mean'):
                       indices[:max_to_flip, 1]] = baseline_image[indices[:max_to_flip, 0],
                                                                  indices[:max_to_flip, 1]]
     elif method == 'mean_center' or method == 'blur_center':
-        center_indices = np.array(center_of_mass(saliency))
+        center_indices = np.array(center_of_mass(np.abs(saliency)))
         lower_bounds   = (center_indices * (1.0 - k)).astype(int)
         upper_bounds   = ((np.array(saliency.shape) - center_indices) * k + center_indices).astype(int)
         
