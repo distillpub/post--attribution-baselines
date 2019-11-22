@@ -835,7 +835,9 @@
             of the baselines proposed above. As a
             control, we also include generating random gaussian noise and
             using the noise saliency map ("Random Noise"
-            in the plot).
+            in the plot). The lower the curve, the better the baseline:
+            a lower curve implies that that baseline best highlights
+            the pixels that, when removed, decrease the network output.
         </p>
         <p>
             We plot, as a fraction of the original logit, the output logit
@@ -901,8 +903,8 @@
             seems particularly effective at the Top K ablation tests, especially
             when you ablate by blurring pixels! Would the uniform
             baseline do best when you ablate the image with uniform random noise?
-            Perhaps expected gradients would do best if you ablate an image
-            by progressively replacing with a different image. We leave
+            Perhaps the training distribution baseline would do best if you ablate an image
+            by progressively replacing it with a different image. We leave
             these experiments as future work, as there is a more pressing question
             we need to discuss.
         </p>
@@ -926,7 +928,7 @@
             pixels an image, we have created inputs that do not come from
             the original data distribution. Our trained model has never seen such 
             inputs. Why should we expect to extract any reasonable information
-            from evaluating our model them?
+            from evaluating our model on them?
         </p>
         <p>
             On the other hand, integrated gradients and expected gradients
