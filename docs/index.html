@@ -830,14 +830,16 @@
             ablating the top k features as ranked by absolute importance magnitude
             decreases the predicted output logit. In the figure below, we
             ablate either by mean-imputation ("Mean Top K") or by replacing each pixel
-            by its gaussian-blurred counter-part ("Blur Top K"). We generate pixel importances
+            by its gaussian-blurred counter-part ("Blur Top K") with smoothing
+            kernel width of \(\sigma = 20\). We generate pixel importances
             for 1000 different correctly-classified test-set images using each
-            of the baselines proposed above. As a
+            of the baselines proposed above. For the
+            "blur" baseline, we use a smoothing kernel of \(\sigma = 20\). For
+            the gaussian baseline, we use standard deviation of noise
+             \(\sigma = 1.0\). As a
             control, we also include generating random gaussian noise and
             using the noise saliency map ("Random Noise"
-            in the plot). The lower the curve, the better the baseline:
-            a lower curve implies that that baseline best highlights
-            the pixels that, when removed, decrease the network output.
+            in the plot).  
         </p>
         <p>
             We plot, as a fraction of the original logit, the output logit
@@ -850,6 +852,7 @@
             that best highlights which pixels the network 
             should exhibit the fastest drop in logit magnitude, because
             it highlights the pixels that most increase the confidence of the network.
+            That is, the lower the curve, the better the baseline.
         </p>
         
         <h3>Mass Center Ablation Tests</h3>
@@ -915,7 +918,8 @@
             to converge than others, and if we re-ran them with more samples, they would
             do better! How do we fairly compare between baselines that have
             different computationally costs? Valuable but computationally-intensive future work would be
-            comparing not only across baselines but also across number of samples drawn.
+            comparing not only across baselines but also across number of samples drawn, 
+            and for the blur and gaussian baselines, the parameter \(\sigma\).
             As mentioned above, we have defined many notions of missingness other than 
             mean-imputation or blurring: more extensive comparisons would also compare
             all of our baselines across all of the corresponding notions of missing data.
