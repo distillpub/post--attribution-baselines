@@ -19,7 +19,7 @@
         <d-front-matter>
         <script type="text/json">{
           "title": "Visualizing the Impact of Feature Attribution Baselines",
-          "description": "Exploring the baseline input hyper-parameter, and how it impacts interpretations of neural network behavior.",
+          "description": "Exploring the baseline input hyperparameter, and how it impacts interpretations of neural network behavior.",
           "authors": [
             {
               "author": "Pascal Sturmfels",
@@ -30,8 +30,8 @@
             {
               "author": "Scott Lundberg",
               "authorURL": "https://scottlundberg.com",
-              "affiliation": "University of Washington",
-              "affiliationURL": "https://www.cs.washington.edu"
+              "affiliation": "Microsoft Research",
+              "affiliationURL": "https://www.microsoft.com/en-us/research/"
           },
           {
             "author": "Su-In Lee",
@@ -43,10 +43,10 @@
         }</script>
       </d-front-matter>
     <d-article>
-        <p>Path attributions methods are a popular, gradient-based way
+        <p>Path attribution methods are a gradient-based way
            of explaining deep models. These path methods require choosing a
-           hyper-parameter known as the "baseline input".
-           What does this hyper-parameter mean, and how important is it? In this article,
+           hyperparameter known as the "baseline input".
+           What does this hyperparameter mean, and how important is it? In this article,
            we investigate these questions, and discuss why it is useful 
            to extend the notion of a baseline from a single input to a distribution.
            Although we focus here on path methods, our discussion of baselines
@@ -79,11 +79,11 @@
             the constant black image and an image of random noise - there is
             little existing research about the impact of this baseline. 
             Is integrated gradients sensitive to the 
-            hyper-parameter choice? Why is the constant black image 
+            hyperparameter choice? Why is the constant black image 
             a "natural baseline" for image data? Are there any alternative choices?
         </p>
         <p>
-            In this article, we will delve into how this hyper-parameter choice arises,
+            In this article, we will delve into how this hyperparameter choice arises,
             and why understanding it is important when you are doing model interpretation.
             As a case-study, we will focus on image classification models in order 
             to visualize the effects of the baseline input. We will explore several 
@@ -95,7 +95,7 @@
         <p>
           We focus on image classification as a task, as it will allow us to visually
           plot integrated gradients attributions, and compare them with our intuition
-          about which pixels we think should be important. We use on the Inception V4 architecture 
+          about which pixels we think should be important. We use the Inception V4 architecture 
           <d-cite key="szegedy2017inception"></d-cite>, a convolutional 
           neural network designed for the ImageNet dataset <d-cite key="deng2009imagenet"></d-cite>,
           in which the task is to determine which class an image belongs to out of 1000 classes.
@@ -271,17 +271,26 @@
         </p>
         <p>
             We have casually omitted one part of the formula: the fact
-            that we multiply by a difference from a baseline. The reason for
-            this term is subtle, but intuitively the term is a normalization term.
-            When we integrate gradients over a path of length \(||x - x'||_2\), 
-            the scale of path integral will depend both on the magnitude of the gradients
-            along the path and the length of the path itself. Shorter paths 
-            will produce importance scores with lower relative magnitudes than
-            longer paths unless we multiply by the path length.
-        </p>
-        <p>
-            This intuition is formalized in the original paper as the completeness
-            axiom, which states the following.
+            that we multiply by a difference from a baseline. Although
+            we won't go into detail here, this term falls out because we
+            care about the derivative of the network
+            function \(f\) with respect to the path we are integrating over
+            <d-footnote>That is, if we integrate over the
+                straight-line between \(x'\) and \(x\), which
+                we can represent as \(\gamma(\alpha) =
+            x' + \alpha(x - x')\), then:
+            $$
+                \frac{\delta f(\gamma(\alpha))}{\delta \alpha} =
+                \frac{\delta f(\gamma(\alpha))}{\delta \gamma(\alpha)} \times 
+                \frac{\delta \gamma(\alpha)}{\delta \alpha} = 
+                \frac{\delta f(x' + \alpha' (x - x'))}{\delta x_i} \times (x_i - x'_i) 
+            $$
+            The difference from baseline term is the derivative of the 
+            path function \(\gamma\) with respect to \(\alpha\).
+        </d-footnote>. The theory behind integrated gradients is discussed
+        in more detail in the original paper. In particular, the authors
+        show that integrated gradients satisfies several desirable
+        properties, including the completeness axiom:
             $$
                 \textrm{Axiom 1: Completeness}\\
                 \sum_i \phi_i^{IG}(f, x, x') = f(x) - f(x')
@@ -290,12 +299,15 @@
             Completeness is a desirable property because it states that the 
             importance scores for each feature break down the output of the network:
             each importance score represents that feature's individual contribution to
-            the network output, and added when together, we recover the output value itself.
+            the network output, and added when together, we recover the output value itself
             <d-footnote>Although it's not essential to our discussion here, we can prove 
             that integrated gradients satisfies this axiom using the
             <a href="https://en.wikipedia.org/wiki/Gradient_theorem" target="_blank">fundamental
-            theorem of calculus for path integrals</a>.</d-footnote> But completeness 
-            is also desirable for a more practical reason.
+            theorem of calculus for path integrals</a>. We leave a
+            full discussion of all of the properties that integrated 
+            gradients satisfies to the original paper, since they hold
+            independent of the choice of baseline. </d-footnote>. The completeness 
+            axiom also provides a way to measure convergence.
         </p>
         <p>
             In practice, we can't compute the exact value of the integral. In order to do so,
@@ -305,12 +317,12 @@
             Intuitively 1,000 may seem like plenty, but can we be certain?
             As proposed in the original paper, we can use the completeness axiom
             as a sanity check on convergence: run integrated gradients with \(k\)
-            points, measure \(|\sum_i \phi_i^{IG}(f, x, x') - f(x) - f(x')|\),
-            and if the difference is large, re-run with a larger \(k\).<d-footnote>
+            points, measure \(|\sum_i \phi_i^{IG}(f, x, x') - (f(x) - f(x'))|\),
+            and if the difference is large, re-run with a larger \(k\) <d-footnote>
                 Of course, this brings up a new question: what is "large" in this context?
                 One heuristic is to compare the difference with the magnitude of the
                 output itself.
-            </d-footnote>
+            </d-footnote>.
         </p>
         <p>
             The line chart above plots the following equation in red:
@@ -320,10 +332,9 @@
             That is, it sums all of the pixel attributions in the saliency map.
             This lets us compare to the blue line, which plots \(f(x) - f(x')\).
             We can see that with 500 samples, we seem (at least intuitively) to
-            be fairly close to converging. But this article isn't about the 
-            fundamental theorem of calculus - it's about baselines! How does
-            this discussion help us understand what baseline to choose? In order
-            to understand the concept of a "baseline", we will need a brief excursion
+            be fairly close to converging. But this article isn't about how 
+            to get good convergence - it's about baselines!  In order
+            to advance our understanding of the baseline, we will need a brief excursion
             into the world of game theory.
         </p>
         
@@ -338,7 +349,7 @@
             determine how much different groups of participants contribute to the system.
         </p>
         <p>
-            In game theory, a notion of "missingness" is well-defined. Games are defined
+            In game theory, a notion of missingness is well-defined. Games are defined
             on coalitions - sets of participants - and for any specific coalition,
             a participant of the system can be in or out of that coalition. The fact
             that games can be evaluated on coalitions is the foundation of
@@ -348,7 +359,7 @@
             if we added more of that group to any given coalition.
         </p>
         <p>
-            Unfortunately, "missingness" is a more difficult notion when
+            Unfortunately, missingness is a more difficult notion when
             we are speaking about machine learning models. In order
             to evaluate how important the \(i\)th feature is, we
             want to be able to compute how much the output of
@@ -356,7 +367,7 @@
             the "presence" of the \(i\)th feature. But what does this mean, exactly?
             In order to increase the presence of a feature, we would need to start
             with the feature being "missing" and have a way of interpolating 
-            between that "missingness" and its current, known value.
+            between that missingness and its current, known value.
         </p>
         <p>
             Hopefully, this is sounding awfully familiar. Integrated gradients
@@ -372,8 +383,8 @@
         </p>
         <p>
             The point here is that fixed feature values may have unintended meaning.
-            The problem compounds further when you consider the multiplicative \(x_i - x'_i\) term,
-            which is necessary to satisfy the completeness axiom.
+            The problem compounds further when you consider the difference from
+            baseline term \(x_i - x'_i\).
             For the sake of a thought experiment, suppose a patient had a blood sugar level of \(0\). 
             To understand why our machine learning model thinks this patient
             is at high risk, you run integrated gradients on this data point with a
@@ -386,8 +397,7 @@
           If you use a constant black image as a baseline, integrated gradients will
           not highlight black pixels as important even if black pixels make up
           the object of interest. More generally, the method is blind to the color you use as a baseline, which
-          we illustrate with the figure below. We note here that this 
-          blindness was acknowledged by the original
+          we illustrate with the figure below. Note that this was acknowledged by the original
           authors in <d-cite key="sundararajan2018note"></d-cite>.
           <d-figure>
               <figure class="l-page">
@@ -414,7 +424,7 @@
             several notions of "missingness", both in the
             context of integrated gradients and more generally 
             <d-cite key="kindermans2017unreliability,ancona2017better,fong2017interpretable"></d-cite>.
-            Despite this, choosing the right baseline remains a challenge. Here we will
+            Nonetheless, choosing the right baseline remains a challenge. Here we will
             present several choices for baselines: some based on existing literature,
             others inspired by the problems discussed above. The figure at the end 
             of the section visualizes the four baselines presented here.
@@ -428,7 +438,7 @@
             farthest image in L1 distance from the current image such that the
             baseline is still in the valid pixel range. This baseline, which
             we will refer to as the maximum distance baseline (denoted
-            max dist. in the figure below),
+            <i>max dist.</i> in the figure below),
             avoids the difference from baseline issue directly. 
         </p>
             
@@ -445,7 +455,7 @@
             domain-specific way to represent missing information. This baseline
             is attractive because it captures the notion of missingness in images
             in a very human intuitive way. In the figure below, this baseline is
-            denoted "blur". The figure lets you play with the smoothing constant
+            denoted <i>blur</i>. The figure lets you play with the smoothing constant
             used to define the baseline.
         </p>
             
@@ -457,9 +467,9 @@
             different than their neighbors, because the baseline is defined as a weighted
             average of a pixel and its neighbors. To overcome this, we can again take inspiration
             from both <d-cite key ="fong2017interpretable"></d-cite> and the original integrated
-            gradients paper. Another way to define "missingness" is to simply sample a random
+            gradients paper. Another way to define missingness is to simply sample a random
             uniform image in the valid pixel range and call that the baseline. 
-            We refer to this baseline as the "uniform" baseline in the figure below.
+            We refer to this baseline as the <i>uniform</i> baseline in the figure below.
         </p>
         
         <h3>The Gaussian Baseline</h3>
@@ -469,7 +479,7 @@
             touch on in the next section), Smilkov et al. <d-cite key="smilkov2017smoothgrad"></d-cite>
             make frequent use of a gaussian distribution centered on the current image with 
             variance \(\sigma\). We can use the same distribution as a baseline for 
-            integrated gradients! In the figure below, this baseline is called the "gaussian"
+            integrated gradients! In the figure below, this baseline is called the <i>gaussian</i>
             baseline. You can vary with the standard deviation of the distribution \(\sigma\). 
             One thing to note here is that we truncate the gaussian baseline in the valid pixel
             range, which means that as \(\sigma\) approaches \(\infty\), the gaussian
@@ -545,7 +555,7 @@
         <p>
             Now that we've introduced a second integral into our formula,
             we need to do a second discrete sum to approximate it, which
-            requires an additional hyper-parameter: the number of baselines to sample. 
+            requires an additional hyperparameter: the number of baselines to sample. 
             In <d-cite key="erion2019learning"></d-cite>, Erion et al. make the 
             observation that both integrals can be thought of as expectations:
             the first integral as an expectation over \(D\), and the second integral 
@@ -567,45 +577,46 @@
             where \(x'^j\) is the \(j\)th sample from \(D\) and 
             \(\alpha^j\) is the \(j\)th sample from the uniform distribution between
             0 and 1. Now suppose that we use the gaussian baseline with variance
-            \(\sigma^2\). Then<d-footnote>
-                We will use \(\sigma^2\) to
-                interchangeably refer to a diagonal matrix
-                with \(\sigma^2\) as the diagonal entries,
-                or the scalar value. Similarly, 0 will refer
-                to the 0 vector or the scalar value appropriately.
-            </d-footnote>:
+            \(\sigma^2\). Then we can re-write the formula for expected gradients as follows:
             
-            $$
-                 x' \sim N(x, \sigma^2) = x + \epsilon_{\sigma}
-            $$
-            
-            where \(\epsilon_{\sigma}\ \sim N(0, \sigma^2)\).
-            Now we have: 
-            $$
-                \begin{aligned}
-                    x' + \alpha(x - x') &= \\
-                    x + \epsilon_{\sigma} + \alpha(x - (x + \epsilon_{\sigma})) &= \\
-                    x + (1 - \alpha)\epsilon_{\sigma}
-                \end{aligned}
-            $$
-            where all we've done is made the above substitution and re-arranged terms.
-            We can re-write the formula for expected gradients as follows:
             $$
             \hat{\phi}_i^{EG}(f, x; N(0, \sigma^2)) 
                 \approx \frac{1}{k} \sum_{j=1}^k 
                 \epsilon_{\sigma}^{j} \times 
                 \frac{\delta f(x + (1 - \alpha^j)\epsilon_{\sigma}^{j})}{\delta x_i}
             $$
+            
+            where \(\epsilon_{\sigma}\ \sim N(\bar{0}, \sigma^2 I)\)
+            <d-footnote>
+                To see how we arrived
+                at the above formula, first observe that 
+                $$  
+                    \begin{aligned}
+                         x' \sim N(x, \sigma^2) &= x + \epsilon_{\sigma} \\
+                         x'- x &= \epsilon_{\sigma} \\
+                     \end{aligned}
+                $$
+                by definition of the gaussian baseline. Now we have: 
+                $$
+                    \begin{aligned}
+                        x' + \alpha(x - x') &= \\
+                        x + \epsilon_{\sigma} + \alpha(x - (x + \epsilon_{\sigma})) &= \\
+                        x + (1 - \alpha)\epsilon_{\sigma}
+                    \end{aligned}
+                $$
+                The above formula simply substitues the last line
+                of each equation block back into the formula.
+            </d-footnote>.            
+            
             This looks awfully familiar to an existing method called SmoothGrad
-            <d-cite key="smilkov2017smoothgrad"></d-cite>. SmoothGrad is
+            <d-cite key="smilkov2017smoothgrad"></d-cite>. If we use the (gradients \(\times\) input image)
+            variant of SmoothGrad <d-footnote> SmoothGrad is
             was a method designed to sharpen saliency maps and was meant to be run
             on top of an existing saliency method. The idea is simple:
             instead of running a saliency method once on an image, first
             add some gaussian noise to an image, then run the saliency method.
             Do this several times with different draws of gaussian noise, then
-            average the results. If we use SmoothGrad and our saliency method
-            is (gradients \(\times\) input image) <d-footnote>Multipying
-            the gradients by the input and using that as a saliency map
+            average the results. Multipying the gradients by the input and using that as a saliency map
             is discussed in more detail in the original SmoothGrad paper.</d-footnote>, 
             then we have the following formula:
             $$
@@ -623,7 +634,7 @@
             gradients samples uniformly along the path, SmoothGrad always
             samples the endpoint \(\alpha = 0\).
         </p>
-        <p>
+        <!-- <p>
             One amazing property of SmoothGrad saliency maps is that they are, well,
             much smoother than their original non-SmoothGrad counterparts. They
             appear visually less cluttered and more centered around the object of interest
@@ -631,21 +642,19 @@
             in the saliency map? If we interpret SmoothGrad as being an approximation
             of expected gradients with the gaussian baseline, we find one possible
             explanation.
-        </p>
+        </p> -->
         <p>
-            When we assume the above gaussian distribution as our baseline, we are
+            Can this connection help us understand why SmoothGrad creates
+            smooth-looking saliency maps? When we assume the above gaussian distribution as our baseline, we are
             assuming that each of our pixel values is drawn from a
             gaussian <i>independently</i> of the other pixel values. But we know
             this is far from true: in images, there is a rich correlation structure
             between nearby pixels. Once your network knows the value of a pixel, 
             it doesn't really need to use its immediate neighbors because
             it's likely that those immediate neighbors have very similar intensities.
-            And, if your saliency method doesn't split importance among correlated
-            pixels, it may only sparsely highlight pixels, resulting in
-            noisy-looking attributions 
-            <d-cite key="janzing2019feature,sundararajan2019shapley"></d-cite>. 
         </p>
         <p>
+            
             Assuming each pixel is drawn from an independent gaussian
             breaks this correlation structure. It means that expected gradients
             tabulates the importance of each pixel independently of
@@ -654,26 +663,11 @@
             because we are no longer allowing the network to rely 
             on only pixel in a group of correlated pixels. This may be
             why SmoothGrad is smooth: because it is implicitly assuming
-            independence among pixels<d-footnote>
-                This connection between expected gradients and SmoothGrad may
-                also let us explain another curious property of SmoothGrad:
-                at high values of \(\sigma\), SmoothGrad breaks down (Figure 3
-                in the original paper). The saliency
-                maps look like meaningless noise. At which values
-                of \(\sigma\) does this occur, and why? As mentioned above,
-                SmoothGrad only samples from the end of the path, while
-                expected gradients samples uniformly over the path.
-                For small values of \(\sigma\), the end of one path
-                is a reasonable approximation of the middle point
-                of a path twice as long. But because we are truncating paths
-                at the valid pixel range, at some point as we increase 
-                \(\sigma\), this heuristic breaks down, and SmoothGrad
-                no longer produces sensible saliency maps
-            </d-footnote>. In the figure below, you can compare
+            independence among pixels. In the figure below, you can compare
             integrated gradients with a single randomly drawn baseline
             to expected gradients sampled over a distribution. For
             the gaussian baseline, you can also toggle the SmoothGrad
-            option to use SmoothGrad formula above. For all figures,
+            option to use the SmoothGrad formula above. For all figures,
             \(k=500\).
         </p>
         

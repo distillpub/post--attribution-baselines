@@ -16,7 +16,7 @@ function figure3() {
     
     var tooltip_image_size = 100;
 
-    var chart_width = 500;
+    var chart_width = 650;
     var chart_height = 300;
     var chart_padding = 80;
     

@@ -31,31 +31,18 @@
             <div class="col s12">
                 <div class="card teal">
                    <div class="card-content white-text">
-                     <span class="card-title"><b style="font-size:36px;">Accumulating Gradients</b></span>
+                     <span class="card-title"><b style="font-size:36px;">Integrately Familiar</b></span>
                      <p style="font-size:20px;">
                          Given that gradients saturate, how can we avoid this problem?
                          We could simply accumulate all of the gradients between some baseline \(x'\)
                          and our current input \(x\). This would represent average rate of change
-                         along the path, which is exactly what integrated gradients does:
-                         $$\phi_i^{IG}(f, x, x') = (x_i - x'_i) \times \int_{\alpha = 0}^ 1
-                           \frac{\delta f(x' + \alpha (x - x'))}{\delta x_i} d \alpha$$
-                     </p>
-                     <p style="font-size:20px;">
-                         We break this equation down and visualize it in four separate equations:
+                         along the path, which is exactly what integrated gradients does.
+                         We break the definition of integrated gradients and visualize it in three separate parts:
                          $$
-                           \tag{1} x'^k + \alpha^{k} (x - x'^k)
-                         $$
-                         $$
-                           \tag{2} (x_i - x'^k_i) \times 
-                             \frac{\delta f(x'^k + \alpha^{k} (x - x'^k))}{\delta x_i}
-                         $$
-                         $$
-                           \tag{3} \frac{1}{k} \sum_{j=1}^k (x_i - x'^j_i) \times 
-                             \frac{\delta f(x'^j + \alpha^{j} (x - x'^j))}{\delta x_i}
-                         $$
-                         $$
-                             \tag{4} \sum_i \bigg( (x_i - x'_i) \times \int_{\alpha' = 0}^{\alpha} 
-                             \frac{\delta f(x' + \alpha' (x - x'))}{\delta x_i} d \alpha' \bigg)
+                             \int_{\alpha' = 0}^{\alpha} \underbrace{(x_i - x'_i) \times 
+                             \frac{\delta f(\text{ }\overbrace{x' + \alpha' (x - x')}^{\text{(1): Interpolated Image}}\text{ })}
+                             {\delta x_i} d \alpha'}_{\text{(2): Gradients at Interpolation}} 
+                             = \overbrace{\phi_i^{IG}(f, x, x'; \alpha)}^{\text{(3): Cumulative Gradients up to }\alpha}
                          $$
                      </p>
                    </div>

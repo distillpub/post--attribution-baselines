@@ -2,7 +2,7 @@
 <html>
     <meta charset=utf-8>
 <head>
-    <meta name="Accumulation of Gradients Over Interpolation"/>
+    <meta name="Comparison of Different Baselines"/>
 </head>
 
 <body onkeydown="handleKeyDown(event)">
@@ -18,10 +18,10 @@
     <script>
         function handleKeyDown(event) {
             if (event.keyCode == 39) {
-                window.location.href = "figure_decoy_mnist.html";
+                window.location.href = "figure_multi_ref.html";
             }
             else if (event.keyCode == 37) {
-                window.location.href = "figure_multi_ref.html";
+                window.location.href = "figure5.html";
             }
         }
     </script>
@@ -31,24 +31,16 @@
             <div class="col s12">
                 <div class="card teal">
                    <div class="card-content white-text">
-                       <span class="card-title"><b style="font-size:36px;">Putting on the Training Wheels</b></span>
+                       <span class="card-title"><b style="font-size:36px;">All About that Baseline</b></span>
                        <p style="font-size:20px;">
-                           We assume an underlying gaussian or uniform distribution because
-                           it is easy to draw samples from them. Although we do not 
-                           have access to our data's underlying distribution, we do
-                           have many samples from that distribution: the training data! We
-                           can use those samples to define our baseline!
-                           We can again break down expected gradients with the 
-                           training distribution in three parts:
-                           $$
-                               \frac{1}{k} \sum_{j=1}^k 
-                               \underbrace{(x_i - x'^j_i) \times 
-                                 \frac{\delta f(\text{ } 
-                                 \overbrace{x'^j + \alpha^{j} (x - x'^j)}^{\text{(1): Interpolated Image}}
-                                 \text{ })}{\delta x_i}}_{\text{ (2): Gradients at Interpolation}}
-                                  = \overbrace{\hat{\phi_i}^{EG}(f, x, k; D_{\text{data}})}
-                                  ^{\text{(3): Cumulative Gradients up to }\alpha}
-                           $$
+                           There are many alternative baselines we could choose to represent missingness,
+                           including a blurred version of the original image or 
+                           generating an image of random uniform noise.
+                           If we really want to avoid baselines that are close
+                           to the original input image, we can even take a baseline
+                           that's an inverted version of the original image! Each
+                           of these baselines has different pros and cons and
+                           are visualized below.
                        </p>
                    </div>
                  </div>
@@ -56,8 +48,8 @@
         </div>
         <div class="row">
             <div class="col s12">
-                <div id='figure6_div'></div>
-                <script src="figure6.js"></script>
+                <div id='figure_baseline_comp_div'></div>
+                <script src="baselines/figure_baseline_comp.js"></script>
             </div> 
         </div>
         <div class="row">
@@ -65,7 +57,7 @@
                 <a href="figure5.html" class="waves-effect waves-light btn">previous</a>
             </div>
             <div class="col s2 offset-s8">
-                <a href="figure_decoy_mnist.html" class="waves-effect waves-light btn">next</a>
+                <a href="figure_multi_ref.html" class="waves-effect waves-light btn">next</a>
             </div>    
         </div>
     </div>

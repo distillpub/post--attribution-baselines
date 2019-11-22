@@ -2,7 +2,7 @@
 <html>
     <meta charset=utf-8>
 <head>
-    <meta name="Accumulation of Gradients Over Interpolation"/>
+    <meta name="The Dangers of Visual Assessment"/>
 </head>
 
 <body onkeydown="handleKeyDown(event)">
@@ -18,10 +18,10 @@
     <script>
         function handleKeyDown(event) {
             if (event.keyCode == 39) {
-                window.location.href = "figure_decoy_mnist.html";
+                window.location.href = "figure7.html";
             }
             else if (event.keyCode == 37) {
-                window.location.href = "figure_multi_ref.html";
+                window.location.href = "figure_ablation.html";
             }
         }
     </script>
@@ -31,24 +31,21 @@
             <div class="col s12">
                 <div class="card teal">
                    <div class="card-content white-text">
-                       <span class="card-title"><b style="font-size:36px;">Putting on the Training Wheels</b></span>
+                       <span class="card-title"><b style="font-size:36px;">Random in Tandem</b></span>
                        <p style="font-size:20px;">
-                           We assume an underlying gaussian or uniform distribution because
-                           it is easy to draw samples from them. Although we do not 
-                           have access to our data's underlying distribution, we do
-                           have many samples from that distribution: the training data! We
-                           can use those samples to define our baseline!
-                           We can again break down expected gradients with the 
-                           training distribution in three parts:
-                           $$
-                               \frac{1}{k} \sum_{j=1}^k 
-                               \underbrace{(x_i - x'^j_i) \times 
-                                 \frac{\delta f(\text{ } 
-                                 \overbrace{x'^j + \alpha^{j} (x - x'^j)}^{\text{(1): Interpolated Image}}
-                                 \text{ })}{\delta x_i}}_{\text{ (2): Gradients at Interpolation}}
-                                  = \overbrace{\hat{\phi_i}^{EG}(f, x, k; D_{\text{data}})}
-                                  ^{\text{(3): Cumulative Gradients up to }\alpha}
-                           $$
+                           There are many other existing "sanity checks" and
+                           evaluation metrics for saliency maps. Unfortunately,
+                           many of these rely on some human intuition
+                           about what a saliency map should look like. The
+                           "model randomness test" proposed by Adebayo et al. (2018)
+                           whether or not randomizing a model's weights 
+                           changes the saliency map produces by the model, with the
+                           idea that if it doesn't, the saliency map is independent of 
+                           the model itself. But
+                           this makes the assumption that a trained model's
+                           "true" saliency map doesn't look like a random model's
+                           saliency map. We don't have any a priori reason
+                           to believe that either!
                        </p>
                    </div>
                  </div>
@@ -56,16 +53,16 @@
         </div>
         <div class="row">
             <div class="col s12">
-                <div id='figure6_div'></div>
-                <script src="figure6.js"></script>
+                <div id='figure_random_mnist_div'></div>
+                <script src="decoy_mnist/figure_random_mnist.js"></script>
             </div> 
         </div>
         <div class="row">
             <div class="col s2">
-                <a href="figure5.html" class="waves-effect waves-light btn">previous</a>
+                <a href="figure_ablation.html" class="waves-effect waves-light btn">previous</a>
             </div>
             <div class="col s2 offset-s8">
-                <a href="figure_decoy_mnist.html" class="waves-effect waves-light btn">next</a>
+                <a href="figure7.html" class="waves-effect waves-light btn">next</a>
             </div>    
         </div>
     </div>

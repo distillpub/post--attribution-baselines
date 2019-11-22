@@ -18,7 +18,7 @@
     <script>
         function handleKeyDown(event) {
             if (event.keyCode == 37) {
-                window.location.href = "figure6.html";
+                window.location.href = "figure_random_mnist.html";
             }
         }
     </script>
@@ -28,18 +28,15 @@
             <div class="col s12">
                 <div class="card teal">
                    <div class="card-content white-text">
-                       <span class="card-title"><b style="font-size:36px;">Conclusion</b></span>
+                       <span class="card-title"><b style="font-size:36px;">The Path to Saliency</b></span>
                        <p style="font-size:20px;">
-                           In scenarios where it is not clear how to define a constant
-                           baseline, we can use the underlying data distribution instead. This turns the
-                           procedure from a deterministic summation approximating an integral
-                           to a stochastic approximation of an expectation. This expectation
-                           may better highlight objects of interest.
-                       </p>
-                   </br>
-                       <p style="font-size:20px;">
-                           It also means that expected gradients attributions are different from run to run.
-                           Doesn't this seem like a bad thing? Well, not necessarily...
+                           There exist many compelling baselines for the image domain.
+                           How should we choose which one to use? We need to design
+                           better evaluation metrics and run-larger scale
+                           evalutions using existing evaluation metrics to have
+                           a concrete answer. But providing theoretical foundation
+                           for each baseline provides a start to further exploring these
+                           questions, and more broadly, questions about missingess.
                        </p>
                    </div>
                  </div>
@@ -53,7 +50,7 @@
         </div>
         <div class="row">
             <div class="col s2">
-                <a href="figure6.html" class="waves-effect waves-light btn">previous</a>
+                <a href="figure_random_mnist.html" class="waves-effect waves-light btn">previous</a>
             </div>
         </div>
     </div>

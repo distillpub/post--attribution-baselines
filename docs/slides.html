@@ -20,9 +20,6 @@
             if (event.keyCode == 39) {
                 window.location.href = "figure3.html";
             }
-            else if (event.keyCode == 37) {
-                window.location.href = "figure1.html";
-            }
         }
     </script>
     
@@ -31,20 +28,20 @@
             <div class="col s12">
                 <div class="card teal">
                    <div class="card-content white-text">
-                     <span class="card-title"><b style="font-size:36px;">Integrated Gradients</b></span>
+                     <span class="card-title"><b style="font-size:36px;">Sense and Saliency</b></span>
                      <p style="font-size:20px;">
-                         Integrated gradients is a popular method for feature attribution: computing
-                         which features were most important towards the output prediction. The  
-                         \(i\)th feature has importance \(\phi_i^{IG}(f, x, x')\), where:
-                         $$\phi_i^{IG}(f, x, x') = (x_i - x'_i) \times \int_{\alpha = 0}^ 1
-                           \frac{\delta f(x' + \alpha (x - x'))}{\delta x_i} d \alpha$$
-                         We calculate the feature importance for every pixel in the input image \(x\)
-                         and plot the result below in a saliency map. Lighter pixels indicate more influential ones. As a baseline
-                         \(x'\), we use the constant black image.
+                         Machine learning models are so good at certain tasks
+                         they outperform humans. The canonical example
+                         is image classification: determining which object is
+                         depicted in an image. But how do these models
+                         correctly reocgnize objects?
                      </p>
                      </br>
                      <p style="font-size:20px;">
-                         Some of the pixel attributions may seem unintuitive. But why? To understand
+                         Integrated gradients is a popular method to compute
+                         which features were most important towards the output prediction. We calculate the feature importance for every pixel in the input image \(x\)
+                         and plot the result below in a saliency map. Lighter pixels indicate more influential ones. As a baseline
+                         \(x'\), we use the constant black image. Some of the pixel attributions may seem unintuitive. But why? To understand
                          why integrated gradients highlights the pixels it does, we will need to understand
                          where the above equation comes from, and what it is computing.
                      </p>
@@ -59,9 +56,6 @@
             </div> 
         </div>
         <div class="row">
-            <div class="col s2">
-                <a href="figure1.html" class="waves-effect waves-light btn">previous</a>
-            </div>
             <div class="col s2 offset-s8">
                 <a href="figure3.html" class="waves-effect waves-light btn">next</a>
             </div>    

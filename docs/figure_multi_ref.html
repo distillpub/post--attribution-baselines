@@ -1,8 +1,9 @@
+
 <!DOCTYPE html>
 <html>
     <meta charset=utf-8>
 <head>
-    <meta name="Accumulation of Gradients Over Interpolation"/>
+    <meta name="From a Single Baseline to a Distribution"/>
 </head>
 
 <body onkeydown="handleKeyDown(event)">
@@ -18,10 +19,10 @@
     <script>
         function handleKeyDown(event) {
             if (event.keyCode == 39) {
-                window.location.href = "figure_decoy_mnist.html";
+                window.location.href = "figure6.html";
             }
             else if (event.keyCode == 37) {
-                window.location.href = "figure_multi_ref.html";
+                window.location.href = "figure_baseline_comp.html";
             }
         }
     </script>
@@ -31,24 +32,25 @@
             <div class="col s12">
                 <div class="card teal">
                    <div class="card-content white-text">
-                       <span class="card-title"><b style="font-size:36px;">Putting on the Training Wheels</b></span>
+                       <span class="card-title"><b style="font-size:36px;"> Err on the Side of Gaussian </b></span>
                        <p style="font-size:20px;">
-                           We assume an underlying gaussian or uniform distribution because
-                           it is easy to draw samples from them. Although we do not 
-                           have access to our data's underlying distribution, we do
-                           have many samples from that distribution: the training data! We
-                           can use those samples to define our baseline!
-                           We can again break down expected gradients with the 
-                           training distribution in three parts:
+                           Instead of using a single baseline, we can average
+                           the contributions from multiple baselines. If the baselines
+                           we are averaging over are all drawn from the same distribution,
+                           then we can re-formulate integrated gradients as an 
+                           expectation. We call this formulation <i>expected gradients</i>:
+                           $$ \phi_i^{EG}(f, x; D) = \underbrace{\mathop{\mathbb{E}}_{x' \sim D, \alpha \sim U(0, 1)}}_
+                               {\text{Expectation over \(D\) and the path...}} 
+                           \bigg[ \overbrace{(x_i - x'_i) \times 
+                             \frac{\delta f(x' + \alpha (x - x'))}{\delta x_i}}^{\text{...of the 
+                                 importance of the } i\text{th pixel}} \bigg]
                            $$
-                               \frac{1}{k} \sum_{j=1}^k 
-                               \underbrace{(x_i - x'^j_i) \times 
-                                 \frac{\delta f(\text{ } 
-                                 \overbrace{x'^j + \alpha^{j} (x - x'^j)}^{\text{(1): Interpolated Image}}
-                                 \text{ })}{\delta x_i}}_{\text{ (2): Gradients at Interpolation}}
-                                  = \overbrace{\hat{\phi_i}^{EG}(f, x, k; D_{\text{data}})}
-                                  ^{\text{(3): Cumulative Gradients up to }\alpha}
-                           $$
+                       </p>
+                       <p style="font-size:20px;">
+                           It turns out that we can view an existing method, called SmoothGrad,
+                           as an approximation of expected gradients with the gaussian baseline.
+                           This connection is one explanation for why SmoothGrad smoothes images:
+                           because the gaussian baseline assumes independence among pixels.
                        </p>
                    </div>
                  </div>
@@ -56,16 +58,16 @@
         </div>
         <div class="row">
             <div class="col s12">
-                <div id='figure6_div'></div>
-                <script src="figure6.js"></script>
+                <div id='figure_multi_ref_div'></div>
+                <script src="baselines/figure_multi_ref.js"></script>
             </div> 
         </div>
         <div class="row">
             <div class="col s2">
-                <a href="figure5.html" class="waves-effect waves-light btn">previous</a>
+                <a href="figure_baseline_comp.html" class="waves-effect waves-light btn">previous</a>
             </div>
             <div class="col s2 offset-s8">
-                <a href="figure_decoy_mnist.html" class="waves-effect waves-light btn">next</a>
+                <a href="figure6.html" class="waves-effect waves-light btn">next</a>
             </div>    
         </div>
     </div>
