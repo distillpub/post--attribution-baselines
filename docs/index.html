@@ -823,16 +823,18 @@
             expected/integrated gradients produces is to see whether 
             ablating the top k features as ranked by absolute importance magnitude
             decreases the predicted output logit. In the figure below, we
-            ablate either by mean-imputation ("Mean Top K") or by replacing each pixel
-            by its gaussian-blurred counter-part ("Blur Top K") with smoothing
-            kernel width of \(\sigma = 20\). We generate pixel importances
+            ablate either by mean-imputation or by replacing each pixel
+            by its gaussian-blurred counter-part (<i>Mean Top K</i> and <i>Blur Top K</i> in the plot). We generate pixel importances
             for 1000 different correctly-classified test-set images using each
-            of the baselines proposed above. For the
-            "blur" baseline, we use a smoothing kernel of \(\sigma = 20\). For
-            the gaussian baseline, we use standard deviation of noise
-             \(\sigma = 1.0\). As a
+            of the baselines proposed above <d-footnote>
+                For the blur baseline and the blur
+                ablation test, we use \(\sigma = 20\).
+                For the gaussian baseline, we use \(\sigma = 1\). These choices
+                are somewhat arbitrary - a more comprehensive evaluation
+                would compare across many values of \(\sigma\).
+            </d-footnote>. As a
             control, we also include generating random gaussian noise and
-            using the noise saliency map ("Random Noise"
+            using the noise saliency map (<i>Random Noise</i>
             in the plot).  
         </p>
         <p>
@@ -866,7 +868,7 @@
             the center of mass. This tests whether or not the saliency map
             is generally highlighting an important region in the image. We plot
             replacing the boxed region around the saliency map using mean-imputation
-            ("Mean Center") and blurring ("Blur Center") below as well.
+            and blurring below as well (<i>Mean Center</i> and <i>Blur Center</i>, respectively).
         </p>
         
         <p>
@@ -876,31 +878,29 @@
                     <script src="baselines/figure_ablation.js"></script>
                     <figcaption>
                         A variety of ablation tests on a variety of baselines.
-                        "Expected Gradients" refers to using samples from the
-                        training data as baselines. The "gaussian" and "uniform"
-                        baseline refer to using multiple
-                        samples from a gaussian or uniform distribution, respectively.
-                        
-                        The "blur" baseline inspired by <d-cite key="fong2017interpretable"></d-cite>
-                        seems particularly effective at highlighting individual pixel importance,
-                        while expected gradients seems to best highlight the center of mass
-                        of the important pixels; although the center of mass ablation tests
-                        provide much less separation than the top k ablation tests.
+                        Using the training distribution and using the uniform distribution
+                        outperform most other methods on the top k ablation tests. The
+                        blur baseline inspired by <d-cite key="fong2017interpretable"></d-cite>
+                        does equally well on the blur top-k test. All methods
+                        perform similarly on the mass center ablation tests. Mouse
+                        over the legend to highlight a single curve.
                     </figcaption>
                 </figure>
             </d-figure>
         </p>
         <p>
             The ablation tests seem to indicate some interesting trends. 
-            All methods do fairly similarly on the Mass Center ablation tests,
-            with expected gradients slightly ahead. This may be because the 
+            All methods do fairly similarly on the mass center ablation tests, and
+            only slightly better than random noise. This may be because the 
             object of interest generally lies in the center of the image - it
             isn't hard for random noise to be centered at the image. In contrast,
-            the "blur" baseline inspired by <d-cite key="fong2017interpretable"></d-cite>
-            seems particularly effective at the Top K ablation tests, especially
-            when you ablate by blurring pixels! Would the uniform
-            baseline do best when you ablate the image with uniform random noise?
-            Perhaps the training distribution baseline would do best if you ablate an image
+            using the training data or a uniform distribution seems to do quite well
+            on the top-k ablation tests. Interestingly, the blur baseline
+            inspired by <d-cite key="fong2017interpretable"></d-cite> also
+            does quite well on the top k baseline tests, especially when
+            we ablate pixels by blurring them! Would the uniform
+            baseline do better if you ablate the image with uniform random noise?
+            Perhaps the training distribution baseline would do even better if you ablate an image
             by progressively replacing it with a different image. We leave
             these experiments as future work, as there is a more pressing question
             we need to discuss.
@@ -908,9 +908,8 @@
         <h3>The Pitfalls of Ablation Tests</h3>
         <p>
             Can we really trust the ablations tests presented above? We ran each method with 500 samples. 
-            Maybe some methods need more samples
-            to converge than others, and if we re-ran them with more samples, they would
-            do better! How do we fairly compare between baselines that have
+            Constant baselines tend to not need as many samples
+            to converge as baselines over distributions. How do we fairly compare between baselines that have
             different computationally costs? Valuable but computationally-intensive future work would be
             comparing not only across baselines but also across number of samples drawn, 
             and for the blur and gaussian baselines, the parameter \(\sigma\).
@@ -932,9 +931,8 @@
             On the other hand, integrated gradients and expected gradients
             rely on presenting interpolated images to your model, and unless
             you make some strange convexity assumption, those interpolated images 
-            don't belong to the to the original training distribution either. The difference is that
-            these path methods compute gradients of the model on out-of-distribution points, 
-            not the output of the model. In general, whether or not users should present
+            don't belong to the to the original training distribution either. 
+            In general, whether or not users should present
             their models with inputs that don't belong to the original training distribution
             is a subject of ongoing debate
             <d-cite key="sundararajan2019shapley,janzing2019feature"></d-cite>. Nonetheless, 
@@ -1015,14 +1013,14 @@
             trained models should have saliency maps that don't look like 
             saliency maps generated on randomly initialized models? That isn't
             to say that the model randomization test doesn't have merit: it
-            does reveal interesting things about what are saliency are doing.
+            does reveal interesting things about what saliency methods are are doing.
             It just doesn't tell the whole story.
         </p>
         <p>
             As we mentioned above, there's a variety of metrics that have been proposed to evaluate 
-            interpretability methods, and even this list is not a comprehensive summary
+            interpretability methods. There are many metrics we do not explicitly discuss here
             <d-cite key="hooker2018benchmark,yeh2019infidelity,kindermans2017unreliability,adebayo2018sanity,yang2019benchmarking,lin2019explanations,narayanan2018humans"></d-cite>.
-            Each proposed metric comes with their various pros and cons.
+            Each proposed metric comes with their various pros and cons. 
             In general, evaluating supervised models is somewhat straightforward: we know the
             true labels of our test set, and can simply evaluate how well
             our predictions match those true labels. Evaluating explanations is hard:
@@ -1099,7 +1097,7 @@
         <p>
             Many other explainability methods other than just the two above 
             define some notion of baseline or missingness, 
-            because missingness and explanations are closely related. When we "explain"
+            because missingness and explanations are closely related. When we explain
             a model, we often want to know which features, when missing, would most
             change model output. But in order to do so, we need to define 
             what missing means because most machine learning models cannot

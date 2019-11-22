@@ -44,7 +44,7 @@ function figure_ablation() {
     var current_data = null;
     
     var legend_data = [
-        { 'baseline': 'eg',         'name': 'Expected Gradients',   'x': 30, 'y': 20 },
+        { 'baseline': 'eg',         'name': 'Train Data Baseline',   'x': 30, 'y': 20 },
         { 'baseline': 'gaussian',   'name': 'Gaussian Baseline',    'x': 30, 'y': 36 },
         { 'baseline': 'ig',         'name': 'Black Baseline',       'x': 30, 'y': 52 },
         { 'baseline': 'max_dist',   'name': 'Max Dist. Baseline',   'x': 30, 'y': 68 },
