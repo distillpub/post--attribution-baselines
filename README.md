@@ -1,6 +1,5 @@
 
 # Visualizing the Impact of Feature Attribution Baselines
-Article link: https://psturmfels.github.io/VisualizingExpectedGradients/  
 
 [Integrated Gradients](https://arxiv.org/pdf/1703.01365) has become a popular method for
 interpreting deep neural networks. As a hyper-parameter, the method requires
@@ -13,5 +12,6 @@ hyper-parameter. We use the example of an image classification network
 to demonstrate why this hyper-parameter can impact how
 you interpret your networks.
 
-Finally, we explain an extension of Integrated Gradients, 
-called Expected Gradients, and how it avoids specifying a baseline input x'.
+Finally, we discuss how this choice of hyper-parameter relates to a broader
+understanding of how we interpret machine learning models, and what it means
+to represent missingness to a model.
