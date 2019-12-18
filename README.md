@@ -15,3 +15,5 @@ you interpret your networks.
 Finally, we discuss how this choice of hyper-parameter relates to a broader
 understanding of how we interpret machine learning models, and what it means
 to represent missingness to a model.
+
+Note: this repository contains a static webpage. Simply clone it, enter the directory and start up a server (something like `python -m http.server` in the repo directory) to view.
