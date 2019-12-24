@@ -693,10 +693,12 @@ function figure_multi_ref() {
                 .attr('xlink:href', saliency_image.attr('xlink:href'))
                 .attr('opacity', 1.0);
             saliency_image.attr('opacity', 0.0);
+            
             current_attribution_id = target_saliency_id;
             saliency_image = target_saliency_image;
-            
         }
+        
+        
         if (row.id == 'uniform') {
             var saliency_file = base_dir + `baselines/${row.id}/saliency.png`;
             if (display_multi_reference) {
@@ -723,8 +725,11 @@ function figure_multi_ref() {
                     .attr('xlink:href', baseline_image.attr('xlink:href'))
                     .attr('opacity', 1.0);
                 baseline_image.attr('opacity', 0.0);
-                current_baseline_id = target_baseline_id;
+                
                 baseline_image = target_baseline_image;
+                if (j == max_set) {
+                    current_baseline_id = target_baseline_id;
+                }
             }
             if (row.id == 'uniform') {
                 var baseline_file = base_dir + `baselines/${row.id}/baseline.png`;
@@ -738,6 +743,7 @@ function figure_multi_ref() {
             }
         }
         
+        current_sigma = 0.5;
         current_baseline_name = row.id;
     }
     
