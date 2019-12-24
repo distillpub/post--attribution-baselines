@@ -44,13 +44,14 @@
       </d-front-matter>
     <d-article>
         <p>Path attribution methods are a gradient-based way
-           of explaining deep models. These path methods require choosing a
-           hyperparameter known as the "baseline input".
+           of explaining deep models. These methods require choosing a
+           hyperparameter known as the <i>baseline input</i>.
            What does this hyperparameter mean, and how important is it? In this article,
-           we investigate these questions, and discuss why it is useful 
-           to extend the notion of a baseline from a single input to a distribution.
-           Although we focus here on path methods, our discussion of baselines
-           is closely connected with the concept of "missingness" in the feature space -
+           we investigate these questions using image classification networks
+           as a case study. We discuss several different ways to choose a baseline
+           input and the assumptions that are implicit in each baseline.
+           Although we focus here on path attribution methods, our discussion of baselines
+           is closely connected with the concept of missingness in the feature space -
            a concept that is critical to interpretability research.
         </p>
 
@@ -62,9 +63,9 @@
             <a href="https://en.wikipedia.org/wiki/International_Conference_on_Machine_Learning" target="-_blank">ICML</a> two years ago 
             <d-cite key="sundararajan2017axiomatic"></d-cite>.
             The method computes which features are important 
-            to a neural network in making a prediction on a 
-            particular data point, which helps users
-            understand what patterns their models are learning.
+            to a neural network when making a prediction on a 
+            particular data point. This helps users
+            understand which features their network relies on.
             Since its introduction,
             integrated gradients has been used to interpret 
             networks trained on a variety of data types, 
@@ -89,7 +90,8 @@
             to visualize the effects of the baseline input. We will explore several 
             notions of missingness, including both constant baselines and baselines
             defined by distributions. Finally, we will discuss different ways to compare
-            baseline choices and talk about why evaluating interpretability methods remains a difficult problem.
+            baseline choices and talk about why quantitative evaluation
+            remains a difficult problem.
         </p>
         <h2>Image Classification</h2>
         <p>
@@ -111,7 +113,7 @@
                   <figcaption>
                       Right: The predicted logits of the network on the original image. The
                       network correctly classifies all images with high confidence.
-                      Left: Pixel-wise attributions of the Inception V4 network using Integrated Gradients.
+                      Left: Pixel-wise attributions of the Inception V4 network using integrated gradients.
                       You might notice that some attributions highlight pixels that do not seem important
                       relative to the true class label.
                   </figcaption>
@@ -147,25 +149,12 @@
         </p>
         <p>
             In the same figure above, we visualize which pixels were most important to the network's correct
-            prediction using integrated gradients.<d-footnote>Throughout this paper, we 
-            use 500 samples when approximating any integral or expectation.</d-footnote>
+            prediction using integrated gradients. 
             The pixels in white indicate more important pixels. In order to plot
             attributions, we follow the same design choices as <d-cite key="smilkov2017smoothgrad"></d-cite>.
             That is, we plot the absolute value of the sum of feature attributions
             across the channel dimension, and cap feature attributions at the 99th percentile to avoid
-            high-magnitude attributions dominating the color scheme.<d-footnote>
-            Why don't we interpret sign when visualizing attributions on ImageNet?
-            One of the reasons is that ImageNet has 1000 different classes, many
-            of which are closely related. If you see a pixel with a strongly negative
-            sign, it's difficult to know exactly why. We know that increasing that
-            pixel value would decrease the output of the network on the explained class
-            (for example goldfinch) but it might increase the output of the network on a 
-            very similar class (housefinch, lets say). You might think that
-            negative pixels shouldn't highlight the correct object, but they often
-            do because of the similarity between image classes. The SmoothGrad paper 
-            <d-cite key="smilkov2017smoothgrad"></d-cite> 
-            contains more discussion about this choice, as well
-            as why it's useful to cap attributions at the 99th percentile.</d-footnote>
+            high-magnitude attributions dominating the color scheme.
         </p>
         <h2>A Better Understanding of Integrated Gradients</h2>  
         <p>
@@ -229,7 +218,7 @@
         </p>
         <p>
             By integrating over a path, 
-            the method avoids problems with local gradients being
+            integrated gradients avoids problems with local gradients being
             saturated. We can break the original equation
             down and visualize it in three separate parts:  the interpolated image between
             the baseline image and the target image, the gradients at the interpolated
@@ -262,7 +251,7 @@
                     <div id='figure4_div'></div>
                     <script src="figure4.js"></script>
                     <figcaption>
-                        Integrated Gradients, visualized. In the line chart, the red line refers to
+                        Integrated gradients, visualized. In the line chart, the red line refers to
                         equation (4) and the blue line refers to \(f(x) - f(x')\). Notice how high magnitude gradients
                         accumulate at small values of \(\alpha\).
                     </figcaption>
@@ -274,7 +263,7 @@
             that we multiply by a difference from a baseline. Although
             we won't go into detail here, this term falls out because we
             care about the derivative of the network
-            function \(f\) with respect to the path we are integrating over
+            function \(f\) with respect to the path we are integrating over.
             <d-footnote>That is, if we integrate over the
                 straight-line between \(x'\) and \(x\), which
                 we can represent as \(\gamma(\alpha) =
@@ -287,7 +276,7 @@
             $$
             The difference from baseline term is the derivative of the 
             path function \(\gamma\) with respect to \(\alpha\).
-        </d-footnote>. The theory behind integrated gradients is discussed
+        </d-footnote> The theory behind integrated gradients is discussed
         in more detail in the original paper. In particular, the authors
         show that integrated gradients satisfies several desirable
         properties, including the completeness axiom:
@@ -299,22 +288,22 @@
             Completeness is a desirable property because it states that the 
             importance scores for each feature break down the output of the network:
             each importance score represents that feature's individual contribution to
-            the network output, and added when together, we recover the output value itself
+            the network output, and added when together, we recover the output value itself.
             <d-footnote>Although it's not essential to our discussion here, we can prove 
             that integrated gradients satisfies this axiom using the
             <a href="https://en.wikipedia.org/wiki/Gradient_theorem" target="_blank">fundamental
             theorem of calculus for path integrals</a>. We leave a
             full discussion of all of the properties that integrated 
             gradients satisfies to the original paper, since they hold
-            independent of the choice of baseline. </d-footnote>. The completeness 
+            independent of the choice of baseline. </d-footnote> The completeness 
             axiom also provides a way to measure convergence.
         </p>
         <p>
-            In practice, we can't compute the exact value of the integral. In order to do so,
+            In practice, we can't compute the exact value of the integral. Instead,
             we use a discrete sum approximation with \(k\) linearly-spaced points between
             0 and 1 for some value of \(k\). If we only chose 1 point to 
             approximate the integral, that feels like too few. Is 10 enough? 100?
-            Intuitively 1,000 may seem like plenty, but can we be certain?
+            Intuitively 1,000 may seem like enough, but can we be certain?
             As proposed in the original paper, we can use the completeness axiom
             as a sanity check on convergence: run integrated gradients with \(k\)
             points, measure \(|\sum_i \phi_i^{IG}(f, x, x') - (f(x) - f(x'))|\),
@@ -332,7 +321,7 @@
             That is, it sums all of the pixel attributions in the saliency map.
             This lets us compare to the blue line, which plots \(f(x) - f(x')\).
             We can see that with 500 samples, we seem (at least intuitively) to
-            be fairly close to converging. But this article isn't about how 
+            have converged. But this article isn't about how 
             to get good convergence - it's about baselines!  In order
             to advance our understanding of the baseline, we will need a brief excursion
             into the world of game theory.
@@ -340,7 +329,7 @@
         
         <h2>Game Theory and Missingness</h2>
         <p>
-            Integrated Gradients is inspired by work
+            Integrated gradients is inspired by work
             from cooperative game theory, specifically the Aumann-Shapley value
             <d-cite key="aumann2015values"></d-cite>. In cooperative game theory,
             a non-atomic game is a construction used to model large-scale economic systems
@@ -363,7 +352,7 @@
             we are speaking about machine learning models. In order
             to evaluate how important the \(i\)th feature is, we
             want to be able to compute how much the output of
-            the network would increase if we successively increase
+            the network would increase if we successively increased
             the "presence" of the \(i\)th feature. But what does this mean, exactly?
             In order to increase the presence of a feature, we would need to start
             with the feature being "missing" and have a way of interpolating 
@@ -398,7 +387,10 @@
           not highlight black pixels as important even if black pixels make up
           the object of interest. More generally, the method is blind to the color you use as a baseline, which
           we illustrate with the figure below. Note that this was acknowledged by the original
-          authors in <d-cite key="sundararajan2018note"></d-cite>.
+          authors in <d-cite key="sundararajan2018note"></d-cite>, and is in fact
+          central to the definition of a baseline: we wouldn't want integrated gradients
+          to highlight missing features as important! But then how do we avoid
+          giving zero importance to the baseline color?
           <d-figure>
               <figure class="l-page">
                   <div id='figure5_div'></div>
@@ -569,7 +561,13 @@
             $$
         </p>
         <p>
-            In practice, we compute the following:
+            Expected gradients and integrated gradients belong to a family of methods
+            known as "path attribution methods" because they integrate gradients
+            over one or more paths between two valid inputs. <d-footnote>
+            Both expected gradients and integrated gradients use straight-line paths,
+            but one can integrate over paths that are not straight as well. This is discussed
+            in more detail in the original paper. </d-footnote> To compute expected gradients in
+            practice, we use the following formula:
             $$
             \hat{\phi}_i^{EG}(f, x; D) = \frac{1}{k} \sum_{j=1}^k (x_i - x'^j_i) \times 
               \frac{\delta f(x'^j + \alpha^{j} (x - x'^j))}{\delta x_i}
@@ -581,7 +579,7 @@
             
             $$
             \hat{\phi}_i^{EG}(f, x; N(0, \sigma^2)) 
-                \approx \frac{1}{k} \sum_{j=1}^k 
+                = \frac{1}{k} \sum_{j=1}^k 
                 \epsilon_{\sigma}^{j} \times 
                 \frac{\delta f(x + (1 - \alpha^j)\epsilon_{\sigma}^{j})}{\delta x_i}
             $$
@@ -681,7 +679,7 @@
                     "Multi-Reference" button to toggle between the two. For the gaussian
                     baseline, you can also toggle the "Smooth Grad" button
                     to toggle between expected gradients and SmoothGrad
-                    with gradients * inputs. 
+                    with gradients * inputs.
                 </figcaption>
             </figure>
         </d-figure>
@@ -821,11 +819,11 @@
         <p>
             One simple way to evaluate the importance scores that 
             expected/integrated gradients produces is to see whether 
-            ablating the top k features as ranked by absolute importance magnitude
+            ablating the top k features as ranked by their importance
             decreases the predicted output logit. In the figure below, we
             ablate either by mean-imputation or by replacing each pixel
             by its gaussian-blurred counter-part (<i>Mean Top K</i> and <i>Blur Top K</i> in the plot). We generate pixel importances
-            for 1000 different correctly-classified test-set images using each
+            for 1000 different correctly classified test-set images using each
             of the baselines proposed above <d-footnote>
                 For the blur baseline and the blur
                 ablation test, we use \(\sigma = 20\).
@@ -833,18 +831,17 @@
                 are somewhat arbitrary - a more comprehensive evaluation
                 would compare across many values of \(\sigma\).
             </d-footnote>. As a
-            control, we also include generating random gaussian noise and
-            using the noise saliency map (<i>Random Noise</i>
-            in the plot).  
+            control, we also include ranking features randomly
+            (<i>Random Noise</i> in the plot).  
         </p>
         <p>
             We plot, as a fraction of the original logit, the output logit
             of the network at the true class. That is, suppose the original
-            image is a goldfinch and the network is predicts correctly
-            with 90% confidence. If the confidence of class goldfinch drops
-            to 54% after ablating the top 10% of pixels as ranked by the 
-            pixel importance magnitudes, then we plot a line that goes through
-            the point \((0.1, \frac{0.54}{0.9})\). The baseline choice
+            image is a goldfinch and the network predicts the goldfinch class correctly
+            with 95% confidence. If the confidence of class goldfinch drops
+            to 60% after ablating the top 10% of pixels as ranked by 
+            feature importance, then we plot a curve that goes through
+            the points \((0.0, 0.95)\) and \((0.1, 0.6)\). The baseline choice
             that best highlights which pixels the network 
             should exhibit the fastest drop in logit magnitude, because
             it highlights the pixels that most increase the confidence of the network.
@@ -869,6 +866,8 @@
             is generally highlighting an important region in the image. We plot
             replacing the boxed region around the saliency map using mean-imputation
             and blurring below as well (<i>Mean Center</i> and <i>Blur Center</i>, respectively).
+            As a control, we compare against a saliency map generated from random gaussian
+            noise (<i>Random Noise</i> in the plot).
         </p>
         
         <p>
@@ -890,7 +889,7 @@
         </p>
         <p>
             The ablation tests seem to indicate some interesting trends. 
-            All methods do fairly similarly on the mass center ablation tests, and
+            All methods do similarly on the mass center ablation tests, and
             only slightly better than random noise. This may be because the 
             object of interest generally lies in the center of the image - it
             isn't hard for random noise to be centered at the image. In contrast,
@@ -910,7 +909,7 @@
             Can we really trust the ablations tests presented above? We ran each method with 500 samples. 
             Constant baselines tend to not need as many samples
             to converge as baselines over distributions. How do we fairly compare between baselines that have
-            different computationally costs? Valuable but computationally-intensive future work would be
+            different computational costs? Valuable but computationally-intensive future work would be
             comparing not only across baselines but also across number of samples drawn, 
             and for the blur and gaussian baselines, the parameter \(\sigma\).
             As mentioned above, we have defined many notions of missingness other than 
@@ -946,7 +945,7 @@
             So what about other evaluation metrics proposed in recent literature? In
             <d-cite key="hooker2018benchmark"></d-cite>, Hooker et al. propose a variant of
             an ablation test where we first ablate pixels in the training and
-            tests sets. Then, we re-train a model on the ablated data and measure
+            test sets. Then, we re-train a model on the ablated data and measure
             by how much the test-set performance degrades. This approach has the advantage
             of better capturing whether or not the saliency method
             highlights the pixels that are most important for predicting the output class.
@@ -975,7 +974,7 @@
             model (assumedly a trained model that performs well) and a randomly initialized
             model. This metric is intuitive: if a feature attribution method produces
             similar attributions for random and trained models, is the feature
-            attribution really looking at the model at all? It might just
+            attribution really using information from the model? It might just
             be relying entirely on information from the input image.
         </p>
         <p>
@@ -1002,7 +1001,7 @@
             attributions of an accurate model would look exactly like those of a randomly trained model.
             The way we did this is similar to the decoy MNIST dataset, except instead of the top left
             corner encoding the class label, we randomly scattered noise througout each training and
-            test image where the intensity of the noise encode the true class label. Generally,
+            test image where the intensity of the noise encodes the true class label. Generally,
             you would run these kinds of saliency method sanity checks on un-modified data.
         </p>
         <p>
@@ -1048,9 +1047,9 @@
                     <div id='figure7_div'></div>
                     <script src="figure7.js"></script>
                     <figcaption>
-                        A side-by-side comparison of Integrated Gradients
+                        A side-by-side comparison of integrated gradients
                         using a black baseline 
-                        and Expected Gradients using the training data
+                        and expected gradients using the training data
                         as a baseline.
                     </figcaption>
                 </figure>
@@ -1058,20 +1057,20 @@
             
         </p>
         
-        <h2>Honorable Mentions</h2>
+        <h2>Related Methods</h2>
         
         <p>
             This work focuses on a specific interpretability method: integrated gradients
             and its extension, expected gradients. We refer to these
-            methods as "path" attribution methods because they integrate 
-            importances over a path. Path attribution methods
-            represent only a tiny fraction of existing methods. We focus
+            methods as path attribution methods because they integrate 
+            importances over a path. However, path attribution methods
+            represent only a tiny fraction of existing interpretability methods. We focus
             on them here both because they are amenable to interesting visualizations,
             and because they provide a springboard for talking about missingness.
             Although we briefly cited many other methods at the beginning of this article,
-            two deserve special mention here.
+            many other methods use some notion of baseline and have contributed to
+            the discussion surrounding baseline choices.
         </p>
-        <h3>Related Methods</h3>
         <p>
              In <d-cite key="fong2017interpretable"></d-cite>, Fong and Vedaldi propose
              a model-agnostic method to explain neural networks that is based
@@ -1095,16 +1094,23 @@
             image". 
         </p>
         <p>
-            Many other explainability methods other than just the two above 
+            The list of other related methods that we didn't discuss
+            in this article goes on: SHAP and DeepSHAP
+            <d-cite key="lundberg2017unified,chen2019explaining"></d-cite>,
+            layer-wise relevance propagation <d-cite key="binder2016layer"></d-cite>,
+            LIME <d-cite key="ribeiro2016i"></d-cite>,
+            RISE <d-cite key="petsiuk2018rise"></d-cite> and 
+            Grad-CAM <d-cite key="selvaraju2017grad"></d-cite>
+            among others. Many methods for explaining machine learning models
             define some notion of baseline or missingness, 
             because missingness and explanations are closely related. When we explain
             a model, we often want to know which features, when missing, would most
             change model output. But in order to do so, we need to define 
             what missing means because most machine learning models cannot
-            handle arbitrary patterns of missing inputs. This is not a comprehensive
-            list of existing discussions on missingness, but it does point
-            to two papers that provided inspiration for specific
-            ideas in this article.
+            handle arbitrary patterns of missing inputs. This article
+            does not discuss all of the nuances presented alongside
+            each existing method, but it is important to note that these methods were
+            points of inspiration for a larger discussion about missingness.
         </p>
         
         </d-article>
