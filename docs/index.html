@@ -186,7 +186,7 @@
             Unfortunately, there are many problems with using gradients to interpret
             deep neural networks <d-cite key="glorot2010understanding,sundararajan2016gradients"></d-cite>. 
             One specific issue is that neural networks are prone to a problem
-            known as saturation: The gradients of input features may have small magnitudes around a 
+            known as saturation: the gradients of input features may have small magnitudes around a 
             sample even if the network depends heavily on those features. This can happen
             if the network function flattens after those features reach a certain magnitude.
             Intuitively, shifting the pixels in an image by a small amount typically
@@ -472,7 +472,7 @@
             make frequent use of a gaussian distribution centered on the current image with 
             variance \(\sigma\). We can use the same distribution as a baseline for 
             integrated gradients! In the figure below, this baseline is called the <i>gaussian</i>
-            baseline. You can vary with the standard deviation of the distribution \(\sigma\). 
+            baseline. You can vary the standard deviation of the distribution \(\sigma\) using the slider. 
             One thing to note here is that we truncate the gaussian baseline in the valid pixel
             range, which means that as \(\sigma\) approaches \(\infty\), the gaussian
             baseline approaches the uniform baseline.
@@ -578,7 +578,7 @@
             \(\sigma^2\). Then we can re-write the formula for expected gradients as follows:
             
             $$
-            \hat{\phi}_i^{EG}(f, x; N(0, \sigma^2)) 
+            \hat{\phi}_i^{EG}(f, x; N(x, \sigma^2 I)) 
                 = \frac{1}{k} \sum_{j=1}^k 
                 \epsilon_{\sigma}^{j} \times 
                 \frac{\delta f(x + (1 - \alpha^j)\epsilon_{\sigma}^{j})}{\delta x_i}
@@ -590,7 +590,7 @@
                 at the above formula, first observe that 
                 $$  
                     \begin{aligned}
-                         x' \sim N(x, \sigma^2) &= x + \epsilon_{\sigma} \\
+                         x' \sim N(x, \sigma^2 I) &= x + \epsilon_{\sigma} \\
                          x'- x &= \epsilon_{\sigma} \\
                      \end{aligned}
                 $$
@@ -618,7 +618,7 @@
             is discussed in more detail in the original SmoothGrad paper.</d-footnote>, 
             then we have the following formula:
             $$
-            \phi_i^{SG}(f, x; N(0, \sigma^2)) 
+            \phi_i^{SG}(f, x; N(\bar{0}, \sigma^2 I)) 
                 = \frac{1}{k} \sum_{j=1}^k 
                 (x + \epsilon_{\sigma}^{j}) \times 
                 \frac{\delta f(x + \epsilon_{\sigma}^{j})}{\delta x_i}
@@ -930,7 +930,7 @@
             On the other hand, integrated gradients and expected gradients
             rely on presenting interpolated images to your model, and unless
             you make some strange convexity assumption, those interpolated images 
-            don't belong to the to the original training distribution either. 
+            don't belong to the original training distribution either. 
             In general, whether or not users should present
             their models with inputs that don't belong to the original training distribution
             is a subject of ongoing debate
@@ -949,8 +949,8 @@
             by how much the test-set performance degrades. This approach has the advantage
             of better capturing whether or not the saliency method
             highlights the pixels that are most important for predicting the output class.
-            Unfortunately, it has the draw-back of needing to re-train a model on the
-            original data. This metric may also get confused by feature correlation.
+            Unfortunately, it has the drawback of needing to re-train the model several
+            times. This metric may also get confused by feature correlation.
         </p>
         <p>
             Consider the following scenario: our dataset has two features 
@@ -998,7 +998,7 @@
         </p>
         <p>
             Of course, we modified MNIST in this example specifically so that expected gradients
-            attributions of an accurate model would look exactly like those of a randomly trained model.
+            attributions of an accurate model would look exactly like those of a randomly initialized model.
             The way we did this is similar to the decoy MNIST dataset, except instead of the top left
             corner encoding the class label, we randomly scattered noise througout each training and
             test image where the intensity of the noise encodes the true class label. Generally,
@@ -1020,9 +1020,8 @@
             interpretability methods. There are many metrics we do not explicitly discuss here
             <d-cite key="hooker2018benchmark,yeh2019infidelity,kindermans2017unreliability,adebayo2018sanity,yang2019benchmarking,lin2019explanations,narayanan2018humans"></d-cite>.
             Each proposed metric comes with their various pros and cons. 
-            In general, evaluating supervised models is somewhat straightforward: we know the
-            true labels of our test set, and can simply evaluate how well
-            our predictions match those true labels. Evaluating explanations is hard:
+            In general, evaluating supervised models is somewhat straightforward: we set aside a
+            test-set and use it to evaluate how well our model performs on unseen data. Evaluating explanations is hard:
             we don't know what our model is doing and have no ground truth to compare
             against.
         </p>
@@ -1067,8 +1066,8 @@
             represent only a tiny fraction of existing interpretability methods. We focus
             on them here both because they are amenable to interesting visualizations,
             and because they provide a springboard for talking about missingness.
-            Although we briefly cited many other methods at the beginning of this article,
-            many other methods use some notion of baseline and have contributed to
+            We briefly cited several other methods at the beginning of this article.
+            Many of those methods use some notion of baseline and have contributed to
             the discussion surrounding baseline choices.
         </p>
         <p>
@@ -1117,8 +1116,7 @@
         <d-appendix>
             <h3>Acknowledgments</h3>
             <p>
-              I'm sure I have people I need to acknowledge here,
-              but I can't remember who right now. I'll get to this later.
+              We would like to thank Joseph D. Janizek and Hugh Chen for their feedback.
             </p>
           
             <d-footnote-list></d-footnote-list>
