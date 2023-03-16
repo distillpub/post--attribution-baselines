@@ -270,9 +270,9 @@
             x' + \alpha(x - x')\), then:
             $$
                 \frac{\delta f(\gamma(\alpha))}{\delta \alpha} =
-                \frac{\delta f(\gamma(\alpha))}{\delta \gamma(\alpha)} \times 
-                \frac{\delta \gamma(\alpha)}{\delta \alpha} = 
-                \frac{\delta f(x' + \alpha' (x - x'))}{\delta x_i} \times (x_i - x'_i) 
+                \sum_i \frac{\delta f(\gamma(\alpha))}{\delta \gamma_i} \times 
+                    \frac{\delta \gamma_i(\alpha)}{\delta \alpha} = 
+                \sum_i \frac{\delta f(x' + \alpha' (x - x'))}{\delta x_i} \times (x_i - x'_i) 
             $$
             The difference from baseline term is the derivative of the 
             path function \(\gamma\) with respect to \(\alpha\).
